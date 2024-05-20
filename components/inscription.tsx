@@ -1,35 +1,63 @@
 import { useState } from 'react';
 import React from 'react';
-
+import PhoneInput from 'react-native-phone-input';
 import { Image, StyleSheet,Text,View,TextInput,Button,TouchableOpacity, Platform } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+
 
 export default function inscription() {
 
   const handleLoginPress = () => {
     console.log('Se connecter pressed');
   };
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
   
     return (
     <View style={styles.container}>
       
-        <View style={styles.back}>
-            <Button
-              title="< back"
-              color="black"
-            />
-        </View>
+      <View style={styles.back}>
+        <Button
+          title="< back"
+          color="black"
+        />
+      </View>
       
       <Text style={styles.textHearder}> Champ d'inscription</Text>
       
       <Image
         source={require('@/assets/images/inscription.png')}
       />
-      
+
       <TextInput placeholder='Entrez votre nom'style={styles.textInput}/>
-      <TextInput placeholder='Entrez votre numero'style={styles.textInput}/>
-      <TextInput placeholder='Creer un mot de passe'style={styles.textInput}/>
-      <TextInput placeholder='Confirmer le mot de passe'style={styles.textInput}/>
-      
+      <PhoneInput initialCountry="cm"placeholder='Entrez votre numero'style={styles.textInput}/>
+
+      <View style={styles.pwd}>
+  <TextInput
+    style={styles.enterPwd}
+    secureTextEntry={!showPassword}
+    placeholder="creer votre mot de passe"
+  />
+  <TouchableOpacity onPress={toggleShowPassword}>
+    <Icon name={showPassword ? 'eye-slash' : 'eye'} size={20} style={styles.eyes} />
+  </TouchableOpacity>
+</View>
+
+<View style={styles.pwd}>
+  <TextInput
+    style={styles.enterPwd}
+    secureTextEntry={!showPassword}
+    placeholder="confirmer le mot de passe"
+  />
+  <TouchableOpacity onPress={toggleShowPassword}>
+    <Icon name={showPassword ? 'eye-slash' : 'eye'} size={20} style={styles.eyes} />
+  </TouchableOpacity>
+</View>
+        
         <View style={styles.next}>
             <Button
               title="SUIVANT"
@@ -89,6 +117,29 @@ next:{
   width:"50%",
   marginLeft:90,
   borderRadius:'10',
+},
+pwd:{
+  flexDirection: 'row', 
+  textAlign:'center',
+  borderWidth:2, 
+  borderColor:'green',
+  width:"80%",
+  height:"25%", 
+  fontSize:20,
+  marginTop:10, 
+  alignItems:'center',
+  textAlign:'center', 
+  marginLeft:40,
+  borderRadius:10,
+  display:'flex',
+},
+eyes:{
+  marginLeft:95,
+  width:"20%"
+},
+enterPwd:{
+    width:"60%",
+    fontSize:16,
 },
 lineContainer:{
     flexDirection:'row',
