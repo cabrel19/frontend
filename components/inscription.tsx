@@ -50,15 +50,14 @@ const styles = StyleSheet.create({
   color:'green',
 },
 textInput:{
-  marginLeft:40, 
-  borderWidth:1, 
+  borderWidth:3, 
   borderColor:'green',
   width:"80%",
   height:"25%", 
   fontSize:20,
   marginTop:10, 
-  textAlign:'center', 
-  backgroundColor:'#bdc3c7',
+  alignItems:'center', 
+
   borderRadius:'15',
 },
 next:{
