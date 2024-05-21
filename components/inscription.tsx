@@ -1,9 +1,21 @@
 import React, { useState } from 'react';
-import { View, Text,Image,Button, TextInput,StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text,Image,Button, TextInput,StyleSheet, KeyboardAvoidingView,
+  TouchableOpacity, TouchableWithoutFeedback, Keyboard, Platform,ScrollView } from 'react-native';
 import PhoneInput from 'react-native-phone-input';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
+const BackButton = ({onPress}) => {
+  return (
+    <TouchableOpacity onPress={onPress}>
+      <Icon name="arrow-back" size={30} color="black"/>
+    </TouchableOpacity>
+  )
+  
+};
+
+
 const Inscription = () => {
+
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -16,9 +28,29 @@ const Inscription = () => {
     console.log('Se connecter pressed');
   };
 
+
+
+  const handleSignup = () => {
+    console.log('Name:', name);
+    console.log('phone:', phone);
+    console.log('Password:', password);
+  };
+
+
   return (
+
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    
+    <ScrollView contentContainerStyle={styles.inner}>
+    
     <View style={styles.container}>
 
+      <BackButton></BackButton>
       <Text style={styles.inscription}>
         Champ d'inscription
       </Text>
@@ -57,9 +89,10 @@ const Inscription = () => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.inscrire}>
+      <TouchableOpacity style={styles.inscrire}  onPress={handleSignup}>
         <Text style={{ color: '#fff', fontSize: 20 }}>S'inscrire</Text>
       </TouchableOpacity>
+
 
       <View style={styles.lineContainer}>
             <View style={styles.line} />
@@ -78,13 +111,19 @@ const Inscription = () => {
 
 
     </View>
+    </ScrollView>
+    </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
+
   );
 };
 const styles = StyleSheet.create({
 
   container:{
-    padding:20,
   },
+inner:{
+  height:760,
+},
   inscription:{ 
     fontSize: 32,
     marginBottom: 20, 
@@ -92,19 +131,23 @@ const styles = StyleSheet.create({
     color:'#088A4B',
   },
  name:{
-  width:"100%",
+  width:360,
   height:52,
   borderWidth: 1,
   borderColor: '#088A4B',
   borderRadius: 15,
   padding: 10,
-  marginBottom: 20,
+  marginBottom: 15,
+  alignSelf:'center',
   fontSize:20,
+  alignItems: 'center', 
 },
 number:{ 
+  width:360,
+  height:52, 
   flexDirection: 'row', 
   alignItems: 'center', 
-  height:52, 
+  alignSelf:'center',
   borderRadius: 15, 
   marginBottom: 15,
   borderWidth: 1, 
@@ -115,27 +158,27 @@ password:{
   borderWidth: 1,
   borderRadius: 15, 
   height:52,
-  width:"100%",
+  width:360,
   marginBottom: 15,
   borderColor: '#088A4B', 
   alignItems: 'flex-start', 
-  marginRight:10, 
+  alignSelf:'center',
 },
 inscrire:{
   backgroundColor: '#088A4B',
   opacity:93,
   padding: 10,
   borderRadius: 10,
-  marginTop: 70,
+  marginTop: 60,
   alignItems: 'center',
   width:140,
   height:47,
-  marginLeft:100,
+  alignSelf:'center',
 },
 lineContainer:{
   flexDirection:'row',
   alignItems:'center',
-  marginTop:15,
+  marginTop:25,
   
   justifyContent:'center',
 },
@@ -152,7 +195,7 @@ text:{
 footer:{
   justifyContent:'center',
   alignItems:'center',
-  marginTop:10,
+  marginTop:15,
 
 },
 haveAccount:{
