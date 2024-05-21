@@ -7,7 +7,7 @@ export default function ouverture() {
            
            <View style={styles.contImage}>
                 <Image
-                   source={require('@/assets/images/ouverture.png')}
+                   source={require('@/assets/images/waiting for taxi 1.png')}
                    style={styles.image}
                 />
            </View>
