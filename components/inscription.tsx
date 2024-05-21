@@ -1,77 +1,73 @@
-import { useState } from 'react';
-import React from 'react';
+import React, { useState } from 'react';
+import { View, Text,Image,Button, TextInput,StyleSheet, TouchableOpacity } from 'react-native';
 import PhoneInput from 'react-native-phone-input';
-import { Image, StyleSheet,Text,View,TextInput,Button,TouchableOpacity, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-
-export default function inscription() {
-
-  const handleLoginPress = () => {
-    console.log('Se connecter pressed');
-  };
-
+const Inscription = () => {
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
-  
-    return (
+  const handleLoginPress = () => {
+    console.log('Se connecter pressed');
+  };
+
+  return (
     <View style={styles.container}>
-      
-      <View style={styles.back}>
-        <Button
-          title="< back"
-          color="black"
-        />
-      </View>
-      
-      <Text style={styles.textHearder}> Champ d'inscription</Text>
-      
+
+      <Text style={styles.inscription}>
+        Champ d'inscription
+      </Text>
       <Image
         source={require('@/assets/images/inscription.png')}
       />
+      <TextInput
+        style={styles.name}
+        value={name}
+        onChangeText={setName}
+        placeholder="Nom"
+      />
+      <View style={styles.number}>
+        <PhoneInput
+          initialCountry="cm"
+          value={phone}
+          onChangePhoneNumber={setPhone}
+          flagStyle={{ width: 40, height: 30, borderWidth: 0,marginLeft:5, }}
+        />
+      </View>
 
-      <TextInput placeholder='Entrez votre nom'style={styles.textInput}/>
-      <PhoneInput initialCountry="cm"placeholder='Entrez votre numero'style={styles.textInput}/>
+      <View style={styles.password}>
+        <TextInput
+          style={{ padding: 10, marginTop:5, width: '90%',fontSize:20, }}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={!showPassword}
+          placeholder="Creer un mot de passe"
+        />
+        <TouchableOpacity onPress={toggleShowPassword}>
+          <Icon
+            name={showPassword ? 'eye-slash' : 'eye'}
+            size={20}
+            style={{ marginTop: 15,}}
+          />
+        </TouchableOpacity>
+      </View>
 
-      <View style={styles.pwd}>
-  <TextInput
-    style={styles.enterPwd}
-    secureTextEntry={!showPassword}
-    placeholder="creer votre mot de passe"
-  />
-  <TouchableOpacity onPress={toggleShowPassword}>
-    <Icon name={showPassword ? 'eye-slash' : 'eye'} size={20} style={styles.eyes} />
-  </TouchableOpacity>
-</View>
+      <TouchableOpacity style={styles.inscrire}>
+        <Text style={{ color: '#fff', fontSize: 20 }}>S'inscrire</Text>
+      </TouchableOpacity>
 
-<View style={styles.pwd}>
-  <TextInput
-    style={styles.enterPwd}
-    secureTextEntry={!showPassword}
-    placeholder="confirmer le mot de passe"
-  />
-  <TouchableOpacity onPress={toggleShowPassword}>
-    <Icon name={showPassword ? 'eye-slash' : 'eye'} size={20} style={styles.eyes} />
-  </TouchableOpacity>
-</View>
-        
-        <View style={styles.next}>
-            <Button
-              title="SUIVANT"
-              color="white"
-            />        
-        </View>
-
-        <View style={styles.lineContainer}>
+      <View style={styles.lineContainer}>
             <View style={styles.line} />
             <Text style={styles.text}>ou</Text>
             <View style={styles.line} />
-        </View>
-        
-        <View style={styles.footer}>
+      </View>
+
+      <View style={styles.footer}>
           <Text style={styles.haveAccount}> 
             Vous avez deja un compte? 
             <TouchableOpacity onPress={handleLoginPress}>
@@ -80,83 +76,78 @@ export default function inscription() {
           </Text>
         </View>
 
+
     </View>
-
   );
-}
-
+};
 const styles = StyleSheet.create({
- container:{
-  height:200,
- },
- back:{
-   alignItems:'flex-start',
-   marginLeft:5,
- },
- textHearder:{
-  textAlign:'center',
-  fontSize:30,
-  color:'green',
-},
-textInput:{
-  borderWidth:2, 
-  borderColor:'green',
-  width:"80%",
-  height:"25%", 
+
+  container:{
+    padding:20,
+  },
+  inscription:{ 
+    fontSize: 32,
+    marginBottom: 20, 
+    textAlign:'center',
+    color:'#088A4B',
+  },
+ name:{
+  width:"100%",
+  height:52,
+  borderWidth: 1,
+  borderColor: '#088A4B',
+  borderRadius: 15,
+  padding: 10,
+  marginBottom: 20,
   fontSize:20,
-  marginTop:10, 
-  alignItems:'center',
-  textAlign:'center', 
-  marginLeft:40,
-  borderRadius:10,
 },
-next:{
-  marginTop:30,
-  backgroundColor:'green',
-  color:'white',
-  width:"50%",
-  marginLeft:90,
-  borderRadius:'10',
-},
-pwd:{
+number:{ 
   flexDirection: 'row', 
-  textAlign:'center',
-  borderWidth:2, 
-  borderColor:'green',
-  width:"80%",
-  height:"25%", 
-  fontSize:20,
-  marginTop:10, 
-  alignItems:'center',
-  textAlign:'center', 
-  marginLeft:40,
-  borderRadius:10,
-  display:'flex',
+  alignItems: 'center', 
+  height:52, 
+  borderRadius: 15, 
+  marginBottom: 15,
+  borderWidth: 1, 
+  borderColor: '#088A4B', 
 },
-eyes:{
-  marginLeft:95,
-  width:"20%"
+password:{ 
+  flexDirection:'row', 
+  borderWidth: 1,
+  borderRadius: 15, 
+  height:52,
+  width:"100%",
+  marginBottom: 15,
+  borderColor: '#088A4B', 
+  alignItems: 'flex-start', 
+  marginRight:10, 
 },
-enterPwd:{
-    width:"60%",
-    fontSize:16,
+inscrire:{
+  backgroundColor: '#088A4B',
+  opacity:93,
+  padding: 10,
+  borderRadius: 10,
+  marginTop: 70,
+  alignItems: 'center',
+  width:140,
+  height:47,
+  marginLeft:100,
 },
 lineContainer:{
-    flexDirection:'row',
-    alignItems:'center',
-    marginTop:15,
-    
-    justifyContent:'center',
+  flexDirection:'row',
+  alignItems:'center',
+  marginTop:15,
+  
+  justifyContent:'center',
 },
 line:{
-     width:"40%",
-     height:1,
-    backgroundColor:'black',
+   width:"40%",
+   height:1,
+  backgroundColor:'black',
 },
 text:{
-    width:"15%",
-    fontSize:16,
-    textAlign:'center',
+  width:"15%",
+  fontSize:16,
+  textAlign:'center',
 },
 footer:{
   justifyContent:'center',
@@ -168,7 +159,8 @@ haveAccount:{
   fontSize:16,
 },
 seConnecter:{
-  color:'green',
+  color:'#088A4B',
   textDecorationLine:'none',
 },
 });
+export default Inscription;
