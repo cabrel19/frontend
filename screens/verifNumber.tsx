@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, TextInput,Text,TouchableOpacity,Alert, TouchableWithoutFeedback,Keyboard, StyleSheet } from 'react-native';
+import { View, TextInput,Text,TouchableOpacity,Alert,KeyboardAvoidingView, TouchableWithoutFeedback,Keyboard, StyleSheet } from 'react-native';
 
 const VerificationCodeInput = () => {
   const [code, setCode] = useState(['', '', '', '', '']);
@@ -37,9 +37,10 @@ const VerificationCodeInput = () => {
   };
 
   return (
+    <KeyboardAvoidingView behavior={'padding'} style={styles.avoidingView}>
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     
-    <View>
+    <View style={{backgroundColor:'white', height:800,}}>
       <Text style={styles.texte}>Entrer le code a 5 chiffres qui vous a ete envoye au 694522577.</Text>
            
       <View style={styles.container}>
@@ -67,6 +68,7 @@ const VerificationCodeInput = () => {
     </View>
     
     </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
  };
 
@@ -74,8 +76,12 @@ const styles = StyleSheet.create({
   texte:{
    alignSelf:'center',
    fontSize:22,
-   marginTop:30,
+   marginTop:50,
    width:"80%",
+  },
+  avoidingView:{
+    justifyContent:'center',
+    backgroundColor:'white',
   },
   container: {
     flexDirection: 'row',
@@ -109,7 +115,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#088A4B',
     padding: 13,
     borderRadius: 10,
-    marginTop: 160,
+    marginTop: 110,
     width:140,
     height:47,
     alignSelf:'center',

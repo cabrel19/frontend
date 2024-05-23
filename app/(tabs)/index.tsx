@@ -1,41 +1,28 @@
-import React from "react";
-import {View,StyleSheet,Image,ActivityIndicator} from "react-native";
+import React, { useState, version } from 'react';
+import { View, Text,Image,Button, TextInput,StyleSheet,} from 'react-native';
 
-export default function ouverture() {
-    return (
-        <View style={styles.container}>
-           
-           <View style={styles.contImage}>
-                <Image
-                   source={require('@/assets/images/waiting for taxi 1.png')}
-                   style={styles.image}
-                />
-           </View>
-
-            <View style={styles.loading}>
-                <ActivityIndicator size="large" color="green"/>
-            </View>
-            
-        </View>
+import Inscription from '@/screens/inscription';
+import VerificationCodeInput from '@/screens/verifNumber';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import verifNumber from '@/screens/verifNumber';
+import authentification from '@/screens/authentification';
 
 
-    );
-}
-const styles = StyleSheet.create ({
+export default function app() {
 
-    container:{
-        marginTop:40,
-        justifyContent:'center',
-        textAlign:'center',
-    },
-    contImage:{
-        width:"80%",
-        height:200,
-        textAlign:'center',
-        marginRight:10,
-    },
-    loading:{
-        marginTop:350,
-        alignItems:'center'
-    },
-});
+const Stack = createNativeStackNavigator()
+
+ return (
+
+<NavigationContainer independent={true}>
+    <Stack.Navigator initialRouteName='authentification'>
+        <Stack.Screen name='Authentification' component={authentification} options={{headerShown: false}}/>
+        <Stack.Screen name='Inscription' component={Inscription} options={{headerShown: true}} />
+        <Stack.Screen name='Verification' component={verifNumber} options={{headerShown: true}}/>
+    </Stack.Navigator>
+</NavigationContainer>
+
+)
+  
+};

@@ -1,20 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text,Image,Button, TextInput,StyleSheet, KeyboardAvoidingView,
-  TouchableOpacity, TouchableWithoutFeedback, Keyboard, Platform,ScrollView } from 'react-native';
+import { View, Text,Image,TextInput,StyleSheet, KeyboardAvoidingView,
+  TouchableOpacity, TouchableWithoutFeedback, Keyboard} from 'react-native';
 import PhoneInput from 'react-native-phone-input';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-const BackButton = ({onPress}) => {
-  return (
-    <TouchableOpacity onPress={onPress}>
-      <Icon name="arrow-back" size={30} color="black"/>
-    </TouchableOpacity>
-  )
-  
-};
-
-
-const Inscription = () => {
+const Inscription = ({navigation}) => {
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -24,38 +14,22 @@ const Inscription = () => {
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
+
   const handleLoginPress = () => {
     console.log('Se connecter pressed');
   };
 
-
-
-  const handleSignup = () => {
-    console.log('Name:', name);
-    console.log('phone:', phone);
-    console.log('Password:', password);
-  };
-
-
   return (
 
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
-    >
+    <KeyboardAvoidingView behavior={'padding'} style={styles.container}>
 
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-    
-    <ScrollView contentContainerStyle={styles.inner}>
-    
+
     <View style={styles.container}>
 
-      <BackButton></BackButton>
-      <Text style={styles.inscription}>
-        Champ d'inscription
-      </Text>
       <Image
         source={require('@/assets/images/inscription.png')}
+        style={{marginTop:30,}}
       />
       <TextInput
         style={styles.name}
@@ -89,7 +63,7 @@ const Inscription = () => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.inscrire}  onPress={handleSignup}>
+      <TouchableOpacity style={styles.inscrire}  onPress={()=> navigation.navigate("Verification")}>
         <Text style={{ color: '#fff', fontSize: 20 }}>S'inscrire</Text>
       </TouchableOpacity>
 
@@ -109,27 +83,23 @@ const Inscription = () => {
           </Text>
         </View>
 
-
     </View>
-    </ScrollView>
+
     </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
+
 
   );
 };
 const styles = StyleSheet.create({
 
   container:{
+    justifyContent:'center',
+    backgroundColor:'white',
   },
 inner:{
-  height:760,
+  height:725,
 },
-  inscription:{ 
-    fontSize: 32,
-    marginBottom: 20, 
-    textAlign:'center',
-    color:'#088A4B',
-  },
  name:{
   width:360,
   height:52,
@@ -196,10 +166,12 @@ footer:{
   justifyContent:'center',
   alignItems:'center',
   marginTop:15,
+  height:60,
 
 },
 haveAccount:{
   fontSize:16,
+  marginBottom:25,
 },
 seConnecter:{
   color:'#088A4B',
