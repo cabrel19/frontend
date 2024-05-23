@@ -4,9 +4,8 @@ import { View, Text,Image,TextInput,StyleSheet, KeyboardAvoidingView,
 import PhoneInput from 'react-native-phone-input';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-const Inscription = ({navigation}) => {
+const Connexion = ({navigation}) => {
 
-  const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -15,9 +14,6 @@ const Inscription = ({navigation}) => {
     setShowPassword(!showPassword);
   };
 
-  const handleLoginPress = () => {
-    console.log('Se connecter pressed');
-  };
 
   return (
 
@@ -28,14 +24,8 @@ const Inscription = ({navigation}) => {
     <View style={styles.container}>
 
       <Image
-        source={require('@/assets/images/inscription.png')}
-        style={{marginTop:30,height:350}}
-      />
-      <TextInput
-        style={styles.name}
-        value={name}
-        onChangeText={setName}
-        placeholder="Nom"
+        source={require('@/assets/images/connexion.png')}
+        style={{marginTop:30,height:350,}}
       />
       <View style={styles.number}>
         <PhoneInput
@@ -46,25 +36,29 @@ const Inscription = ({navigation}) => {
         />
       </View>
 
-      <View style={styles.password}>
-        <TextInput
-          style={{ padding: 10, marginTop:5, width: '90%',fontSize:20, }}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!showPassword}
-          placeholder="Creer un mot de passe"
-        />
-        <TouchableOpacity onPress={toggleShowPassword}>
-          <Icon
-            name={showPassword ? 'eye-slash' : 'eye'}
-            size={20}
-            style={{ marginTop: 15,}}
-          />
-        </TouchableOpacity>
-      </View>
+        <View style={styles.password}>
+            <TextInput
+              style={{ padding: 10, marginTop:5, width: '90%',fontSize:20, }}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              placeholder="Mot de passe"
+            />
+            <TouchableOpacity onPress={toggleShowPassword}>
+                <Icon
+                  name={showPassword ? 'eye-slash' : 'eye'}
+                  size={20}
+                  style={{ marginTop: 15,}}
+                />
+            </TouchableOpacity>
+        </View>
 
-      <TouchableOpacity style={styles.inscrire}  onPress={()=> navigation.navigate("Verification")}>
-        <Text style={{ color: '#fff', fontSize: 20 }}>S'inscrire</Text>
+        <TouchableOpacity onPress={()=> navigation.navigate("ForgetPwd")}>
+              <Text style={{color:'#088A4B', marginLeft:20}}>Mot de passe oublier ?</Text>
+            </TouchableOpacity>
+
+      <TouchableOpacity style={styles.connecter}  onPress={()=> navigation.navigate("Verification")}>
+        <Text style={{ color: '#fff', fontSize: 20,}}>Se connecter</Text>
       </TouchableOpacity>
 
 
@@ -75,10 +69,10 @@ const Inscription = ({navigation}) => {
       </View>
 
       <View style={styles.footer}>
-          <Text style={styles.haveAccount}> 
-            Vous avez deja un compte? 
-            <TouchableOpacity onPress={()=> navigation.navigate("Connexion")}>
-              <Text style={styles.seConnecter}>    Se connecter</Text>
+          <Text style={styles.notAccount}> 
+            Vous n'avez pas de compte? 
+            <TouchableOpacity onPress={()=> navigation.navigate("Inscription")}>
+              <Text style={styles.inscrire}>    S'inscrire</Text>
             </TouchableOpacity>
           </Text>
         </View>
@@ -97,21 +91,6 @@ const styles = StyleSheet.create({
     justifyContent:'center',
     backgroundColor:'white',
   },
-inner:{
-  height:725,
-},
- name:{
-  width:360,
-  height:52,
-  borderWidth: 1,
-  borderColor: '#088A4B',
-  borderRadius: 15,
-  padding: 10,
-  marginBottom: 15,
-  alignSelf:'center',
-  fontSize:20,
-  alignItems: 'center', 
-},
 number:{ 
   width:360,
   height:52, 
@@ -134,12 +113,12 @@ password:{
   alignItems: 'flex-start', 
   alignSelf:'center',
 },
-inscrire:{
+connecter:{
   backgroundColor: '#088A4B',
   opacity:93,
   padding: 10,
   borderRadius: 10,
-  marginTop: 45,
+  marginTop: 70,
   alignItems: 'center',
   width:140,
   height:47,
@@ -165,17 +144,17 @@ text:{
 footer:{
   justifyContent:'center',
   alignItems:'center',
-  marginTop:10,
+  marginTop:40,
   height:60,
 
 },
-haveAccount:{
+notAccount:{
   fontSize:16,
   marginBottom:25,
 },
-seConnecter:{
+inscrire:{
   color:'#088A4B',
   textDecorationLine:'none',
 },
 });
-export default Inscription;
+export default Connexion;

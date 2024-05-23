@@ -5,12 +5,10 @@ const authentification = ({navigation}) => {
 
  return (
 
-    <View style={styles.container}>
 
-        <ImageBackground
-           source={require('@/assets/images/fond.png')}
-           style={styles.image}
-        />
+    <ImageBackground
+        source={require('@/assets/images/fond.png')}
+        style={styles.image}>
 
         <TouchableOpacity style={styles.inscrire}  onPress={()=> navigation.navigate("Inscription")}>
            <Text style={{ color: '#fff', fontSize: 20 }}>S'inscrire</Text>
@@ -20,8 +18,7 @@ const authentification = ({navigation}) => {
              <Text style={{ color: '#fff', fontSize: 20 }}>Se connecter</Text>
         </TouchableOpacity>
 
-    </View>
-
+    </ImageBackground>   
  );
 
 
@@ -29,16 +26,13 @@ const authentification = ({navigation}) => {
 
 const styles = StyleSheet.create ({
 
-    container:{
-        flex:1,
-        height:'100%',
-    },
-
     image:{
         flex:1,
-        width:'100%',
-        height:'120%',
+        justifyContent: 'flex-end',
         resizeMode:'cover',
+        width:'100%',
+        height:'100%',
+        alignSelf:'center',
     },
 
     inscrire:{
@@ -48,8 +42,8 @@ const styles = StyleSheet.create ({
         borderRadius: 10,
         marginBottom: 15,
         alignItems: 'center',
-        width:140,
-        height:47,
+        width:200,
+        height:50,
         alignSelf:'center',
       },
 
@@ -60,8 +54,8 @@ const styles = StyleSheet.create ({
         borderRadius: 10,
         marginBottom: 15,
         alignItems: 'center',
-        width:140,
-        height:47,
+        width:200,
+        height:50,
         alignSelf:'center',
       },
 });
