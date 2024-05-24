@@ -4,12 +4,14 @@
     "slug": "frontend",
     "version": "1.0.0",
     "orientation": "portrait",
+    
     "icon": "./assets/images/logo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/first.png",
       "resizeMode": "cover",
+
       "backgroundColor": "#ffffff"
     },
     "ios": {
@@ -17,14 +19,16 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"
       }
     },
     "web": {
       "bundler": "metro",
       "output": "static",
+
       "favicon": "./assets/images/logo.png"
+
     },
     "plugins": [
       "expo-router"
