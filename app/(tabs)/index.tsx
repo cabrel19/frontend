@@ -1,9 +1,17 @@
-import { Image, Text, StyleSheet, Platform } from 'react-native';
+import { Image, Text, StyleSheet, Platform, View } from 'react-native';
 import React from 'react';
 
 export default function HomeScreen() {
   return (
-    <Text>bonjour</Text>
+
+    <View>
+      <Text>bonjour</Text>
+      <Text>bonjour</Text>
+    </View>
+
+
+
+
   );
 };
 
