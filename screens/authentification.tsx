@@ -1,7 +1,7 @@
 import React from "react";
 import { Image,Text,View, TouchableOpacity,StyleSheet, ImageBackground } from "react-native";
  
-const authentification = ({navigation}) => {
+const Authentification = ({navigation}) => {
 
  return (
 
@@ -33,6 +33,7 @@ const styles = StyleSheet.create ({
         width:'100%',
         height:'100%',
         alignSelf:'center',
+        
     },
 
     inscrire:{
@@ -60,4 +61,4 @@ const styles = StyleSheet.create ({
       },
 });
 
-export default authentification;
+export default Authentification;

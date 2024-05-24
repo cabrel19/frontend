@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text,Image,TextInput,StyleSheet, KeyboardAvoidingView,
-  TouchableOpacity, TouchableWithoutFeedback, Keyboard} from 'react-native';
+  TouchableOpacity, TouchableWithoutFeedback, Keyboard,
+  Alert} from 'react-native';
 import PhoneInput from 'react-native-phone-input';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -10,13 +11,33 @@ const Inscription = ({navigation}) => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleLoginPress = () => {
-    console.log('Se connecter pressed');
+  const handleInputChange = (setter) =>
+    (value) => {
+        setter(value);
+        validateForm();
+      };
+
+  const validateForm = () => {
+    if (name.length > 0 && phone.length >0 && password.length > 0) {
+      setIsFormValid(true);
+    } else {
+      setIsFormValid(false);
+    }
+  };
+
+  const handleSignup = () => {
+    if (isFormValid) {
+      navigation.navigate("Verification");
+    } else {
+      Alert.alert('Erreur', 'Veuillez remplir tous les champs.');
+    }
+
   };
 
   return (
@@ -34,14 +55,15 @@ const Inscription = ({navigation}) => {
       <TextInput
         style={styles.name}
         value={name}
-        onChangeText={setName}
+        onChangeText={handleInputChange(setName)}
         placeholder="Nom"
+        keyboardType="web-search"
       />
       <View style={styles.number}>
         <PhoneInput
           initialCountry="cm"
           value={phone}
-          onChangePhoneNumber={setPhone}
+          onChangePhoneNumber={handleInputChange(setPhone)}
           flagStyle={{ width: 40, height: 30, borderWidth: 0,marginLeft:5, }}
         />
       </View>
@@ -50,9 +72,10 @@ const Inscription = ({navigation}) => {
         <TextInput
           style={{ padding: 10, marginTop:5, width: '90%',fontSize:20, }}
           value={password}
-          onChangeText={setPassword}
+          onChangeText={handleInputChange(setPassword)}
           secureTextEntry={!showPassword}
           placeholder="Creer un mot de passe"
+          keyboardType="web-search"
         />
         <TouchableOpacity onPress={toggleShowPassword}>
           <Icon
@@ -63,7 +86,7 @@ const Inscription = ({navigation}) => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.inscrire}  onPress={()=> navigation.navigate("Verification")}>
+      <TouchableOpacity style={styles.inscrire}  onPress={handleSignup}>
         <Text style={{ color: '#fff', fontSize: 20 }}>S'inscrire</Text>
       </TouchableOpacity>
 

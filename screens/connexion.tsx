@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text,Image,TextInput,StyleSheet, KeyboardAvoidingView,
-  TouchableOpacity, TouchableWithoutFeedback, Keyboard} from 'react-native';
+  TouchableOpacity, TouchableWithoutFeedback, Keyboard,Alert} from 'react-native';
 import PhoneInput from 'react-native-phone-input';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -9,6 +9,30 @@ const Connexion = ({navigation}) => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  const validateForm = () => {
+    if (phone.length > 0 && password.length > 0) {
+      setIsFormValid(true);
+    } else {
+      setIsFormValid(false);
+    }
+  };
+
+  const handleInputChange = (setter) =>
+    (value) => {
+      setter(value);
+      validateForm();
+    };
+
+    const handleSignup = () => {
+      if (isFormValid) {
+        navigation.navigate("Home");
+      } else {
+        Alert.alert('Erreur', 'Veuillez remplir tous les champs.');
+      }
+  
+    };
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -31,7 +55,7 @@ const Connexion = ({navigation}) => {
         <PhoneInput
           initialCountry="cm"
           value={phone}
-          onChangePhoneNumber={setPhone}
+          onChangePhoneNumber={handleInputChange(setPhone)}
           flagStyle={{ width: 40, height: 30, borderWidth: 0,marginLeft:5, }}
         />
       </View>
@@ -40,9 +64,10 @@ const Connexion = ({navigation}) => {
             <TextInput
               style={{ padding: 10, marginTop:5, width: '90%',fontSize:20, }}
               value={password}
-              onChangeText={setPassword}
+              onChangeText={handleInputChange(setPassword)}
               secureTextEntry={!showPassword}
               placeholder="Mot de passe"
+              keyboardType="web-search"
             />
             <TouchableOpacity onPress={toggleShowPassword}>
                 <Icon
@@ -57,7 +82,7 @@ const Connexion = ({navigation}) => {
               <Text style={{color:'#088A4B', marginLeft:20}}>Mot de passe oublier ?</Text>
             </TouchableOpacity>
 
-      <TouchableOpacity style={styles.connecter}  onPress={()=> navigation.navigate("Verification")}>
+      <TouchableOpacity style={styles.connecter}  onPress={handleSignup}>
         <Text style={{ color: '#fff', fontSize: 20,}}>Se connecter</Text>
       </TouchableOpacity>
 
@@ -115,7 +140,6 @@ password:{
 },
 connecter:{
   backgroundColor: '#088A4B',
-  opacity:93,
   padding: 10,
   borderRadius: 10,
   marginTop: 70,
