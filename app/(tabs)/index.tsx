@@ -1,9 +1,9 @@
 import { Image, StyleSheet,Text, Platform, SafeAreaView, Keyboard, KeyboardAvoidingView, TouchableWithoutFeedback  } from 'react-native';
 import React from 'react';
-import { Logo } from '../../_components/Logo';
-import { BarreRecherche } from '../../_components/BarreRecherche';
-import { SecondVue } from '../../_components/SecondVue';
-import { Boutton } from '../../_components/Boutton';
+import { Logo } from '../../components/__tests__/Logo';
+import { BarreRecherche } from '../../components/__tests__/BarreRecherche';
+import { SecondVue } from '../../components/__tests__/SecondVue';
+import { Boutton } from '../../components/__tests__/Boutton';
 
 
 export default function HomeScreen() {
