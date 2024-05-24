@@ -20,7 +20,7 @@ const Stack = createNativeStackNavigator()
 
  return (
 
-/*<NavigationContainer independent={true}>
+<NavigationContainer independent={true}>
     <Stack.Navigator initialRouteName='authentification'>
         <Stack.Screen name='Authentification' component={authentification} options={{headerTransparent: true,headerShown: false}}/>
         <Stack.Screen name='Connexion' component={Connexion} options={{headerTransparent: true,headerShown: true}} />
@@ -28,8 +28,7 @@ const Stack = createNativeStackNavigator()
         <Stack.Screen name='Verification' component={verifNumber} options={{headerTransparent: true,headerShown: true}}/>
         <Stack.Screen name='Home' component={Home} options={{headerTransparent: true,headerShown: false}}/>
     </Stack.Navigator>
-</NavigationContainer>*/
-<Offres/>
+</NavigationContainer>
 
 )
   
