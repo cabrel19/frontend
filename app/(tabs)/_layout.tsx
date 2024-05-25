@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-
+import {Stack} from "expo-router";
+/*
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -35,3 +36,14 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+*/
+const Layout = () =>{
+  return(
+    <Stack>
+      <Stack.Screen name='numero1' />
+      <Stack.Screen name='inscription' />
+    </Stack>
+  );
+}
+
+export default Layout;   
