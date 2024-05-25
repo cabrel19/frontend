@@ -25,7 +25,7 @@ const Newpassword = () =>{
             {'\n'}
             {'\n'}
             <Pressable>
-                <Button title='Valider' />
+                <Button   title='Valider' />
                 </Pressable>
         </View>
     );
@@ -43,6 +43,9 @@ const styles = StyleSheet.create({
     container:{
         flex:1,
         flexDirection:"column",
+    },
+    bouton:{
+        
     }
 });
 export default Newpassword;
