@@ -1,41 +1,78 @@
-import React from "react";
-import {View,StyleSheet,Image,ActivityIndicator} from "react-native";
+import React, { useEffect } from 'react';
+import { View, StyleSheet, Text, Image} from 'react-native';
+import Swiper from 'react-native-swiper';
+import LottieView from 'lottie-react-native';
+import { useNavigation } from '@react-navigation/native';
 
-export default function ouverture() {
+const images = [
+    //liste des images qui vont défiler
+    require('@/assets/images/commande.png'),
+    require('@/assets/images/course.png'),
+    require('@/assets/images/home1.png'),
+    require('@/assets/images/home2.png'),
+];
+
+const Ouverture = () => {
+    const navigation = useNavigation();
+
+    useEffect(() => {
+        //temps pendant lequel mes images vont défiler
+        const timer = setTimeout(() => {
+            navigation.replace('Inscription');
+        }, 9000);
+
+        return () => clearTimeout(timer);
+    }, [navigation]);
+
     return (
         <View style={styles.container}>
-           
-           <View style={styles.contImage}>
-                <Image
-                   source={require('@/assets/images/waiting for taxi 1.png')}
-                   style={styles.image}
-                />
-           </View>
-
-            <View style={styles.loading}>
-                <ActivityIndicator size="large" color="green"/>
-            </View>
+            <Swiper
+            //faire défiler les images après 2 sec
+                style={styles.wrapper}
+                showsButtons={false}
+                autoplay={true}
+                autoplayTimeout={2}
+                loop={true}
+            >
+                {images.map((image, index) => (
+                    <View key={index} style={styles.slide}>
+                        <Image source={image} style={styles.image} />
+                    </View>
+                ))}
+            </Swiper>
+            
+                <Text style={styles.loadingText}>Chargement...</Text>
             
         </View>
-
-
     );
-}
-const styles = StyleSheet.create ({
+};
 
-    container:{
-        marginTop:40,
-        justifyContent:'center',
-        textAlign:'center',
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    contImage:{
-        width:"80%",
-        height:200,
-        textAlign:'center',
-        marginRight:10,
+    wrapper: {
+        height: '70%',
     },
-    loading:{
-        marginTop:350,
-        alignItems:'center'
+    slide: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    image: {
+        width: 300,
+        height: 300,
+        resizeMode: 'contain',
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#555',
+        textAlign:'center',
+        bottom: 70,
     },
 });
+
+export default Ouverture;

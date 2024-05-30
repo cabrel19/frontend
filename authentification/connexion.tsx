@@ -1,40 +1,51 @@
-import React, { useState } from 'react';
-import { View, Text,Image,TextInput,StyleSheet, KeyboardAvoidingView,
-  TouchableOpacity, TouchableWithoutFeedback, Keyboard,Alert} from 'react-native';
-import PhoneInput from 'react-native-phone-input';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  View, Text, Image, ImageBackground, TextInput, StyleSheet, KeyboardAvoidingView,
+  TouchableOpacity, TouchableWithoutFeedback, Keyboard, Alert
+} from 'react-native';
+import PhoneInput from 'react-native-phone-number-input';
+import { FontAwesome } from '@expo/vector-icons';
 
-const Connexion = ({navigation}) => {
+const Connexion = ({ navigation }: any) => {
 
-  const [phone, setPhone] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isFormValid, setIsFormValid] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);//masquer le password par default
+  const [buttonColor, setButtonColor] = useState('#d3d3d3'); // Couleur grise initiale
+  const phoneInput = useRef(null);
 
-  const validateForm = () => {
-    if (phone.length > 0 && password.length > 0) {
-      setIsFormValid(true);
+  useEffect(() => {
+    // Changer la couleur du bouton en vert si tout les champs sont correctement remplis, sinon gris
+    if (phoneNumber.trim().length === 13 && password.trim().length > 7) {
+      setButtonColor('#088A4B'); // Couleur verte
     } else {
-      setIsFormValid(false);
+      setButtonColor('#d3d3d3'); // Couleur grise
     }
+  }, [phoneNumber, password]);
+
+
+  const connecter = () => {
+    // conditions a respecter pour aller a la page suivante
+    if (phoneNumber === '' || password === '') {
+      Alert.alert('Erreur', 'Tous les champs sont obligatoires');
+      return;//tous les champs remplis
+    }
+
+    if (password.trim().length < 8) {
+      Alert.alert('Erreur', 'Votre mot de passe doit contenir au moins 08 caractères.');
+      return;// password supérieur a 7 caractères
+    }
+    const isValid = phoneInput.current?.isValidNumber(phoneNumber);
+    if (!isValid) {
+      Alert.alert('Erreur', 'Le numéro de téléphone est invalide');
+      return;
+    }//vérifier si le numero est valide
+
+    navigation.replace("Home");
   };
 
-  const handleInputChange = (setter) =>
-    (value) => {
-      setter(value);
-      validateForm();
-    };
-
-    const handleSignup = () => {
-      if (isFormValid) {
-        navigation.navigate("Home");
-      } else {
-        Alert.alert('Erreur', 'Veuillez remplir tous les champs.');
-      }
-  
-    };
-
   const toggleShowPassword = () => {
+    // masquer ou afficher le mot de passe
     setShowPassword(!showPassword);
   };
 
@@ -43,68 +54,83 @@ const Connexion = ({navigation}) => {
 
     <KeyboardAvoidingView behavior={'padding'} style={styles.container}>
 
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 
-    <View style={styles.container}>
+        <View style={styles.container}>
 
-      <Image
-        source={require('@/assets/images/connexion.png')}
-        style={{marginTop:30,height:350,}}
-      />
-      <View style={styles.number}>
-        <PhoneInput
-          initialCountry="cm"
-          value={phone}
-          onChangePhoneNumber={handleInputChange(setPhone)}
-          flagStyle={{ width: 40, height: 30, borderWidth: 0,marginLeft:5, }}
-        />
-      </View>
-
-        <View style={styles.password}>
-            <TextInput
-              style={{ padding: 10, marginTop:5, width: '90%',fontSize:20, }}
-              value={password}
-              onChangeText={handleInputChange(setPassword)}
-              secureTextEntry={!showPassword}
-              placeholder="Mot de passe"
-              keyboardType="web-search"
+          <ImageBackground
+            source={require('@/assets/images/background.png')}
+            style={styles.container}
+            
+          >
+            <Image
+            
+              source={require('@/assets/images/connexion.png')}
+              style={styles.image}
             />
-            <TouchableOpacity onPress={toggleShowPassword}>
-                <Icon
-                  name={showPassword ? 'eye-slash' : 'eye'}
-                  size={20}
-                  style={{ marginTop: 15,}}
+
+            <View style={styles.formulaire}>
+
+              <PhoneInput
+                ref={phoneInput}
+                defaultValue={phoneNumber}
+                defaultCode="CM"
+                layout="first"
+                onChangeFormattedText={text => { setPhoneNumber(text); }}
+                containerStyle={styles.PhoneInput}
+                textContainerStyle={styles.enterNumber}
+              />
+
+              <View style={styles.password}>
+                <TextInput
+                  style={{ padding: 10, marginTop: 5, width: '90%', fontSize: 20, }}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  placeholder="Mot de passe"
+                  keyboardType="web-search"
+                  autoCorrect={false}
                 />
-            </TouchableOpacity>
+                <TouchableOpacity onPress={toggleShowPassword}>
+                  <FontAwesome
+                    name={showPassword ? 'eye' : 'eye-slash'}
+                    size={20}
+                    color='#088A4B'
+                  />
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity style={styles.forgetPassword} onPress={() => navigation.navigate("Vérification")}>
+                <Text style={{ color: '#088A4B', fontSize: 16 }}>Mot de passe oublier ?</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={{ ...styles.connecter, backgroundColor: buttonColor }} onPress={connecter}>
+                <Text style={{ color: '#fff', fontSize: 20, }}>Se connecter</Text>
+              </TouchableOpacity>
+
+
+              <View style={styles.lineContainer}>
+                <View style={styles.line} />
+                <Text style={styles.text}>ou</Text>
+                <View style={styles.line} />
+              </View>
+
+              <View style={styles.footer}>
+                <Text style={styles.notAccount}>
+                  Vous n'avez pas de compte?
+                  <TouchableOpacity onPress={() => navigation.navigate("Inscription")}>
+                    <Text style={styles.inscrire}>    S'inscrire</Text>
+                  </TouchableOpacity>
+                </Text>
+              </View>
+
+            </View>
+
+          </ImageBackground>
+
         </View>
 
-        <TouchableOpacity onPress={()=> navigation.navigate("ForgetPwd")}>
-              <Text style={{color:'#088A4B', marginLeft:20}}>Mot de passe oublier ?</Text>
-            </TouchableOpacity>
-
-      <TouchableOpacity style={styles.connecter}  onPress={handleSignup}>
-        <Text style={{ color: '#fff', fontSize: 20,}}>Se connecter</Text>
-      </TouchableOpacity>
-
-
-      <View style={styles.lineContainer}>
-            <View style={styles.line} />
-            <Text style={styles.text}>ou</Text>
-            <View style={styles.line} />
-      </View>
-
-      <View style={styles.footer}>
-          <Text style={styles.notAccount}> 
-            Vous n'avez pas de compte? 
-            <TouchableOpacity onPress={()=> navigation.navigate("Inscription")}>
-              <Text style={styles.inscrire}>    S'inscrire</Text>
-            </TouchableOpacity>
-          </Text>
-        </View>
-
-    </View>
-
-    </TouchableWithoutFeedback>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
 
 
@@ -112,73 +138,100 @@ const Connexion = ({navigation}) => {
 };
 const styles = StyleSheet.create({
 
-  container:{
-    justifyContent:'center',
-    backgroundColor:'white',
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: '#DDDDDD',
   },
-number:{ 
-  width:360,
-  height:52, 
-  flexDirection: 'row', 
-  alignItems: 'center', 
-  alignSelf:'center',
-  borderRadius: 15, 
-  marginBottom: 15,
-  borderWidth: 1, 
-  borderColor: '#088A4B', 
-},
-password:{ 
-  flexDirection:'row', 
-  borderWidth: 1,
-  borderRadius: 15, 
-  height:52,
-  width:360,
-  marginBottom: 15,
-  borderColor: '#088A4B', 
-  alignItems: 'flex-start', 
-  alignSelf:'center',
-},
-connecter:{
-  backgroundColor: '#088A4B',
-  padding: 10,
-  borderRadius: 10,
-  marginTop: 70,
-  alignItems: 'center',
-  width:140,
-  height:47,
-  alignSelf:'center',
-},
-lineContainer:{
-  flexDirection:'row',
-  alignItems:'center',
-  marginTop:40,
-  
-  justifyContent:'center',
-},
-line:{
-   width:"40%",
-   height:1,
-  backgroundColor:'black',
-},
-text:{
-  width:"15%",
-  fontSize:16,
-  textAlign:'center',
-},
-footer:{
-  justifyContent:'center',
-  alignItems:'center',
-  marginTop:40,
-  height:60,
+  image: {
+    width: "100%",
+    height: "45%",
+  },
+  formulaire: {
+    width: "85%",
+    alignSelf: 'center',
+    backgroundColor: 'white',
+    marginBottom: 50,
+    borderRadius: 15,
+    flex: 1,
+  },
+  PhoneInput: {
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderRadius: 15,
+    height: 52,
+    width: '90%',
+    marginTop: 20,
+    borderColor: '#088A4B',
+    alignSelf: 'center',
+  },
+  enterNumber: {
+    borderTopRightRadius: 15,
+    borderBottomRightRadius: 15,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    height: "100%",
+  },
+  password: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderRadius: 15,
+    height: 52,
+    width: '90%',
+    borderColor: '#088A4B',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: 15,
+  },
+  forgetPassword: {
+    width: '55%',
+    height: 22,
+    marginLeft: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 5,
+  },
+  connecter: {
+    backgroundColor: '#088A4B',
+    borderRadius: 10,
+    marginTop: 20,
+    alignItems: 'center',
+    width: '40%',
+    height: 47,
+    alignSelf: 'center',
+    justifyContent: 'center'
+  },
+  lineContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 40,
 
-},
-notAccount:{
-  fontSize:16,
-  marginBottom:25,
-},
-inscrire:{
-  color:'#088A4B',
-  textDecorationLine:'none',
-},
+    justifyContent: 'center',
+  },
+  line: {
+    width: "30%",
+    height: 1,
+    backgroundColor: '#088A4B',
+  },
+  text: {
+    width: "15%",
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  footer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+    height: 60,
+
+  },
+  notAccount: {
+    fontSize: 16,
+    marginBottom: 25,
+  },
+  inscrire: {
+    color: '#088A4B',
+    textDecorationLine: 'none',
+  },
 });
 export default Connexion;

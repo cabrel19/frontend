@@ -1,22 +1,33 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Text,StyleSheet, View,Image, TouchableOpacity } from "react-native";
-import { Share} from "react-native-share";
+import  Share from "react-native-share";
 
 const Offres = () => {
 
-    const Share = () => {
-        const options = {
-            message:"bonjour je ddshrjwjr"
-        };
-        Share.open(options)
-        .then((res) => {
-          console.log(res);
-        })
-        .catch((err) => {
-          err && console.log(err);
-        })
-    };
+    /*const shareMessage =  () => {
+        const shareOptions = {
+          message: 'Ceci est un texte de test à partager via d'autres applications!',
+        };*/
+    
+        const shareMessage = async  () => {
+            const shareOptions = {
+                message:'promotion',
+            }
+            try{
+                const ShareReponse  = await Share.open(shareOptions);
+            }
+            catch(error) {
+               console.log('Error =>', error);
+            }
+
+
+       /* Share.open(shareOptions)
+          .then((res) => console.log('Share response:', res))
+          .catch((err) => {
+            err && console.log('Error sharing:', err);
+          });*/
+      };
 
     return(
 
@@ -40,7 +51,7 @@ const Offres = () => {
             </View> 
 
             <Text style={{marginLeft:40,fontFamily:'abel',width:"80%", fontSize:16,}}>
-                Votre ami recevra une reduction de 10% sur sa premiere course.
+                Votre ami recevra une reduction de 10% sur sa première course.
             </Text>
 
 
@@ -51,12 +62,12 @@ const Offres = () => {
             </View> 
                 
             <Text style={{alignSelf:'center',fontFamily:'abel',width:"90%",fontSize:16,}}>
-            Une fois qu’il aura effectue sa premiere course,vous beneficierez de 50% de reduction sur votre 
+            Une fois qu’il aura effectue sa première course,vous bénéficierez de 50% de reduction sur votre 
             prochain trajet.
             </Text>
             
 
-            <TouchableOpacity style={styles.partager} onPress={Share}>
+            <TouchableOpacity style={styles.partager} onPress={shareMessage }>
                 <Text style={{fontSize: 20}}>PARTAGER</Text>
                 <Text style={{fontSize:16}}>Il reste 700 codes promotionnels</Text>
             </TouchableOpacity>

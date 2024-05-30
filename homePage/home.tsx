@@ -4,7 +4,7 @@ import { Text, View,Image, StyleSheet,TouchableOpacity, } from "react-native";
 import { MaterialIcons} from '@expo/vector-icons';
 
 
-const Home = ({navigation}) => {
+const Home = () => {
 
 
     return (
@@ -70,8 +70,7 @@ const styles = StyleSheet.create({
 
     container:{
         backgroundColor:'white',
-        height:'100%',
-
+        flex:1,
     },
 
     transport:{

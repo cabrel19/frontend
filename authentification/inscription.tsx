@@ -1,204 +1,249 @@
-import React, { useState } from 'react';
-import { View, Text,Image,TextInput,StyleSheet, KeyboardAvoidingView,
-  TouchableOpacity, TouchableWithoutFeedback, Keyboard,
-  Alert} from 'react-native';
-import PhoneInput from 'react-native-phone-input';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  View, Text, TextInput, Image, ImageBackground, Button, Alert, KeyboardAvoidingView,
+  StyleSheet, TouchableWithoutFeedback, TouchableOpacity, Keyboard
+} from 'react-native';
+import PhoneInput from 'react-native-phone-number-input';
+import { FontAwesome } from '@expo/vector-icons';
 
-const Inscription = ({navigation}) => {
-
+const FirstPage = ({ navigation }: any) => {
   const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isFormValid, setIsFormValid] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);//masquer le password par default
+  const [buttonColor, setButtonColor] = useState('#d3d3d3'); // Couleur grise initiale
+  const phoneInput = useRef(null);
+
+  const inscrire = () => {
+    // conditions a respecter pour aller a la page suivante
+    if (name === '' || phoneNumber === '' || password === '') {
+      Alert.alert('Erreur', 'Tous les champs sont obligatoires');
+      return;
+    }//tous les champs remplis
+
+    if (password.length < 8) {
+      Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 8 caractères');
+      return;
+    }// password supérieur a 7 caractères
+
+    const isValid = phoneInput.current?.isValidNumber(phoneNumber);
+    if (!isValid) {
+      Alert.alert('Erreur', 'Le numéro de téléphone est invalide');
+      return;
+    }//verifie si le numero est valide
+
+    navigation.navigate('OTP', { phoneNumber });
+  };
+
+  useEffect(() => {
+    // Changer la couleur du bouton en vert si tout les champs sont correctement remplis, sinon gris
+    if (name.trim().length > 0 && phoneNumber.trim().length === 13 && password.trim().length > 7) {
+      setButtonColor('#088A4B'); // Couleur verte
+    } else {
+      setButtonColor('#d3d3d3'); // Couleur grise
+    }
+  }, [name, phoneNumber, password]);
 
   const toggleShowPassword = () => {
+    // masquer ou afficher le mot de passe
     setShowPassword(!showPassword);
   };
 
-  const handleInputChange = (setter) =>
-    (value) => {
-        setter(value);
-        validateForm();
-      };
-
-  const validateForm = () => {
-    if (name.length > 0 && phone.length >0 && password.length > 0) {
-      setIsFormValid(true);
-    } else {
-      setIsFormValid(false);
-    }
-  };
-
-  const handleSignup = () => {
-    if (isFormValid) {
-      navigation.navigate("Verification");
-    } else {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs.');
-    }
-
-  };
-
   return (
-
     <KeyboardAvoidingView behavior={'padding'} style={styles.container}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
 
-    <View style={styles.container}>
+          <ImageBackground
+            source={require('@/assets/images/background.png')}
+            style={styles.container}
+          >
+            <Image
+              source={require('@/assets/images/inscription.png')}
+              style={styles.image}
+            />
 
-      <Image
-        source={require('@/assets/images/inscription.png')}
-        style={{marginTop:30,height:350}}
-      />
-      <TextInput
-        style={styles.name}
-        value={name}
-        onChangeText={handleInputChange(setName)}
-        placeholder="Nom"
-        keyboardType="web-search"
-      />
-      <View style={styles.number}>
-        <PhoneInput
-          initialCountry="cm"
-          value={phone}
-          onChangePhoneNumber={handleInputChange(setPhone)}
-          flagStyle={{ width: 40, height: 30, borderWidth: 0,marginLeft:5, }}
-        />
-      </View>
+            <View style={styles.formulaire}>
+              <TextInput
+                style={styles.name}
+                value={name}
+                onChangeText={setName}
+                placeholder="Entrez votre nom"
+                keyboardType="web-search"
+                autoCorrect={false}
+              />
 
-      <View style={styles.password}>
-        <TextInput
-          style={{ padding: 10, marginTop:5, width: '90%',fontSize:20, }}
-          value={password}
-          onChangeText={handleInputChange(setPassword)}
-          secureTextEntry={!showPassword}
-          placeholder="Creer un mot de passe"
-          keyboardType="web-search"
-        />
-        <TouchableOpacity onPress={toggleShowPassword}>
-          <Icon
-            name={showPassword ? 'eye-slash' : 'eye'}
-            size={20}
-            style={{ marginTop: 15,}}
-          />
-        </TouchableOpacity>
-      </View>
+              <PhoneInput
+                ref={phoneInput}
+                defaultValue={phoneNumber}
+                defaultCode="CM"
+                layout="first"
+                onChangeFormattedText={text => { setPhoneNumber(text); }}
+                containerStyle={styles.PhoneInput}
+                textContainerStyle={styles.enterNumber}
 
-      <TouchableOpacity style={styles.inscrire}  onPress={handleSignup}>
-        <Text style={{ color: '#fff', fontSize: 20 }}>S'inscrire</Text>
-      </TouchableOpacity>
+              />
 
+              <View style={styles.Password}>
+                <TextInput
+                  style={styles.enterPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  placeholder="Creer un mot de passe"
+                  keyboardType="web-search"
+                  autoCorrect={false}
+                />
+                <TouchableOpacity onPress={toggleShowPassword}>
+                  <FontAwesome
+                    name={showPassword ? 'eye' : 'eye-slash'}
+                    size={20}
+                    color='#088A4B'
+                  />
+                </TouchableOpacity>
+              </View>
 
-      <View style={styles.lineContainer}>
-            <View style={styles.line} />
-            <Text style={styles.text}>ou</Text>
-            <View style={styles.line} />
-      </View>
+              <TouchableOpacity style={{ ...styles.inscrire, backgroundColor: buttonColor }} onPress={inscrire}>
+                <Text style={{ color: '#fff', fontSize: 20 }}>S'inscrire</Text>
+              </TouchableOpacity>
 
-      <View style={styles.footer}>
-          <Text style={styles.haveAccount}> 
-            Vous avez deja un compte? 
-            <TouchableOpacity onPress={()=> navigation.navigate("Connexion")}>
-              <Text style={styles.seConnecter}>    Se connecter</Text>
-            </TouchableOpacity>
-          </Text>
+              <View style={styles.lineContainer}>
+
+                <View style={styles.line}></View>
+                <Text style={styles.text}>ou</Text>
+                <View style={styles.line}></View>
+
+              </View>
+
+              <View style={styles.footer}>
+                <Text style={styles.haveAccount}>
+                  Vous avez deja un compte?
+                </Text>
+                <TouchableOpacity onPress={() => navigation.navigate("Connexion")} style={styles.seConnecter}>
+                  <Text style={{color:'#088A4B'}}>    Se connecter</Text>
+                </TouchableOpacity>
+
+              </View>
+
+            </View>
+
+          </ImageBackground>
+
         </View>
 
-    </View>
-
-    </TouchableWithoutFeedback>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
-
-
   );
 };
+
 const styles = StyleSheet.create({
-
-  container:{
-    justifyContent:'center',
-    backgroundColor:'white',
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: '#DDDDDD',
   },
-inner:{
-  height:725,
-},
- name:{
-  width:360,
-  height:52,
-  borderWidth: 1,
-  borderColor: '#088A4B',
-  borderRadius: 15,
-  padding: 10,
-  marginBottom: 15,
-  alignSelf:'center',
-  fontSize:20,
-  alignItems: 'center', 
-},
-number:{ 
-  width:360,
-  height:52, 
-  flexDirection: 'row', 
-  alignItems: 'center', 
-  alignSelf:'center',
-  borderRadius: 15, 
-  marginBottom: 15,
-  borderWidth: 1, 
-  borderColor: '#088A4B', 
-},
-password:{ 
-  flexDirection:'row', 
-  borderWidth: 1,
-  borderRadius: 15, 
-  height:52,
-  width:360,
-  marginBottom: 15,
-  borderColor: '#088A4B', 
-  alignItems: 'flex-start', 
-  alignSelf:'center',
-},
-inscrire:{
-  backgroundColor: '#088A4B',
-  opacity:93,
-  padding: 10,
-  borderRadius: 10,
-  marginTop: 45,
-  alignItems: 'center',
-  width:140,
-  height:47,
-  alignSelf:'center',
-},
-lineContainer:{
-  flexDirection:'row',
-  alignItems:'center',
-  marginTop:40,
-  
-  justifyContent:'center',
-},
-line:{
-   width:"40%",
-   height:1,
-  backgroundColor:'black',
-},
-text:{
-  width:"15%",
-  fontSize:16,
-  textAlign:'center',
-},
-footer:{
-  justifyContent:'center',
-  alignItems:'center',
-  marginTop:10,
-  height:60,
-
-},
-haveAccount:{
-  fontSize:16,
-  marginBottom:25,
-},
-seConnecter:{
-  color:'#088A4B',
-  textDecorationLine:'none',
-},
+  image: {
+    width: "100%",
+    height: "45%",
+  },
+  formulaire: {
+    width: "85%",
+    alignSelf: 'center',
+    backgroundColor: 'white',
+    height: "52%",
+    marginBottom: 50,
+    borderRadius: 15,
+    flex: 1
+  },
+  name: {
+    width: "90%",
+    marginTop: 10,
+    height: 52,
+    borderWidth: 1,
+    borderColor: '#088A4B',
+    borderRadius: 15,
+    padding: 10,
+    alignSelf: 'center',
+    fontSize: 20,
+  },
+  PhoneInput: {
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderRadius: 15,
+    height: 52,
+    width: '90%',
+    marginTop: 10,
+    borderColor: '#088A4B',
+    alignSelf: 'center',
+  },
+  enterNumber: {
+    borderTopRightRadius: 15,
+    borderBottomRightRadius: 15,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    height: "100%",
+  },
+  Password: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderRadius: 15,
+    height: 52,
+    width: '90%',
+    marginTop: 10,
+    borderColor: '#088A4B',
+    alignItems: 'center',
+    alignSelf: 'center',
+  },
+  enterPassword: {
+    padding: 10,
+    width: '90%',
+    fontSize: 20,
+  },
+  inscrire: {
+    backgroundColor: '#088A4B',
+    opacity: 93,
+    borderRadius: 10,
+    marginTop: 15,
+    alignItems: 'center',
+    width: '40%',
+    height: 47,
+    alignSelf: 'center',
+    justifyContent: 'center'
+  },
+  lineContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+    justifyContent: 'center',
+    alignSelf: 'center',
+  },
+  line: {
+    width: "40%",
+    height: 1,
+    backgroundColor: '#088A4B',
+  },
+  text: {
+    width: "15%",
+    height: 20,
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  footer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+    flexDirection: 'row',
+    flex: 1,
+    alignSelf: 'center',
+  },
+  haveAccount: {
+    fontSize: 16,
+  },
+  seConnecter: {
+    color: '#088A4B',
+    textDecorationLine: 'none',
+  },
 });
-export default Inscription;
+
+export default FirstPage;
