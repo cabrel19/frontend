@@ -7,9 +7,9 @@ import Back from '@/components/btnBack';
 
 const OTP = ({ route, navigation }: any) => {
   const { phoneNumber } = route.params;
-  const [code, setCode] = useState('');
+  //const [code, setCode] = useState('');
   const [renvoyer, setRenvoyer] = useState(true);
-  const [secondes, setSecondes] = useState(30);// décomptage de 10 sec par default
+  const [secondes, setSecondes] = useState(10);// décomptage de 10 sec par default
   const inputRef = useRef([]);
 
 
@@ -38,7 +38,7 @@ const OTP = ({ route, navigation }: any) => {
 
   const resendCode = () => {
     // l'appuie sur le bouton relance le décomptage et désactive le bouton
-    setSecondes(30);
+    setSecondes(10);
     setRenvoyer(true);
     Alert.alert('Info', 'Un nouveau code a été renvoyer');
 
@@ -61,7 +61,8 @@ const OTP = ({ route, navigation }: any) => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 
       <View style={styles.container}>
-    <Back/>
+        
+        <Back />
         <Text style={{ fontSize: 25, marginTop: 25 }}>Un code à cinq chiffres vous a été envoyé au : {phoneNumber}</Text>
         <View style={styles.codeContainer}>
           {Array(5).fill(null).map((_, index) => (
@@ -77,7 +78,6 @@ const OTP = ({ route, navigation }: any) => {
         </View>
         <Text style={{ textAlign: 'center', fontSize: 17, marginTop: 15 }}> vous pourriez demander un nouveau code dans :</Text>
         <Text style={styles.secondes}>{décomptage(secondes)} </Text>
-        <Text>Min      Sec</Text>
 
         <View style={{ marginTop: 40 }}>
           <Button title="Renvoyer un code" color="#088A4B" onPress={resendCode} disabled={renvoyer} />
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 70,
     flexDirection: 'row'
-},
+  },
   codeContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',

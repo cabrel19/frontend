@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   name: {
     width: "90%",
     marginTop: 10,
-    height: 52,
+    height: 62,
     borderWidth: 1,
     borderColor: '#088A4B',
     borderRadius: 15,
@@ -171,11 +171,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderWidth: 1,
     borderRadius: 15,
-    height: 52,
+    height: 62,
     width: '90%',
     marginTop: 10,
     borderColor: '#088A4B',
     alignSelf: 'center',
+    alignItems:'center'
   },
   enterNumber: {
     borderTopRightRadius: 15,
@@ -188,7 +189,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderWidth: 1,
     borderRadius: 15,
-    height: 52,
+    height: 62,
     width: '90%',
     marginTop: 10,
     borderColor: '#088A4B',
