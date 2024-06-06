@@ -70,10 +70,10 @@ const styles = StyleSheet.create({
         
     },
     leftTextContainer:{
-        left:140,
+        left:'35%',
     },
     rightTextContainer:{
-       right:125
+       right:"33%"
     },
     text: {
         fontSize: 32,

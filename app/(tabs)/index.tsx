@@ -10,8 +10,12 @@ import OTP from '@/authentification/codeOTP';
 import Vérification from '@/authentification/verifNumber';
 import NewPassword from '@/authentification/newpassword';
 import Home from '@/homePage/home';
+import Map from '@/authentification/map';
 
-//import Test from '@/authentification/test';
+
+
+import Commander from '@/homePage/choiceVehicule';
+import App from '@/authentification/test';
 
 export default function app() {
 
@@ -19,20 +23,23 @@ export default function app() {
 
   return (
 
-    <NavigationContainer independent={true}>
-      <Stack.Navigator initialRouteName='First'>
-    <Stack.Screen name='First' component={First} options={{ headerTransparent: true, headerShown: false, gestureEnabled: false }} />
-        <Stack.Screen name='Ouverture' component={Ouverture} options={{ headerTransparent: true, headerShown: false, gestureEnabled: false }} />
-        <Stack.Screen name='Connexion' component={Connexion} options={{ headerTransparent: false, headerShown: false, gestureEnabled: false }} />
-        <Stack.Screen name='Inscription' component={Inscription} options={{ headerTransparent: true, headerShown: false }} />
-        <Stack.Screen name='Vérification' component={Vérification} options={{ headerTransparent: false, headerShown: false }} />
-        <Stack.Screen name='Home' component={Home} options={{ headerTransparent: true, headerShown: false, }} />
-        <Stack.Screen name='OTP' component={OTP} options={{ headerTransparent: false, headerShown: false }} />
-        <Stack.Screen name='NewPassword' component={NewPassword} options={{ headerTransparent: false, headerShown: false }} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    //  <NavigationContainer independent={true}>
+    //   <Stack.Navigator initialRouteName='First'>
+    // <Stack.Screen name='First' component={First} options={{ headerTransparent: true, headerShown: false, gestureEnabled: false }} />
+    //     <Stack.Screen name='Ouverture' component={Ouverture} options={{ headerTransparent: true, headerShown: false, gestureEnabled: false }} />
+    //     <Stack.Screen name='Connexion' component={Connexion} options={{ headerTransparent: false, headerShown: false, gestureEnabled: false }} />
+    //     <Stack.Screen name='Inscription' component={Inscription} options={{ headerTransparent: true, headerShown: false }} />
+    //     <Stack.Screen name='Vérification' component={Vérification} options={{ headerTransparent: false, headerShown: false }} />
+    //     <Stack.Screen name='Home' component={Home} options={{ headerTransparent: true, headerShown: false, }} />
+    //     <Stack.Screen name='OTP' component={OTP} options={{ headerTransparent: false, headerShown: false }} />
+    //     <Stack.Screen name='NewPassword' component={NewPassword} options={{ headerTransparent: false, headerShown: false }} />
+    //   </Stack.Navigator>
+    // </NavigationContainer> 
 
-    //<Test/>
+    //<Map/>
+    <Commander/>
+   
+    
 
   );
 

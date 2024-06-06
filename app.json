@@ -4,14 +4,12 @@
     "slug": "frontend",
     "version": "1.0.0",
     "orientation": "portrait",
-    
     "icon": "./assets/images/logo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/first.png",
+      "image": "./assets/images/splash.png",
       "resizeMode": "cover",
-
       "backgroundColor": "#ffffff"
     },
     "ios": {
@@ -21,17 +19,18 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.anonymous.frontend"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-
       "favicon": "./assets/images/logo.png"
-
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "@react-native-firebase/app", 
+      "@react-native-firebase/auth"
     ],
     "experiments": {
       "typedRoutes": true

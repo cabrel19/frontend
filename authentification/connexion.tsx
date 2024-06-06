@@ -1,10 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, Image, ImageBackground, TextInput, StyleSheet, KeyboardAvoidingView,
-  TouchableOpacity, TouchableWithoutFeedback, Keyboard, Alert
+  View, Text, ImageBackground, TextInput, StyleSheet, KeyboardAvoidingView,
+  TouchableOpacity, Alert, ScrollView
 } from 'react-native';
 import PhoneInput from 'react-native-phone-number-input';
 import { FontAwesome } from '@expo/vector-icons';
+import Ou from '@/components/ou';
+import { z } from 'zod';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+interface props { onChangeText : any }
 
 const Connexion = ({ navigation }: any) => {
 
@@ -13,6 +19,32 @@ const Connexion = ({ navigation }: any) => {
   const [showPassword, setShowPassword] = useState(false);//masquer le password par default
   const [buttonColor, setButtonColor] = useState('#d3d3d3'); // Couleur grise initiale
   const phoneInput = useRef(null);
+
+  const validationSchema = z.object({
+    phone: z.string().min(9, 'Numero incorrect').max(9, 'Numero incorrect'),
+    password: z.string().min(8, 'Au moins 08 caractères '),
+  });
+
+  type FormData = z.infer<typeof validationSchema>
+
+  const { handleSubmit, control, formState: { errors } } = useForm<FormData>({
+    resolver: zodResolver(validationSchema),
+  });
+
+  const onSubmit = (data: FormData) => {
+    console.log(data);
+    const isValid = phoneInput.current?.isValidNumber(phoneNumber);
+    if (!isValid) {
+      Alert.alert('Erreur', 'Le numéro de téléphone est invalide');
+      return;
+    }//vérifier si le numero est valide
+    navigation.navigate('Home');
+  };
+
+  const toggleShowPassword = () => {
+    // masquer ou afficher le mot de passe
+    setShowPassword(!showPassword);
+  };
 
   useEffect(() => {
     // Changer la couleur du bouton en vert si tout les champs sont correctement remplis, sinon gris
@@ -23,215 +55,202 @@ const Connexion = ({ navigation }: any) => {
     }
   }, [phoneNumber, password]);
 
-
-  const connecter = () => {
-    // conditions a respecter pour aller a la page suivante
-    if (phoneNumber === '' || password === '') {
-      Alert.alert('Erreur', 'Tous les champs sont obligatoires');
-      return;//tous les champs remplis
-    }
-
-    if (password.trim().length < 8) {
-      Alert.alert('Erreur', 'Votre mot de passe doit contenir au moins 08 caractères.');
-      return;// password supérieur a 7 caractères
-    }
-    const isValid = phoneInput.current?.isValidNumber(phoneNumber);
-    if (!isValid) {
-      Alert.alert('Erreur', 'Le numéro de téléphone est invalide');
-      return;
-    }//vérifier si le numero est valide
-
-    navigation.replace("Home");
-  };
-
-  const toggleShowPassword = () => {
-    // masquer ou afficher le mot de passe
-    setShowPassword(!showPassword);
-  };
-
-
   return (
 
-    <KeyboardAvoidingView behavior={'padding'} style={styles.container}>
+    <ImageBackground
+      source={require('@/assets/images/connexion.png')}
+      style={styles.background}
+    >
 
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView
+        behavior={'padding'}
+        style={styles.keyboardAvoidingView} >
 
-        <View style={styles.container}>
 
-          <ImageBackground
-            source={require('@/assets/images/background.png')}
-            style={styles.container}
-            
-          >
-            <Image
-            
-              source={require('@/assets/images/connexion.png')}
-              style={styles.image}
-            />
+        <ScrollView contentContainerStyle={styles.scrollViewContent}>
+          <View style={styles.formulaire}>
 
-            <View style={styles.formulaire}>
-
-              <PhoneInput
-                ref={phoneInput}
-                defaultValue={phoneNumber}
-                defaultCode="CM"
-                layout="first"
-                onChangeFormattedText={text => { setPhoneNumber(text); }}
-                containerStyle={styles.PhoneInput}
-                textContainerStyle={styles.enterNumber}
-              />
-
-              <View style={styles.password}>
-                <TextInput
-                  style={{ padding: 10, marginTop: 5, width: '90%', fontSize: 20, }}
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                  placeholder="Mot de passe"
-                  keyboardType="web-search"
-                  autoCorrect={false}
+          <Controller name="phone"
+              control={control}
+              render={({ field: { onChange } }) => (
+                <PhoneInput
+                  ref={phoneInput}
+                  defaultValue={phoneNumber}
+                  defaultCode="CM"
+                  layout="first"
+                  onChangeText={onChange}
+                  onChangeFormattedText={text => { setPhoneNumber(text); }}
+                  containerStyle={styles.PhoneInput}
+                  textContainerStyle={styles.textContainer}
+                  textInputStyle={styles.enterNumber}
+                  flagButtonStyle={styles.drapeau}
+                  placeholder='Numero'
                 />
-                <TouchableOpacity onPress={toggleShowPassword}>
-                  <FontAwesome
-                    name={showPassword ? 'eye' : 'eye-slash'}
-                    size={20}
-                    color='#088A4B'
-                  />
-                </TouchableOpacity>
-              </View>
+              )}
+            />
+            {errors.phone && <Text style={{color:'red', textAlign:'center'}}>{errors.phone.message}</Text>}
 
-              <TouchableOpacity style={styles.forgetPassword} onPress={() => navigation.navigate("Vérification")}>
-                <Text style={{ color: '#088A4B', fontSize: 16 }}>Mot de passe oublier ?</Text>
+            <Controller name="password"
+              control={control}
+              render={({ field: { onChange,value } }) => (
+            <View style={styles.Password}>
+              <TextInput
+                style={styles.enterPassword}
+                value={value}
+                onChangeText={onChange}
+                secureTextEntry={!showPassword}
+                placeholder="Créer un mot de passe"
+                keyboardType="web-search"
+                autoCorrect={false}
+              />
+              <TouchableOpacity onPress={toggleShowPassword}>
+                <FontAwesome
+                  name={showPassword ? 'eye' : 'eye-slash'}
+                  size={20}
+                  color='#088A4B'
+                />
               </TouchableOpacity>
+            </View>
+            )}
+            />
+            {errors.password && <Text style={{color:'red', textAlign:'center'}}>{errors.password.message}</Text>}
 
-              <TouchableOpacity style={{ ...styles.connecter, backgroundColor: buttonColor }} onPress={connecter}>
-                <Text style={{ color: '#fff', fontSize: 20, }}>Se connecter</Text>
+            <TouchableOpacity style={styles.forgetPassword} onPress={() => navigation.navigate("Vérification")}>
+              <Text style={{ color: '#088A4B', fontSize: 16 }}>Mot de passe oublier ?</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={{ ...styles.connecter, backgroundColor: buttonColor }} onPress={handleSubmit(onSubmit)}>
+              <Text style={{ color: '#fff', fontSize: 20, }}>Se connecter</Text>
+            </TouchableOpacity>
+
+
+            <Ou />
+
+            <View style={styles.footer}>
+              <Text style={styles.notAccount}>
+                Vous n'avez pas de compte?
+              </Text>
+              <TouchableOpacity style={styles.inscrire} onPress={() => navigation.navigate("Inscription")}>
+                <Text style={styles.textInscrire}>S'inscrire</Text>
               </TouchableOpacity>
-
-
-              <View style={styles.lineContainer}>
-                <View style={styles.line} />
-                <Text style={styles.text}>ou</Text>
-                <View style={styles.line} />
-              </View>
-
-              <View style={styles.footer}>
-                <Text style={styles.notAccount}>
-                  Vous n'avez pas de compte?
-                  <TouchableOpacity onPress={() => navigation.navigate("Inscription")}>
-                    <Text style={styles.inscrire}>    S'inscrire</Text>
-                  </TouchableOpacity>
-                </Text>
-              </View>
-
             </View>
 
-          </ImageBackground>
-
-        </View>
-
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+          </View>
+        </ScrollView>
 
 
+
+      </KeyboardAvoidingView >
+
+    </ImageBackground>
   );
 };
 const styles = StyleSheet.create({
 
-  container: {
+  background: {
     flex: 1,
-    justifyContent: 'center',
-    backgroundColor: '#DDDDDD',
+    width: '100%',
+    height: '100%',
   },
-  image: {
-    width: "100%",
-    height: "45%",
+  keyboardAvoidingView: {
+    flex: 1,
   },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+
   formulaire: {
     width: "85%",
     alignSelf: 'center',
     backgroundColor: 'white',
-    marginBottom: 50,
+    marginBottom: '10%',
+    height: '50%',
     borderRadius: 15,
-    flex: 1,
+    overflow: 'hidden',
+    padding: '3%'
   },
   PhoneInput: {
-    backgroundColor: 'white',
     borderWidth: 1,
     borderRadius: 15,
-    height: 62,
+    height: '18%',
     width: '90%',
-    marginTop: 20,
+    marginTop: '4%',
     borderColor: '#088A4B',
     alignSelf: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 2,
+  },
+  textContainer: {
+    backgroundColor: 'white',
+    borderTopRightRadius: 15,
+    borderBottomRightRadius: 15,
+    height: "95%",
+    paddingVertical: 0,
+    paddingHorizontal: 0
   },
   enterNumber: {
     borderTopRightRadius: 15,
     borderBottomRightRadius: 15,
-    backgroundColor: 'white',
-    justifyContent: 'center',
     height: "100%",
+    fontSize: 18
   },
-  password: {
+  drapeau: {
+    borderTopLeftRadius: 15,
+    borderBottomLeftRadius: 15,
+  },
+  Password: {
     flexDirection: 'row',
     borderWidth: 1,
     borderRadius: 15,
-    height: 62,
+    height: '18%',
     width: '90%',
+    marginTop: '4%',
     borderColor: '#088A4B',
     alignItems: 'center',
     alignSelf: 'center',
-    marginTop: 15,
+  },
+  enterPassword: {
+    padding: '3%',
+    width: '90%',
+    fontSize: 22,
   },
   forgetPassword: {
     width: '55%',
-    height: 22,
-    marginLeft: 25,
+    height: '6%',
+    marginLeft: '8%',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 5,
+    marginTop: '3%',
   },
   connecter: {
     backgroundColor: '#088A4B',
     borderRadius: 10,
-    marginTop: 20,
+    marginTop: '7%',
     alignItems: 'center',
     width: '40%',
-    height: 47,
+    height: '14%',
     alignSelf: 'center',
     justifyContent: 'center'
   },
-  lineContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 40,
-
-    justifyContent: 'center',
-  },
-  line: {
-    width: "30%",
-    height: 1,
-    backgroundColor: '#088A4B',
-  },
-  text: {
-    width: "15%",
-    fontSize: 16,
-    textAlign: 'center',
-  },
   footer: {
-    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10,
-    height: 60,
-
+    marginTop: '5%',
+    width: '90%',
+    height: '10%',
+    alignSelf: 'center',
+    flexDirection: 'row',
   },
   notAccount: {
     fontSize: 16,
-    marginBottom: 25,
+    width: '75%',
   },
   inscrire: {
+    width: '25%',
+  },
+  textInscrire: {
     color: '#088A4B',
-    textDecorationLine: 'none',
   },
 });
 export default Connexion;

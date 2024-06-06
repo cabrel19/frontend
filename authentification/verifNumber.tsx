@@ -1,13 +1,17 @@
 import React from "react";
 import { useState, useEffect, useRef } from "react";
 import {
-  View, Image, Text, KeyboardAvoidingView, Alert,
-  TouchableOpacity, Button, ImageBackground,
-  TouchableWithoutFeedback, StyleSheet, TextInput, Keyboard
-}
-  from "react-native";
+  View, Text, KeyboardAvoidingView, Alert,
+  TouchableOpacity, ImageBackground,
+  StyleSheet, ScrollView
+} from "react-native";
 import PhoneInput from "react-native-phone-number-input";
 import Back from "@/components/btnBack";
+import { z } from 'zod';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+interface props { onChangeText: any }
 
 const Vérification = ({ navigation }: any) => {
 
@@ -15,81 +19,113 @@ const Vérification = ({ navigation }: any) => {
   const [buttonColor, setButtonColor] = useState('#d3d3d3'); // Couleur grise initiale
   const phoneInput = useRef(null);
 
+
+  const validationSchema = z.object({
+    phone: z.string().min(9, 'Numero incorrect').max(9, 'Numero incorrect'),
+
+  });
+
+  type FormData = z.infer<typeof validationSchema>
+
+  const { handleSubmit, control, formState: { errors } } = useForm<FormData>({
+    resolver: zodResolver(validationSchema),
+  });
+
+  const onSubmit = (data: FormData) => {
+    console.log(data);
+    const isValid = phoneInput.current?.isValidNumber(phoneNumber);
+    if (!isValid) {
+      //vérifier si le numero est valide
+      Alert.alert('Erreur', 'Le numéro de téléphone est invalide');
+      return;
+    }
+    navigation.navigate('NewPassword');
+  };
+
   useEffect(() => {
     // Changer la couleur du bouton en vert si tous les champs sont remplis, sinon gris
     if (phoneNumber.trim().length === 13) {
-      setButtonColor('#088A4B'); 
+      setButtonColor('#088A4B');
     } else {
-      setButtonColor('#d3d3d3'); 
+      setButtonColor('#d3d3d3');
     }
   }, [phoneNumber]);
 
 
-  const handleSubmit = () => {
-    //vérifier si le numero est correct
-    const isValid = phoneInput.current?.isValidNumber(phoneNumber);
-    if (!isValid) {
-      Alert.alert('Erreur', 'Le numéro de téléphone est invalide');
-      return;
-    }
-    navigation.navigate("NewPassword");
-  };
 
 
   return (
-    <KeyboardAvoidingView behavior={'padding'} style={styles.container} >
 
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.container}>
+    <ImageBackground
+      source={require('@/assets/images/forget.png')}
+      style={styles.background}
+    >
+      <KeyboardAvoidingView
+        behavior={'padding'}
+        style={styles.keyboardAvoidingView} >
 
-          <ImageBackground
-            source={require('@/assets/images/background.png')}
-            style={styles.container}
-          >
-<Back/>
-            <Image
-              source={require('@/assets/images/forget.png')}
-              style={styles.image}
+        <Back />
+
+        <ScrollView contentContainerStyle={styles.scrollViewContent}>
+          <View style={styles.formulaire}>
+
+            <Text style={styles.text}>Veuillez Entrer votre Numero de Telephone :</Text>
+
+            <Controller name="phone"
+              control={control}
+              render={({ field: { onChange } }) => (
+                <PhoneInput
+                  ref={phoneInput}
+                  defaultValue={phoneNumber}
+                  defaultCode="CM"
+                  layout="first"
+                  onChangeText={onChange}
+                  onChangeFormattedText={text => { setPhoneNumber(text); }}
+                  containerStyle={styles.PhoneInput}
+                  textContainerStyle={styles.textContainer}
+                  textInputStyle={styles.enterNumber}
+                  flagButtonStyle={styles.drapeau}
+                  placeholder='Numero'
+                />
+              )}
             />
+            {errors.phone && <Text style={{ color: 'red', textAlign: 'center' }}>{errors.phone.message}</Text>}
 
-            <View style={{ width: "85%", alignSelf: 'center', backgroundColor: 'white', height: "40%", marginBottom: 40, borderRadius: 15 }}>
+            <TouchableOpacity style={{ ...styles.bouton, backgroundColor: buttonColor }} onPress={handleSubmit(onSubmit)} >
+              <Text style={{ color: "white", fontSize: 17, }}>VERIFIER</Text>
+            </TouchableOpacity>
 
-              <Text style={styles.text}>Veuillez Entrer votre Numero de Telephone :</Text>
+          </View>
+        </ScrollView>
 
-              <PhoneInput
-                ref={phoneInput}
-                defaultValue={phoneNumber}
-                defaultCode="CM"
-                layout="first"
-                onChangeFormattedText={text => { setPhoneNumber(text); }}
-                containerStyle={styles.PhoneInput}
-                textContainerStyle={styles.enterNumber}
-              />
+      </KeyboardAvoidingView>
 
-              <TouchableOpacity style={{ ...styles.bouton, backgroundColor: buttonColor }} onPress={handleSubmit} >
-                <Text style={{ color: "white", fontSize: 17, }}>VERIFIER</Text>
-              </TouchableOpacity>
-
-            </View>
-
-          </ImageBackground>
-
-        </View>
-
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+    </ImageBackground>
   );
 };
 const styles = StyleSheet.create({
-  container: {
+  background: {
     flex: 1,
-    justifyContent: 'center',
-    backgroundColor: '#DDDDDD',
+    width: '100%',
+    height: '100%',
   },
-  image: {
-    height: "50%",
-    width: "130%",
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  formulaire: {
+    width: "85%",
     alignSelf: 'center',
+    backgroundColor: 'white',
+    marginBottom: '22%',
+    height: '40%',
+    borderRadius: 15,
+    overflow: 'hidden',
+    padding: '3%'
   },
   text: {
     width: "80%",
@@ -97,36 +133,48 @@ const styles = StyleSheet.create({
     fontSize: 20,
     alignSelf: 'center',
     marginBottom: 20,
-    marginTop:10,
+    marginTop: 10,
     fontFamily: 'InriaSans-Regular',
   },
   PhoneInput: {
-    backgroundColor: 'white',
     borderWidth: 1,
     borderRadius: 15,
-    height: 62,
-    width: 300,
-    marginBottom: 15,
+    height: '18%',
+    width: '90%',
+    marginTop: '4%',
     borderColor: '#088A4B',
-    alignItems: 'center',
     alignSelf: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 2,
+  },
+  textContainer: {
+    backgroundColor: 'white',
+    borderTopRightRadius: 15,
+    borderBottomRightRadius: 15,
+    height: "95%",
+    paddingVertical: 0,
+    paddingHorizontal: 0
   },
   enterNumber: {
     borderTopRightRadius: 15,
     borderBottomRightRadius: 15,
-    backgroundColor: 'white',
-    justifyContent: 'center',
     height: "100%",
+    fontSize: 18
+  },
+  drapeau: {
+    borderTopLeftRadius: 15,
+    borderBottomLeftRadius: 15,
   },
   bouton: {
     backgroundColor: '#088A4B',
+    opacity: 93,
     borderRadius: 10,
-    marginTop: 10,
-    justifyContent: 'center',
-    width: 150,
-    height: 55,
-    alignSelf: 'center',
+    marginTop: '6%',
     alignItems: 'center',
+    width: '40%',
+    height: '15%',
+    alignSelf: 'center',
+    justifyContent: 'center'
   },
 });
 

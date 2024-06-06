@@ -1,48 +1,50 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import {
-  View, Text, TextInput, Image, ImageBackground, Button, Alert, KeyboardAvoidingView,
-  StyleSheet, TouchableWithoutFeedback, TouchableOpacity, Keyboard
+  View, Text, TextInput, ImageBackground, Alert, KeyboardAvoidingView,
+  StyleSheet, TouchableOpacity,
+  ScrollView
 } from 'react-native';
 import PhoneInput from 'react-native-phone-number-input';
 import { FontAwesome } from '@expo/vector-icons';
+import Ou from '@/components/ou';
+import { z } from 'zod';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-const FirstPage = ({ navigation }: any) => {
+interface props { onChangeText : any }
+
+const validationSchema = z.object({
+  phone: z.string().min(9, 'Numero incorrect').max(9, 'Numero incorrect'),
+  name: z.string().min(1, 'Champ vide'),
+  password: z.string().min(8, 'Au moins 08 caractères '),
+});
+
+const Inscription = ({ navigation }: any) => {
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
+  const phoneInput = useRef(null);
   const [showPassword, setShowPassword] = useState(false);//masquer le password par default
   const [buttonColor, setButtonColor] = useState('#d3d3d3'); // Couleur grise initiale
-  const phoneInput = useRef(null);
 
-  const inscrire = () => {
-    // conditions a respecter pour aller a la page suivante
-    if (name === '' || phoneNumber === '' || password === '') {
-      Alert.alert('Erreur', 'Tous les champs sont obligatoires');
-      return;
-    }//tous les champs remplis
+  type FormData = z.infer<typeof validationSchema>
 
-    if (password.length < 8) {
-      Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 8 caractères');
-      return;
-    }// password supérieur a 7 caractères
+  const { handleSubmit, control,watch, formState: { errors } } = useForm<FormData>({
+    resolver: zodResolver(validationSchema),
+  });
 
+  const onSubmit = (data: FormData) => {
+    console.log(data);
     const isValid = phoneInput.current?.isValidNumber(phoneNumber);
     if (!isValid) {
       Alert.alert('Erreur', 'Le numéro de téléphone est invalide');
       return;
-    }//verifie si le numero est valide
-
-    navigation.navigate('OTP', { phoneNumber });
+    }//vérifier si le numero est valide
+    navigation.navigate('OTP', { phoneNumber, name,password });
   };
 
-  useEffect(() => {
-    // Changer la couleur du bouton en vert si tout les champs sont correctement remplis, sinon gris
-    if (name.trim().length > 0 && phoneNumber.trim().length === 13 && password.trim().length > 7) {
-      setButtonColor('#088A4B'); // Couleur verte
-    } else {
-      setButtonColor('#d3d3d3'); // Couleur grise
-    }
-  }, [name, phoneNumber, password]);
+  const allFieldsFilled = watch(['name', 'phone', 'password']).every(field => field);
+
 
   const toggleShowPassword = () => {
     // masquer ou afficher le mot de passe
@@ -50,192 +52,217 @@ const FirstPage = ({ navigation }: any) => {
   };
 
   return (
-    <KeyboardAvoidingView behavior={'padding'} style={styles.container}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 
-        <View style={styles.container}>
+    <ImageBackground
+      source={require('@/assets/images/inscription.png')}
+      style={styles.background}
+    >
+      <KeyboardAvoidingView
+        behavior={'padding'}
+        style={styles.keyboardAvoidingView} >
 
-          <ImageBackground
-            source={require('@/assets/images/background.png')}
-            style={styles.container}
-          >
-            <Image
-              source={require('@/assets/images/inscription.png')}
-              style={styles.image}
+
+        <ScrollView contentContainerStyle={styles.scrollViewContent}>
+
+          <View style={styles.formulaire}>
+          <Controller name="name"
+              control={control}
+              render={({ field: { onChange,value } }) => (
+            <TextInput
+              style={styles.name}
+              value={value}
+              onChangeText={onChange}
+              placeholder="Entrez votre nom"
+              keyboardType="web-search"
+              autoCorrect={false}
             />
+          )}
+          />
+          {errors.name && <Text style={{color:'red', textAlign:'center'}}>{errors.name.message}</Text>}
 
-            <View style={styles.formulaire}>
+            <Controller name="phone"
+              control={control}
+              render={({ field: { onChange } }) => (
+                <PhoneInput
+                  ref={phoneInput}
+                  defaultValue={phoneNumber}
+                  defaultCode="CM"
+                  layout="first"
+                  onChangeText={onChange}
+                  onChangeFormattedText={text => { setPhoneNumber(text); }}
+                  containerStyle={styles.PhoneInput}
+                  textContainerStyle={styles.textContainer}
+                  textInputStyle={styles.enterNumber}
+                  flagButtonStyle={styles.drapeau}
+                  placeholder='Numero'
+                />
+              )}
+            />
+            {errors.phone && <Text style={{color:'red', textAlign:'center'}}>{errors.phone.message}</Text>}
+
+            <Controller name="password"
+              control={control}
+              render={({ field: { onChange,value } }) => (
+            <View style={styles.Password}>
               <TextInput
-                style={styles.name}
-                value={name}
-                onChangeText={setName}
-                placeholder="Entrez votre nom"
+                style={styles.enterPassword}
+                value={value}
+                onChangeText={onChange}
+                secureTextEntry={!showPassword}
+                placeholder="Créer un mot de passe"
                 keyboardType="web-search"
                 autoCorrect={false}
               />
-
-              <PhoneInput
-                ref={phoneInput}
-                defaultValue={phoneNumber}
-                defaultCode="CM"
-                layout="first"
-                onChangeFormattedText={text => { setPhoneNumber(text); }}
-                containerStyle={styles.PhoneInput}
-                textContainerStyle={styles.enterNumber}
-
-              />
-
-              <View style={styles.Password}>
-                <TextInput
-                  style={styles.enterPassword}
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                  placeholder="Creer un mot de passe"
-                  keyboardType="web-search"
-                  autoCorrect={false}
+              <TouchableOpacity onPress={toggleShowPassword}>
+                <FontAwesome
+                  name={showPassword ? 'eye' : 'eye-slash'}
+                  size={20}
+                  color='#088A4B'
                 />
-                <TouchableOpacity onPress={toggleShowPassword}>
-                  <FontAwesome
-                    name={showPassword ? 'eye' : 'eye-slash'}
-                    size={20}
-                    color='#088A4B'
-                  />
-                </TouchableOpacity>
-              </View>
+              </TouchableOpacity>
+            </View>
+            )}
+            />
+            {errors.password && <Text style={{color:'red', textAlign:'center'}}>{errors.password.message}</Text>}
 
-              <TouchableOpacity style={{ ...styles.inscrire, backgroundColor: buttonColor }} onPress={inscrire}>
-                <Text style={{ color: '#fff', fontSize: 20 }}>S'inscrire</Text>
+            <TouchableOpacity style={[styles.inscrire, allFieldsFilled ? styles.buttonEnabled :styles.buttonDisabled]} disabled={!allFieldsFilled} onPress={handleSubmit(onSubmit)}>
+
+              <Text style={{ color: '#fff', fontSize: 20 }}>S'inscrire</Text>
+            </TouchableOpacity>
+
+
+            <Ou />
+
+            <View style={styles.footer}>
+              <Text style={styles.haveAccount}>
+                Vous avez deja un compte?
+              </Text>
+              <TouchableOpacity style={styles.seConnecter} onPress={() => navigation.navigate("Connexion")} >
+                <Text style={{ color: '#088A4B' }}>    Se connecter</Text>
               </TouchableOpacity>
 
-              <View style={styles.lineContainer}>
-
-                <View style={styles.line}></View>
-                <Text style={styles.text}>ou</Text>
-                <View style={styles.line}></View>
-
-              </View>
-
-              <View style={styles.footer}>
-                <Text style={styles.haveAccount}>
-                  Vous avez deja un compte?
-                </Text>
-                <TouchableOpacity onPress={() => navigation.navigate("Connexion")} style={styles.seConnecter}>
-                  <Text style={{color:'#088A4B'}}>    Se connecter</Text>
-                </TouchableOpacity>
-
-              </View>
-
             </View>
+          </View>
 
-          </ImageBackground>
+        </ScrollView>
 
-        </View>
 
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+
+      </KeyboardAvoidingView>
+
+    </ImageBackground >
+
+
+
+
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  background: {
     flex: 1,
-    justifyContent: 'center',
-    backgroundColor: '#DDDDDD',
+    width: '100%',
+    height: '100%',
   },
-  image: {
-    width: "100%",
-    height: "45%",
+  keyboardAvoidingView: {
+    flex: 1,
   },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+
   formulaire: {
     width: "85%",
     alignSelf: 'center',
     backgroundColor: 'white',
-    height: "52%",
-    marginBottom: 50,
+    marginBottom: '10%',
+    height: '55%',
     borderRadius: 15,
-    flex: 1
+    overflow: 'hidden',
+    padding: '3%'
   },
   name: {
     width: "90%",
-    marginTop: 10,
-    height: 62,
+    marginTop: '4%',
+    height: '15%',
     borderWidth: 1,
     borderColor: '#088A4B',
     borderRadius: 15,
-    padding: 10,
+    padding: '3%',
     alignSelf: 'center',
     fontSize: 20,
   },
   PhoneInput: {
-    backgroundColor: 'white',
     borderWidth: 1,
     borderRadius: 15,
-    height: 62,
+    height: '16%',
     width: '90%',
-    marginTop: 10,
+    marginTop: '4%',
     borderColor: '#088A4B',
     alignSelf: 'center',
-    alignItems:'center'
+    alignItems: 'center',
+    paddingHorizontal: 2,
+  },
+  textContainer: {
+    backgroundColor: 'white',
+    borderTopRightRadius: 15,
+    borderBottomRightRadius: 15,
+    height: "95%",
+    paddingVertical: 0,
+    paddingHorizontal: 0
   },
   enterNumber: {
     borderTopRightRadius: 15,
     borderBottomRightRadius: 15,
-    backgroundColor: 'white',
-    justifyContent: 'center',
     height: "100%",
+    fontSize: 18
   },
+  drapeau: {
+    borderTopLeftRadius: 15,
+    borderBottomLeftRadius: 15,
+  },
+
   Password: {
     flexDirection: 'row',
     borderWidth: 1,
     borderRadius: 15,
-    height: 62,
+    height: '15%',
     width: '90%',
-    marginTop: 10,
+    marginTop: '4%',
     borderColor: '#088A4B',
     alignItems: 'center',
     alignSelf: 'center',
   },
   enterPassword: {
-    padding: 10,
+    padding: '3%',
     width: '90%',
-    fontSize: 20,
+    fontSize: 22,
   },
   inscrire: {
     backgroundColor: '#088A4B',
     opacity: 93,
     borderRadius: 10,
-    marginTop: 15,
+    marginTop: '4%',
     alignItems: 'center',
     width: '40%',
-    height: 47,
+    height: '13%',
     alignSelf: 'center',
     justifyContent: 'center'
   },
-  lineContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 20,
-    justifyContent: 'center',
-    alignSelf: 'center',
-  },
-  line: {
-    width: "40%",
-    height: 1,
+  buttonEnabled:{
     backgroundColor: '#088A4B',
   },
-  text: {
-    width: "15%",
-    height: 20,
-    fontSize: 16,
-    textAlign: 'center',
+  buttonDisabled:{
+    backgroundColor: '#d3d3d3',
   },
   footer: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: '2%',
     flexDirection: 'row',
-    flex: 1,
+    height: '10%',
     alignSelf: 'center',
   },
   haveAccount: {
@@ -247,4 +274,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FirstPage;
+export default Inscription;

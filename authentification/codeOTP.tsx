@@ -4,28 +4,60 @@ import {
   Alert, Keyboard
 } from 'react-native';
 import Back from '@/components/btnBack';
+import { app, auth,PhoneAuthProvider, RecaptchaVerifier } from '@/firebase.config';
+import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 
 const OTP = ({ route, navigation }: any) => {
-  const { phoneNumber } = route.params;
-  //const [code, setCode] = useState('');
+  const {confirmation, phoneNumber, name,password } = route.params;
+  const [code, setCode] = useState(false);
+  const [verificationId, setVerificationId]= useState("")
   const [renvoyer, setRenvoyer] = useState(true);
   const [secondes, setSecondes] = useState(10);// décomptage de 10 sec par default
+  const [error, setError] = useState("")
+  const recaptchaVerifier= useRef(null)
+
   const inputRef = useRef([]);
+  
 
 
-  useEffect(() => {
-    //désactivation et activation du bouton renvoyer le code
-    let timer: any;
-    if (renvoyer && secondes > 0) {
-      timer = setInterval(() => {
-        setSecondes((prevSeconds) => prevSeconds - 1);
-      }, 1000);
-    } else if (secondes === 0) {
-      setRenvoyer(false);
-      clearInterval(timer);
+useEffect(() => {
+  const sentVerificationCode = async()=>{
+    try {
+      const phoneProvider = new PhoneAuthProvider(auth)
+      const id = await phoneProvider.verifyPhoneNumber(`+237${phoneNumber}`, RecaptchaVerifier.current!)
+      setVerificationId(id)
+      setCode(true)
+      Alert.alert("Succès", "Le code a été envoyé avec succès !");
+  
+    } catch (error:any) {
+      console.error("Erreur lors de l'envoi du code:", error);
+      setError(error.message);
+      Alert.alert(
+        "Erreur",
+        `Erreur lors de l'envoi du code: ${error.message}`
+      );
+
     }
-    return () => clearInterval(timer);
-  }, [renvoyer, secondes]);
+  }
+  sentVerificationCode()
+
+}, [phoneNumber])
+
+
+
+  // useEffect(() => {
+  //   //désactivation et activation du bouton renvoyer le code
+  //   let timer: any;
+  //   if (renvoyer && secondes > 0) {
+  //     timer = setInterval(() => {
+  //       setSecondes((prevSeconds) => prevSeconds - 1);
+  //     }, 1000);
+  //   } else if (secondes === 0) {
+  //     setRenvoyer(false);
+  //     clearInterval(timer);
+  //   }
+  //   return () => clearInterval(timer);
+  // }, [renvoyer, secondes]);
 
   const décomptage = (secondes: any) => {
     // faire le décomptage 00:30
@@ -44,52 +76,56 @@ const OTP = ({ route, navigation }: any) => {
 
   };
 
-  const handleChange = (text, index) => {
-    //aller automatiquement a la case suivante lorsque la précédente est remplie
-    if (text.length === 1 && index < 4) {
-      inputRef.current[index + 1].focus();
-    }
-  };
 
-  const verifyCode = () => {
-    //vérifier si le code entrer est correct et naviguer a la page d'accueil
-    navigation.replace('Home');
-  };
+const handleChange = (text, index) => {
+  //aller automatiquement a la case suivante lorsque la précédente est remplie
+  if (text.length === 1 && index < 4) {
+    inputRef.current[index + 1].focus();
+  }
+};
 
-  return (
+const verifyCode = () => {
+  //vérifier si le code entrer est correct et naviguer a la page d'accueil
+  navigation.replace('Home');
+};
 
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+return (
 
-      <View style={styles.container}>
-        
-        <Back />
-        <Text style={{ fontSize: 25, marginTop: 25 }}>Un code à cinq chiffres vous a été envoyé au : {phoneNumber}</Text>
-        <View style={styles.codeContainer}>
-          {Array(5).fill(null).map((_, index) => (
-            <TextInput
-              key={index}
-              ref={(ref) => inputRef.current[index] = ref}
-              style={styles.codeInput}
-              maxLength={1}
-              keyboardType="number-pad"
-              onChangeText={text => handleChange(text, index)}
-            />
-          ))}
-        </View>
-        <Text style={{ textAlign: 'center', fontSize: 17, marginTop: 15 }}> vous pourriez demander un nouveau code dans :</Text>
-        <Text style={styles.secondes}>{décomptage(secondes)} </Text>
+  <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 
-        <View style={{ marginTop: 40 }}>
-          <Button title="Renvoyer un code" color="#088A4B" onPress={resendCode} disabled={renvoyer} />
-        </View>
-
-        <TouchableOpacity style={styles.vérifier} onPress={verifyCode}>
-          <Text style={{ color: 'white', textAlign: 'center', fontSize: 16 }}>VÉRIFIER</Text>
-        </TouchableOpacity>
-
+    <View style={styles.container}>
+    {/* <FirebaseRecaptchaVerifierModal
+        ref={recaptchaVerifier}
+        firebaseConfig={app.options}
+      />  */}
+      <Back />
+      <Text style={{ fontSize: 25, marginTop: 25 }}>Un code à cinq chiffres vous a été envoyé au : {phoneNumber}</Text>
+      <View style={styles.codeContainer}>
+        {Array(5).fill(null).map((_, index) => (
+          <TextInput
+            key={index}
+            ref={(ref) => inputRef.current[index] = ref}
+            style={styles.codeInput}
+            maxLength={1}
+            keyboardType="number-pad"
+            onChangeText={text => handleChange(text, index)}
+          />
+        ))}
       </View>
-    </TouchableWithoutFeedback>
-  );
+      <Text style={{ textAlign: 'center', fontSize: 17, marginTop: 15 }}> vous pourriez demander un nouveau code dans :</Text>
+      <Text style={styles.secondes}>{décomptage(secondes)} </Text>
+
+      <View style={{ marginTop: 40 }}>
+        <Button title="Renvoyer un code" color="#088A4B" onPress={resendCode} disabled={renvoyer} />
+      </View>
+
+      <TouchableOpacity style={styles.vérifier} onPress={verifyCode}>
+        <Text style={{ color: 'white', textAlign: 'center', fontSize: 16 }}>VÉRIFIER</Text>
+      </TouchableOpacity>
+
+    </View>
+  </TouchableWithoutFeedback>
+);
 };
 
 const styles = StyleSheet.create({
