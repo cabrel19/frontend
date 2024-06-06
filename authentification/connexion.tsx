@@ -38,7 +38,7 @@ const Connexion = ({ navigation }: any) => {
       Alert.alert('Erreur', 'Le numéro de téléphone est invalide');
       return;
     }//vérifier si le numero est valide
-    navigation.navigate('Home');
+    navigation.navigate('Login');
   };
 
   const toggleShowPassword = () => {

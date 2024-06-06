@@ -9,7 +9,6 @@ import Connexion from '@/authentification/connexion';
 import OTP from '@/authentification/codeOTP';
 import Vérification from '@/authentification/verifNumber';
 import NewPassword from '@/authentification/newpassword';
-import Home from '@/homePage/home';
 import Map from '@/authentification/map';
 import Login from "@/homePage/login";
 import  Firstmenu  from '@/homePage/firstmenu';
@@ -36,7 +35,6 @@ export default function app() {
         <Stack.Screen name='Connexion' component={Connexion} options={{ headerTransparent: false, headerShown: false, gestureEnabled: false }} />
         <Stack.Screen name='Inscription' component={Inscription} options={{ headerTransparent: true, headerShown: false }} />
         <Stack.Screen name='Vérification' component={Vérification} options={{ headerTransparent: false, headerShown: false }} />
-        <Stack.Screen name='Home' component={Home} options={{ headerTransparent: true, headerShown: false, }} />
         <Stack.Screen name='OTP' component={OTP} options={{ headerTransparent: false, headerShown: false }} />
         <Stack.Screen name='NewPassword' component={NewPassword} options={{ headerTransparent: false, headerShown: false }} />
       <Stack.Screen name="Login"  component={Login} options={{headerShown:false}}/>

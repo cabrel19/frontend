@@ -86,7 +86,7 @@ const handleChange = (text, index) => {
 
 const verifyCode = () => {
   //vérifier si le code entrer est correct et naviguer a la page d'accueil
-  navigation.replace('Home');
+  navigation.replace('Login');
 };
 
 return (

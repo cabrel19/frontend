@@ -5,10 +5,38 @@ import BackHome from '@/components/backHome';
 import { AntDesign } from '@expo/vector-icons';
 
 
+const space =() => {
+  return  <View style={styles.space}/>;
+};
 
 const Commander = () => {
 
-    const data = useState('');
+    const data = [{
+        id: "1",
+        image:require('@/assets/images/moto.png'),
+        titre:'moto',
+        prix: 300,
+    },
+{
+    id: "2",
+    image:require('@/assets/images/eco.png'),
+    titre:'eco',
+    prix: 600,
+},
+{
+    id: "3",
+    image:require('@/assets/images/confort.png'),
+    titre:'confort',
+    prix: 1400,
+},
+{
+    id: "4",
+    image:require('@/assets/images/rapide.png'),
+    titre:'rapide',
+    prix: 2000,
+}
+
+]
     const regionInitiale = {
         latitude: 4.0651,
         longitude: 9.7584,
@@ -40,51 +68,28 @@ const Commander = () => {
                 <Text style={{ fontSize: 20 }}>Options de prise en charge</Text>
 
                 <FlatList
-                    style={{ height: '10%' }}
                     data={data}
-                    renderItem={({ item }) => (
+                    renderItem={({item})=>(
                         <View style={styles.flatlist}>
                             <TouchableOpacity style={styles.choice}>
-                                <Image source={require('@/assets/images/moto.png')} style={{ height: '100%', width: '33%' }} />
+                                <Image source={item.image} style={{ height: '100%', width: '27%' }} />
 
                                 <View style={styles.confortMoto}>
-                                    <Text style={styles.textEco}> moto </Text>
-                                    <Text style={styles.textPrix}> prix:300f</Text>
+                                    <Text style={styles.textEco}>{item.titre}</Text>
+                                    <Text style={styles.textPrix}> prix: {item.prix}</Text>
                                 </View>
+                
                             </TouchableOpacity>
-
-                            <TouchableOpacity style={styles.choice}>
-                                <Image source={require('@/assets/images/eco.png')} style={{ height: '100%', width: '40%' }} />
-
-                                <View style={styles.confort}>
-                                    <Text style={styles.textEco}> eco </Text>
-                                    <Text style={styles.textPrix}> prix:600f</Text>
-                                </View>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity style={styles.choice}>
-                                <Image source={require('@/assets/images/confort.png')} style={{ height: '100%', width: '40%' }} />
-
-                                <View style={styles.confort}>
-                                    <Text style={styles.textEco}> confort </Text>
-                                    <Text style={styles.textPrix}> prix:1400f</Text>
-                                </View>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity style={styles.choice}>
-                                <Image source={require('@/assets/images/rapide.png')} style={{ height: '100%', width: '40%' }} />
-
-                                <View style={styles.confort}>
-                                    <Text style={styles.textEco}> rapide </Text>
-                                    <Text style={styles.textPrix}> prix:2000f</Text>
-                                </View>
-                            </TouchableOpacity>
-
                         </View>
-                    )} />
+                
+                    )}
+                    keyExtractor={item => item.id}
+                    ItemSeparatorComponent={space}
+                />
+                    
 
                 <TouchableOpacity style={styles.promo}>
-                    <Image source={require('@/assets/images/promo.png')} style={{ height: '65%', width: '10%' }} />
+                    <Image source={require('@/assets/images/promo.png')} style={{ height: '55%', width: '7%' }} />
 
                     <View style={styles.text}>
                         <Text style={styles.textPromo}> Obtenez 50% de reduction lors de votre prochain trajet </Text>
@@ -102,6 +107,10 @@ const Commander = () => {
 };
 
 const styles = StyleSheet.create({
+    space:{
+marginTop:'2%',
+    },
+
     container: {
         flex: 1,
         width: '100%',
@@ -111,7 +120,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 0,
         width: '100%',
-        height: '54%',
+        height: '44%',
         backgroundColor: 'white',
         alignItems: 'center',
         borderTopLeftRadius: 20,
@@ -134,7 +143,7 @@ const styles = StyleSheet.create({
     },
     choice: {
         width: '100%',
-        height: '22%',
+        height: '100%',
         borderWidth: 1,
         marginTop: '3%',
         flexDirection: 'row',
@@ -154,7 +163,7 @@ const styles = StyleSheet.create({
         height: '100%',
         textAlign: 'center',
         alignItems: 'stretch',
-        marginLeft: '10%'
+        marginLeft: '15%'
     },
     textEco: {
         height: '50%',
@@ -168,6 +177,7 @@ const styles = StyleSheet.create({
         fontSize: 17
     },
     promo: {
+        
         width: '90%',
         height: '14%',
         borderWidth: 1,
@@ -184,7 +194,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         alignItems: 'center',
         flexDirection: 'row',
-        marginLeft: '2%'
+        marginLeft: '4%'
 
     },
     textPromo: {
