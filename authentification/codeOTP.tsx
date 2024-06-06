@@ -6,6 +6,7 @@ import {
 import Back from '@/components/btnBack';
 import { app, auth,PhoneAuthProvider, RecaptchaVerifier } from '@/firebase.config';
 import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
+import Login from '@/homePage/login';
 
 const OTP = ({ route, navigation }: any) => {
   const {confirmation, phoneNumber, name,password } = route.params;
@@ -86,7 +87,7 @@ const handleChange = (text, index) => {
 
 const verifyCode = () => {
   //vérifier si le code entrer est correct et naviguer a la page d'accueil
-  navigation.replace('Home');
+  navigation.replace('Login');
 };
 
 return (

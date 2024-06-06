@@ -22,7 +22,7 @@ const NewPassword = ({ navigation }: any) => {
   const handleSubmit = () => {
     // afficher une alerte valider si les textes entrés sont identiques et contiennent aux moins 7 caractères si non afficher erreur
     if (password.trim().length > 7 && confirmPassword.trim().length > 7 && password.trim() === confirmPassword.trim()) {
-      navigation.replace("Home")
+      navigation.replace("Login")
     } else {
       Alert.alert('Erreur', 'Les mots de passe ne sont pas identiques.');
     }

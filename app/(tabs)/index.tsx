@@ -23,7 +23,6 @@ import Connexion from '@/authentification/connexion';
 import OTP from '@/authentification/codeOTP';
 import Vérification from '@/authentification/verifNumber';
 import NewPassword from '@/authentification/newpassword';
-import Home from '@/homePage/home';
 import Map from '@/authentification/map';
 
 
@@ -54,7 +53,6 @@ export default function HomeScreen(){
         <Stack.Screen name="Parametres" component={Parametres} />
         <Stack.Screen name="Langue" component={Langue} />
         <Stack.Screen name='Vérification' component={Vérification} options={{ headerTransparent: false, headerShown: false }} />
-        <Stack.Screen name='Home' component={Home} options={{ headerTransparent: true, headerShown: false, }} />
         <Stack.Screen name='OTP' component={OTP} options={{ headerTransparent: false, headerShown: false }} />
         <Stack.Screen name='NewPassword' component={NewPassword} options={{ headerTransparent: false, headerShown: false }} />
     
