@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, Image, View, StyleSheet } from 'react-native';
+import { Text, Image, View, StyleSheet,ImageBackground } from 'react-native';
 
 
 export function SecondVue(){
@@ -8,15 +8,15 @@ export function SecondVue(){
     return( 
         <View style={styles.container}>
     
-       <Image
-        source={require('@/assets/images/3.png')} 
+       <ImageBackground
+        source={require('@/assets/images/fond.jpeg')} 
         style={styles.imageone}
+        
+        
+        
         />
         
-        <Image
-        source={require('@/assets/images/4.png')} 
-        style={styles.image}
-        />
+        
         </View>
         
 
@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     container: {
         justifyContent: 'center',
         alignItems: 'center',
-       margin: 2,
+        marginTop: 0,
        zIndex: -1,
 
     },
