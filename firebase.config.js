@@ -1,18 +1,20 @@
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFiretore } from "firebase/firestore";
+import { initializeApp } from "firebase/app"
+ import { getAuth,PhoneAuthProvider,RecaptchaVerifier } from "firebase/auth"
+ import { getFirestore } from "firebase/firestore"
 
 const firebaseConfig = {
-  apiKey: "api-key",
-  authDomain: "gomobil-de87b.firebaseapp.com",
-  databaseURL: "https://gomobil-de87b.firebaseio.com",
-  projectId: "gomobil-de87b",
-  storageBucket: "gomobil-de87b.appspot.com",
-  messagingSenderId: "sender-id",
-  appId: "com.gomobil",
-  measurementId: "G-measument-id",
+    apiKey: "AIzaSyC5Cyie3kBaYkHWlIyas1UOXigA5JgiMPg",
+    authDomain: 'gomobil-de87b.firebaseapp.com',
+    databaseURL: 'https://gomobil-de87b.firebaseio.com',
+    projectId: 'gomobil-de87b',
+    storageBucket: 'gomobil-de87b.appspot.com',
+    messagingSenderId: 'sender-id',
+    appId: 'com.gomobil',
+    measurementId: 'G-measurement-id',
 };
 
-const firebase = initializeApp(firebaseConfig);
-export const auth = getAuth(firebase);
-export const firestore = getFiretore(firebase);
+const app = initializeApp(firebaseConfig);
+ const auth = getAuth();
+ const firestore = getFirestore();
+export {PhoneAuthProvider, RecaptchaVerifier,auth,firestore,app};
+
