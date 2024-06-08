@@ -22,7 +22,7 @@ const First = () => {
             easing: Easing.inOut(Easing.ease),
         });
         const timeOut = setTimeout (() => {
-            navigation.navigate('Ouverture');}, 3000);
+            navigation.navigate("Ouverture");}, 3000);
 
             return() => clearTimeout(timeOut);
     

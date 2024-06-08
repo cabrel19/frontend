@@ -10,13 +10,13 @@ const Securite = ({ navigation }: any) => {
         const webUrl = 'https://www.messenger.com/';
          
         try {
-            // check if Messenger is installed
+            // Verifier si messenger est installer
             const supported = await Linking.canOpenURL(appUrl);
             if (supported) {
-                //Open Messenger app
+                //ouvrir l'application messenger
                 await Linking.openURL(appUrl);
             } else {
-                //Messenger is not installed, open the website
+                //au cas ou messenger n'est pas installer, l'ouvrir sur le site
                 await Linking.openURL(webUrl);
             }
         } catch (error) {

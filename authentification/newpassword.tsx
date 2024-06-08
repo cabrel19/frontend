@@ -22,10 +22,13 @@ const NewPassword = ({ navigation }: any) => {
   const handleSubmit = () => {
     // afficher une alerte valider si les textes entrés sont identiques et contiennent aux moins 7 caractères si non afficher erreur
     if (password.trim().length > 7 && confirmPassword.trim().length > 7 && password.trim() === confirmPassword.trim()) {
-      navigation.replace("Login")
+      Alert.alert('VALIDÉ', 'Votre mot de passe a ete modifier avec succès')
+      return( navigation.replace("Connexion"));
     } else {
       Alert.alert('Erreur', 'Les mots de passe ne sont pas identiques.');
+      return;
     }
+   
   };
 
   const toggleShowPassword = () => {
@@ -54,7 +57,7 @@ const NewPassword = ({ navigation }: any) => {
            
 
 
-            <Text style={styles.text}>Creer un nouveau mot de passe</Text>
+            <Text style={styles.text}>Créer un nouveau mot de passe</Text>
 
             <View style={styles.Password}>
               <TextInput

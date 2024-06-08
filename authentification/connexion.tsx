@@ -27,7 +27,7 @@ const Connexion = ({ navigation }: any) => {
 
   type FormData = z.infer<typeof validationSchema>
 
-  const { handleSubmit, control, formState: { errors } } = useForm<FormData>({
+  const { handleSubmit, watch, control, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(validationSchema),
   });
 
@@ -38,8 +38,10 @@ const Connexion = ({ navigation }: any) => {
       Alert.alert('Erreur', 'Le numéro de téléphone est invalide');
       return;
     }//vérifier si le numero est valide
-    navigation.navigate('Login');
+    navigation.navigate('Home');
   };
+
+  const allFieldsFilled = watch(['phone', 'password']).every(field => field);
 
   const toggleShowPassword = () => {
     // masquer ou afficher le mot de passe
@@ -119,7 +121,7 @@ const Connexion = ({ navigation }: any) => {
               <Text style={{ color: '#088A4B', fontSize: 16 }}>Mot de passe oublier ?</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={{ ...styles.connecter, backgroundColor: buttonColor }} onPress={handleSubmit(onSubmit)}>
+            <TouchableOpacity style={[styles.connecter, allFieldsFilled ? styles.buttonEnabled :styles.buttonDisabled]} disabled={!allFieldsFilled} onPress={handleSubmit(onSubmit)}>
               <Text style={{ color: '#fff', fontSize: 20, }}>Se connecter</Text>
             </TouchableOpacity>
 
@@ -233,6 +235,12 @@ const styles = StyleSheet.create({
     height: '14%',
     alignSelf: 'center',
     justifyContent: 'center'
+  },
+  buttonEnabled:{
+    backgroundColor: '#088A4B',
+  },
+  buttonDisabled:{
+    backgroundColor: '#d3d3d3',
   },
   footer: {
     alignItems: 'center',

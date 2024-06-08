@@ -27,9 +27,11 @@ const Vérification = ({ navigation }: any) => {
 
   type FormData = z.infer<typeof validationSchema>
 
-  const { handleSubmit, control, formState: { errors } } = useForm<FormData>({
+  const { handleSubmit, control,watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(validationSchema),
   });
+
+  const allFieldsFilled = watch(['phone']).every(field => field);
 
   const onSubmit = (data: FormData) => {
     console.log(data);
@@ -91,7 +93,7 @@ const Vérification = ({ navigation }: any) => {
             />
             {errors.phone && <Text style={{ color: 'red', textAlign: 'center' }}>{errors.phone.message}</Text>}
 
-            <TouchableOpacity style={{ ...styles.bouton, backgroundColor: buttonColor }} onPress={handleSubmit(onSubmit)} >
+            <TouchableOpacity style={[styles.bouton, allFieldsFilled ? styles.buttonEnabled :styles.buttonDisabled]} disabled={!allFieldsFilled} onPress={handleSubmit(onSubmit)} >
               <Text style={{ color: "white", fontSize: 17, }}>VERIFIER</Text>
             </TouchableOpacity>
 
@@ -175,6 +177,12 @@ const styles = StyleSheet.create({
     height: '15%',
     alignSelf: 'center',
     justifyContent: 'center'
+  },
+  buttonEnabled:{
+    backgroundColor: '#088A4B',
+  },
+  buttonDisabled:{
+    backgroundColor: '#d3d3d3',
   },
 });
 
