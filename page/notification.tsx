@@ -4,7 +4,7 @@ import { View, StyleSheet} from 'react-native';
 
 
 
-const Notifivation = () => {
+const Notification = () => {
     return(
         <View style = {styles.container}>
 
@@ -19,4 +19,4 @@ const styles = StyleSheet.create({
 })
 
 
-export default Notifivation;
+export default Notification;
