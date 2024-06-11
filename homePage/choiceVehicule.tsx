@@ -71,7 +71,7 @@ const Commander = ({ navigation }: any) => {
 
 
             <View style={styles.overlay}>
-                <View style={styles.line}></View>
+                
                 <BackHome />
                 <Text style={{ fontSize: 20 }}>Options de prise en charge</Text>
 
@@ -148,12 +148,6 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         padding: '1%',
-    },
-    line: {
-        width: "20%",
-        height: 2,
-        backgroundColor: '#088A4B',
-        alignSelf: 'center',
     },
     flatlist: {
         flex: 1,

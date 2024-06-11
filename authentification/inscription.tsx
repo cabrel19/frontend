@@ -40,7 +40,7 @@ const Inscription = ({ navigation }: any) => {
       Alert.alert('Erreur', 'Le numéro de téléphone est invalide');
       return;
     }//vérifier si le numero est valide
-    navigation.navigate('OTP', { phoneNumber, name,password });
+    navigation.navigate('OtpSignUp', { phoneNumber, name,password });
   };
 
   const allFieldsFilled = watch(['name', 'phone', 'password']).every(field => field);

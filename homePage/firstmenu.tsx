@@ -78,7 +78,7 @@ const Firstmenu = ({ navigation }: any) => {
           {/* <MaterialIcons name="arrow-forward-ios" size={24} color="#088A4B" /> */}
         </TouchableOpacity>
         <Horizontal />
-        <TouchableOpacity style={styles.button} onPress={() =>navigation.navigate("Parametres") }>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("Parametres")}>
           <MaterialIcons
             name="settings"
             size={22}
@@ -92,12 +92,12 @@ const Firstmenu = ({ navigation }: any) => {
               fontWeight: "bold",
             }}
           >
-            Parametres
+            Paramètres
           </Text>
           {/* <MaterialIcons name="arrow-forward-ios" size={24} color="#088A4B" /> */}
         </TouchableOpacity>
         <Horizontal />
-         <TouchableOpacity style={styles.button} onPress={() => Alert.alert("")}> 
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Notification')}>
           <Ionicons
             name="notifications"
             size={22}
@@ -133,18 +133,18 @@ const Firstmenu = ({ navigation }: any) => {
               fontWeight: "bold",
             }}
           >
-            Securite
+            Sécurité
           </Text>
           {/* <MaterialIcons name="arrow-forward-ios" size={24} color="#088A4B" /> */}
         </TouchableOpacity>
         <Horizontal />
         <TouchableOpacity style={styles.button} onPress={() => Alert.alert("")}>
-        <MaterialIcons
+          <MaterialIcons
             name="security"
             size={22}
             color="#088A4B"
             style={{ margin: 10, }}
-  
+
           />
           <Text
             style={{
@@ -158,6 +158,16 @@ const Firstmenu = ({ navigation }: any) => {
           {/* <MaterialIcons name="arrow-forward-ios" size={24} color="#088A4B" /> */}
           <Horizontal />
         </TouchableOpacity>
+        <View style={{
+          marginLeft: 15,
+          height: 60,
+          width: "98%",
+        }}>
+          <TouchableOpacity style={{flexDirection:'row',marginTop:15,width:150,}} onPress={() => Alert.alert("")}>
+            <MaterialIcons name="logout" size={22} color="#b22222"  />
+            <Text style={{ fontSize: 16, marginLeft: 10, color: '#b22222' }}>Déconnexion</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );

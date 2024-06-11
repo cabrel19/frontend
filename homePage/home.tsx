@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import React from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { MaterialIcons } from "@expo/vector-icons";
 
 
 const Home = ({ navigation }: any) => {
@@ -19,13 +20,13 @@ const Home = ({ navigation }: any) => {
       >
         <View style={styles.footer}>
 
-            <TouchableOpacity
-              style={styles.hamburger}
-              onPress={() => navigation.navigate("Firstmenu")}
-            >
-              <Ionicons name="menu" size={45} color="white" />
-            </TouchableOpacity>
-        
+          <TouchableOpacity
+            style={styles.hamburger}
+            onPress={() => navigation.navigate("Firstmenu")}
+          >
+            <Ionicons name="menu" size={45} color="white" />
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={styles.course}
             onPress={() => navigation.navigate("Commander")}
@@ -35,12 +36,14 @@ const Home = ({ navigation }: any) => {
 
           <TouchableOpacity
             style={styles.livraison}
-            onPress={() => Alert.alert("")}
+            onPress={() => navigation.navigate('DestinationLIV')}
           >
-            <Text style={{ color: "white"}}>
+            <Text style={{ color: "white" }}>
               LIVRAISON
             </Text>
           </TouchableOpacity>
+
+          
         </View>
       </ImageBackground>
     </View>
@@ -49,14 +52,14 @@ const Home = ({ navigation }: any) => {
 
 const styles = StyleSheet.create({
   container: {
-  width:'100%',
-  height:'100%',
+    width: '100%',
+    height: '100%',
     flex: 1,
   },
-image:{ 
-  flex: 1, 
-  justifyContent: 'flex-end' 
-},
+  image: {
+    flex: 1,
+    justifyContent: 'flex-end'
+  },
   footer: {
     flexDirection: "row",
     width: "95%",
@@ -68,24 +71,24 @@ image:{
     backgroundColor: "#a9a9a9",
     alignSelf: "center",
   },
-  hamburger:{
-    width:'15%',
-    height:'65%',
-    alignItems:'center',
-    justifyContent:'center',
-    marginRight:'16%'
+  hamburger: {
+    width: '15%',
+    height: '65%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: '16%'
   },
   course: {
-    justifyContent:'center',
-    alignItems:'center',
+    justifyContent: 'center',
+    alignItems: 'center',
     height: '65%',
     width: '22%',
-    marginRight:'12%'
+    marginRight: '12%'
   },
 
   livraison: {
-    justifyContent:'center',
-    alignItems:'center',
+    justifyContent: 'center',
+    alignItems: 'center',
     height: '65%',
     width: '27%',
   },

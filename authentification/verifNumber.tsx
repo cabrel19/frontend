@@ -41,7 +41,7 @@ const Vérification = ({ navigation }: any) => {
       Alert.alert('Erreur', 'Le numéro de téléphone est invalide');
       return;
     }
-    navigation.navigate('NewPassword');
+    navigation.navigate('OtpSignIn', { phoneNumber});
   };
 
   useEffect(() => {

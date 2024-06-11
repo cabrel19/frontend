@@ -7,7 +7,7 @@ import Back from '@/components/btnBack';
 import { app, auth,PhoneAuthProvider, RecaptchaVerifier } from '@/firebase.config';
 import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 
-const OTP = ({ route, navigation }: any) => {
+const OtpSignUp = ({ route, navigation }: any) => {
   const {confirmation, phoneNumber, name,password } = route.params;
   const [code, setCode] = useState(['', '', '', '', '']);
   const [verificationId, setVerificationId]= useState("")
@@ -15,35 +15,51 @@ const OTP = ({ route, navigation }: any) => {
   const [secondes, setSecondes] = useState(10);// décomptage de 10 sec par default
   const [error, setError] = useState("")
   const recaptchaVerifier= useRef(null)
-
   const inputRef = useRef([]);
   
-
-
-useEffect(() => {
-  const sentVerificationCode = async()=>{
-    try {
-      const phoneProvider = new PhoneAuthProvider(auth)
-      const id = await phoneProvider.verifyPhoneNumber(`+237${phoneNumber}`, RecaptchaVerifier.current!)
-      setVerificationId(id)
-      //setCode(true)
-      Alert.alert("Succès", "Le code a été envoyé avec succès !");
+// useEffect(() => {
+//   const sentVerificationCode = async()=>{
+//     try {
+//       const phoneProvider = new PhoneAuthProvider(auth)
+//       const id = await phoneProvider.verifyPhoneNumber(`+237${phoneNumber}`, RecaptchaVerifier.current!)
+//       setVerificationId(id)
+//       //setCode(true)
+//       Alert.alert("Succès", "Le code a été envoyé avec succès !");
   
-    } catch (error:any) {
-      console.error("Erreur lors de l'envoi du code:", error);
-      setError(error.message);
-      Alert.alert(
-        "Erreur",
-        `Erreur lors de l'envoi du code: ${error.message}`
-      );
+//     } catch (error:any) {
+//       console.error("Erreur lors de l'envoi du code:", error);
+//       setError(error.message);
+//       Alert.alert(
+//         "Erreur",
+//         `Erreur lors de l'envoi du code: ${error.message}`
+//       );
 
-    }
+//     }
+//   }
+//   sentVerificationCode()
+
+// }, [phoneNumber])
+
+const handleChange = (text, index) => {
+  //aller automatiquement a la case suivante lorsque la précédente est remplie
+  const newCode = [...code];
+    newCode[index] = text;
+    setCode(newCode);
+  if (text.length === 1 && index < 4) {
+    inputRef.current[index + 1].focus();
   }
-  sentVerificationCode()
+};
 
-}, [phoneNumber])
-
-
+const verifyCode = () => {
+  // vérifier si le code entrer est correct et naviguer a la page d'accueil
+   if (code.join('') === '12345') { 
+     Alert.alert('Succès', 'Le code est valide');
+     return(navigation.replace("Home"));
+   } else {
+     Alert.alert('Erreur', 'Le code est invalide');
+     return;
+   }
+ };
 
   useEffect(() => {
     //désactivation et activation du bouton renvoyer le code
@@ -77,26 +93,9 @@ useEffect(() => {
   };
 
 
-const handleChange = (text, index) => {
-  //aller automatiquement a la case suivante lorsque la précédente est remplie
-  const newCode = [...code];
-    newCode[index] = text;
-    setCode(newCode);
-  if (text.length === 1 && index < 4) {
-    inputRef.current[index + 1].focus();
-  }
-};
 
-const verifyCode = () => {
- // vérifier si le code entrer est correct et naviguer a la page d'accueil
-  if (code.join('') === '12345') { 
-    Alert.alert('Succès', 'Le code est valide');
-    return(navigation.replace("Home"));
-  } else {
-    Alert.alert('Erreur', 'Le code est invalide');
-    return;
-  }
-};
+
+
 
 return (
 
@@ -188,4 +187,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OTP;
+export default OtpSignUp;

@@ -53,10 +53,10 @@ const Offres = () => {
             <Text style={styles.profitez}>PROFITEZ DE CETTE OFFRE!</Text>
 
             <View>
-                <Text style={{ fontFamily: 'archivo black', fontSize: 20, marginLeft: 50, marginTop: 100, }}>INVITEZ UN AMI</Text>
+                <Text style={{ fontFamily: 'archivo black', fontSize: 20, marginLeft: 50, marginTop: 80, }}>INVITEZ UN AMI</Text>
             </View>
 
-            <Text style={{ marginLeft: 40, fontFamily: 'abel', width: "80%", fontSize: 16, }}>
+            <Text style={{ marginLeft: 40, fontFamily: 'abel', width: "85%", fontSize: 16, marginTop:6,}}>
                 Votre ami recevra une reduction de 10% sur sa première course.
             </Text>
 
@@ -67,7 +67,7 @@ const Offres = () => {
                 </Text>
             </View>
 
-            <Text style={{ alignSelf: 'center', fontFamily: 'abel', width: "90%", fontSize: 16, }}>
+            <Text style={{ alignSelf: 'center', fontFamily: 'abel', width: "85%", fontSize: 16, marginTop:6,}}>
                 Une fois qu’il aura effectue sa première course,vous bénéficierez de 50% de reduction sur votre
                 prochain trajet.
             </Text>
@@ -107,8 +107,9 @@ const styles = StyleSheet.create({
         width: '65%',
     },
     image: {
-        width: '98%',
+        width: '95%',
         height: '35%',
+       // alignItems:'center',
     },
     profitez:{ 
         alignSelf: 'center', 

@@ -25,32 +25,9 @@ const Parametre = ({ navigation }: any) => {
 
             <View style={styles.midle}></View>
 
-            <View style={{
+            
 
-                marginTop: 40,
-                marginLeft: 35,
-                height: 60,
-                width: "98%",
-            }}>
-                <TouchableOpacity onPress={() => Alert.alert("")}>
-                    <MaterialCommunityIcons name="account-remove-outline" size={22} color="#b22222" style={{ top: 19, right: 10 }} />
-                    <Text style={{ fontSize: 16, marginLeft: 26, color: '#b22222' }}>Supprimer le compte</Text>
-                </TouchableOpacity>
-
-            </View>
-
-            <View style={{
-
-
-                marginLeft: 35,
-                height: 60,
-                width: "98%",
-            }}>
-                <TouchableOpacity onPress={() => Alert.alert("")}>
-                    <MaterialIcons name="logout" size={22} color="#b22222" style={{ top: 19, right: 10 }} />
-                    <Text style={{ fontSize: 16, marginLeft: 26, color: '#b22222' }}>Deconnexion</Text>
-                </TouchableOpacity>
-            </View>
+            
         </View>
     )
 };

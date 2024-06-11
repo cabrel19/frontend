@@ -6,7 +6,8 @@ import First from '@/authentification/firstPage';
 import Ouverture from '@/authentification/ouverture';
 import Inscription from '@/authentification/inscription';
 import Connexion from '@/authentification/connexion';
-import OTP from '@/authentification/codeOTP';
+import OtpSignUp from '@/authentification/codeInscription';
+import OtpSignIn from '@/authentification/codeConnexion';
 import Vérification from '@/authentification/verifNumber';
 import NewPassword from '@/authentification/newpassword';
 import Map from '@/authentification/map';
@@ -22,11 +23,8 @@ import Langue from '@/homePage/langue';
 import Commander from '@/homePage/choiceVehicule';
 import Offres from '@/homePage/offres';
 import Chauffeur from '@/homePage/profilChaufeur';
-
-
-//import Test2 from '@/authentification/test2';
-import App from '@/authentification/test';
-import { BarreRecherche } from '@/components/BarreRecherche';
+import DestinationLIV from '@/homePage/destinationLivraison';
+import Notification from '@/homePage/notification';
 
 export default function app() {
 
@@ -39,9 +37,10 @@ export default function app() {
         <Stack.Screen name='First' component={First} options={{ headerTransparent: true, headerShown: false, gestureEnabled: false }} />
         <Stack.Screen name='Ouverture' component={Ouverture} options={{ headerTransparent: true, headerShown: false, gestureEnabled: false }} />
         <Stack.Screen name='Connexion' component={Connexion} options={{ headerTransparent: false, headerShown: false, gestureEnabled: false }} />
-        <Stack.Screen name='Inscription' component={Inscription} options={{ headerTransparent: true, headerShown: false }} />
+        <Stack.Screen name='Inscription' component={Inscription} options={{ headerTransparent: true, headerShown: false,gestureEnabled: false  }} />
         <Stack.Screen name='Vérification' component={Vérification} options={{ headerTransparent: false, headerShown: false }} />
-        <Stack.Screen name='OTP' component={OTP} options={{ headerTransparent: false, headerShown: false }} />
+        <Stack.Screen name='OtpSignUp' component={OtpSignUp} options={{ headerTransparent: false, headerShown: false }} />
+        <Stack.Screen name='OtpSignIn' component={OtpSignIn} options={{ headerTransparent: false, headerShown: false }} />
         <Stack.Screen name='NewPassword' component={NewPassword} options={{ headerTransparent: false, headerShown: false }} />
         <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
         <Stack.Screen name="Firstmenu" component={Firstmenu} options={{ headerShown: false }} />
@@ -55,22 +54,10 @@ export default function app() {
         <Stack.Screen name="Commander" component={Commander} options={{ headerShown: false }} />
         <Stack.Screen name="Offres" component={Offres} options={{ headerShown: false }} />
         <Stack.Screen name="Chauffeur" component={Chauffeur} options={{ headerShown: false }} />
+        <Stack.Screen name="DestinationLIV" component={DestinationLIV} options={{ headerShown: false }} />
+        <Stack.Screen name="Notification" component={Notification} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
-
-
-
-
-
-    //<BarreRecherche/>
-    //<App/>
-    //<Map/>
-    //<Commander/>
-    // <Offres/>
-    //<Test2 />
-    //<Chauffeur/>
-
-
 
 
   );
