@@ -4,12 +4,14 @@ import {
   Alert, Keyboard
 } from 'react-native';
 import Back from '@/components/btnBack';
-import { app, auth,PhoneAuthProvider, RecaptchaVerifier } from '@/firebase.config';
+import { app, auth,firestore,PhoneAuthProvider, signInWithCredential } from '@/firebase.config';
 import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
+import { addDoc, collection } from 'firebase/firestore';
 
 const OtpSignUp = ({ route, navigation }: any) => {
   const {confirmation, phoneNumber, name,password } = route.params;
   const [code, setCode] = useState(['', '', '', '', '']);
+  const [codeVerification, setCodeVerification] = useState('');
   const [verificationId, setVerificationId]= useState("")
   const [renvoyer, setRenvoyer] = useState(true);
   const [secondes, setSecondes] = useState(10);// décomptage de 10 sec par default
@@ -17,28 +19,8 @@ const OtpSignUp = ({ route, navigation }: any) => {
   const recaptchaVerifier= useRef(null)
   const inputRef = useRef([]);
   
-// useEffect(() => {
-//   const sentVerificationCode = async()=>{
-//     try {
-//       const phoneProvider = new PhoneAuthProvider(auth)
-//       const id = await phoneProvider.verifyPhoneNumber(`+237${phoneNumber}`, RecaptchaVerifier.current!)
-//       setVerificationId(id)
-//       //setCode(true)
-//       Alert.alert("Succès", "Le code a été envoyé avec succès !");
-  
-//     } catch (error:any) {
-//       console.error("Erreur lors de l'envoi du code:", error);
-//       setError(error.message);
-//       Alert.alert(
-//         "Erreur",
-//         `Erreur lors de l'envoi du code: ${error.message}`
-//       );
 
-//     }
-//   }
-//   sentVerificationCode()
-
-// }, [phoneNumber])
+console.log('phoneNumber', phoneNumber)
 
 const handleChange = (text, index) => {
   //aller automatiquement a la case suivante lorsque la précédente est remplie
@@ -49,7 +31,43 @@ const handleChange = (text, index) => {
     inputRef.current[index + 1].focus();
   }
 };
+useEffect(() => {
+  const sentVerificationCode = async()=>{
+    try {
+      const phoneProvider = new PhoneAuthProvider(auth)
+      const id = await phoneProvider.verifyPhoneNumber(`${phoneNumber}`, recaptchaVerifier.current!)
+      setVerificationId(id)
+      //setCode(true)
+      Alert.alert("Succès", "Le code a été envoyé avec succès !");
+  
+    } catch (error:any) {
+      console.error("Erreur lors de l'envoi du code:", error);
+      // setError(error.message);
+      Alert.alert(
+        "Erreur",
+        `Erreur lors de l'envoi du code: ${error.message}`
+      );
 
+    }
+  }
+  sentVerificationCode()
+
+}, [phoneNumber])
+
+const confirmCode = async ()=>{
+  try {
+    if(verificationId){
+      const credential = PhoneAuthProvider.credential(verificationId,codeVerification)
+      await signInWithCredential(auth,credential)
+      await addDoc(collection(firestore,"users"),{
+        name: name, phone:phoneNumber, password:password
+      })
+      navigation.navigate('home')
+    }
+  } catch (error:any) {
+    console.log("une erreur lors de la confirmation", error.message)
+  }
+}
 const verifyCode = () => {
   // vérifier si le code entrer est correct et naviguer a la page d'accueil
    if (code.join('') === '12345') { 
@@ -100,9 +118,12 @@ const verifyCode = () => {
 return (
 
   <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-
+     
     <View style={styles.container}>
-
+    <FirebaseRecaptchaVerifierModal
+        ref={recaptchaVerifier}
+        firebaseConfig={app.options}
+      />
       <Back />
       <Text style={{ fontSize: 25, marginTop: 25 }}>Un code à cinq chiffres vous a été envoyé au : {phoneNumber}</Text>
       <View style={styles.codeContainer}>
@@ -126,7 +147,7 @@ return (
         <Button title="Renvoyer un code" color="#088A4B" onPress={resendCode} disabled={renvoyer} />
       </View>
 
-      <TouchableOpacity style={styles.vérifier} onPress={verifyCode}>
+      <TouchableOpacity style={styles.vérifier} onPress={confirmCode}>
         <Text style={{ color: 'white', textAlign: 'center', fontSize: 16 }}>VÉRIFIER</Text>
       </TouchableOpacity>
 

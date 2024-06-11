@@ -25,6 +25,7 @@ import Offres from '@/homePage/offres';
 import Chauffeur from '@/homePage/profilChaufeur';
 import DestinationLIV from '@/homePage/destinationLivraison';
 import Notification from '@/homePage/notification';
+import HomeChauffeur from '@/homePageChauffeur/home';
 
 export default function app() {
 
@@ -60,6 +61,7 @@ export default function app() {
     </NavigationContainer>
 
 
+//<HomeChauffeur/>
   );
 
 };

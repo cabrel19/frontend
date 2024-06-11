@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, ImageBackground, Alert, KeyboardAvoidingView,
   StyleSheet, TouchableOpacity,
@@ -10,6 +10,9 @@ import Ou from '@/components/ou';
 import { z } from 'zod';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { PhoneAuthProvider, app, auth, firestore, signInWithCredential } from '@/firebase.config';
+import { addDoc, collection } from 'firebase/firestore';
+import FirebaseRecaptchaVerifierModal from 'expo-firebase-recaptcha/build/FirebaseRecaptchaVerifierModal';
 
 interface props { onChangeText : any }
 
@@ -26,6 +29,9 @@ const Inscription = ({ navigation }: any) => {
   const phoneInput = useRef(null);
   const [showPassword, setShowPassword] = useState(false);//masquer le password par default
   const [buttonColor, setButtonColor] = useState('#d3d3d3'); // Couleur grise initiale
+  const [verificationId,setVerificationId]= useState("")
+  const recaptchaVerifier= useRef(null)
+  const [code, setCode] = useState('');
 
   type FormData = z.infer<typeof validationSchema>
 
@@ -46,6 +52,8 @@ const Inscription = ({ navigation }: any) => {
   const allFieldsFilled = watch(['name', 'phone', 'password']).every(field => field);
 
 
+  
+ 
   const toggleShowPassword = () => {
     // masquer ou afficher le mot de passe
     setShowPassword(!showPassword);
@@ -63,7 +71,10 @@ const Inscription = ({ navigation }: any) => {
 
 
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
-
+        {/* <FirebaseRecaptchaVerifierModal
+        ref={recaptchaVerifier}
+        firebaseConfig={app.options}
+      /> */}
           <View style={styles.formulaire}>
           <Controller name="name"
               control={control}

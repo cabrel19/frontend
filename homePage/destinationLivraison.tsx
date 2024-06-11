@@ -3,6 +3,7 @@ import { StyleSheet, View, TextInput, TouchableOpacity, Text, Animated, Dimensio
 import MapView, { Marker } from 'react-native-maps';
 import BackHome from '@/components/backHome';
 import { Ionicons, Entypo } from '@expo/vector-icons';
+import { BarreRecherche } from '@/components/BarreRecherche';
 
 
 const { height } = Dimensions.get('window');
@@ -88,18 +89,7 @@ const DestinationLIV = () => {
                     <Text style={styles.buttonText}>Ma localisation</Text>
                 </TouchableOpacity>
 
-                <View style={styles.enterDest}>
-                    <TextInput
-                        keyboardType="web-search"
-                        placeholder="Entrez la destination"
-                        style={styles.textInput}
-                    />
-                    <Ionicons
-                        name='search-outline'
-                        size={24}
-                        color='#088A4B'
-                    />
-                </View>
+                <BarreRecherche/>
             </Animated.View>
 
         </View>

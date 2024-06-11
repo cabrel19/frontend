@@ -20,16 +20,17 @@ export function BarreRecherche() {
           borderWidth: 0,
           borderColor: "#088A4B",
           borderRadius: 10,
-          fontSize: 16,
+          fontSize: 20,
           width: "90%",
           justifyContent: "center",
           alignItems: "center",
           zIndex: 999,
 
           listView: {
-            backgroundColor: "",
+            //backgroundColor: "blue",
             position: "absolute",
-            top: 40,
+            top: 30,
+            marginTop:35,
             borderRadius: 5,
             flex: 1,
             elevation: 8, // for Android
@@ -45,11 +46,10 @@ export function BarreRecherche() {
         }}
         listViewDisplayed='auto'
 
-
       />
 
       <TouchableOpacity style={styles.icon}>
-        <Ionicons name="search" size={20} color="grey" />
+        <Ionicons name="search" size={22} color="#088A4B" />
       </TouchableOpacity>
     </View>
   );
@@ -74,5 +74,6 @@ const styles = StyleSheet.create({
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    //backgroundColor:'red'
   },
 });
