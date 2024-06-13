@@ -6,34 +6,41 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+import { Keyboard } from "react-native";
 
 export function BarreRecherche() {
   return (
+
+    <KeyboardAvoidingView behavior={"padding"} style={{justifyContent:'flex-end'}}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <View style={styles.container}>
       <GooglePlacesAutocomplete
-        placeholder="ou allez-vous?"
+        placeholder="votre destination" 
         styles={{
-          height: 51,
+          height: 71,
           borderWidth: 0,
           borderColor: "#088A4B",
           borderRadius: 10,
           fontSize: 16,
-          width: "90%",
+          width: "95%",
           justifyContent: "center",
           alignItems: "center",
           zIndex: 999,
 
           listView: {
-            backgroundColor: "",
+            //backgroundColor: "",
             position: "absolute",
-            top: 40,
+            top: 50,
             borderRadius: 5,
             flex: 1,
             elevation: 8, // for Android
             zIndex: 1080, // for iOS
+            width: '100%',
           },
         }}
         onPress={(data, details = null) => {
@@ -49,9 +56,12 @@ export function BarreRecherche() {
       />
 
       <TouchableOpacity style={styles.icon}>
-        <Ionicons name="search" size={20} color="grey" />
+        <Ionicons name="search" size={24} color="#088A4B" />
       </TouchableOpacity>
     </View>
+
+    </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -60,7 +70,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     borderWidth: 1,
     borderColor: "#088A4B",
-    height: 50,
+    height: 51,
+    width: 380,
     borderRadius: 15,
     fontSize: 16,
     paddingLeft: 10,

@@ -12,8 +12,8 @@ const ImageViewer =({placeholderImageSource, selectedImage}:{placeholderImageSou
 } 
 const styles = StyleSheet.create({
     image: {
-        width: 211,
-        height: 211,
+        width: '100%',
+        height: '100%',
         borderRadius: 300,
       },
     });

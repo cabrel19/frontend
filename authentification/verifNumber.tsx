@@ -6,7 +6,7 @@ import {
   StyleSheet, ScrollView
 } from "react-native";
 import PhoneInput from "react-native-phone-number-input";
-import Back from "@/components/btnBack";
+import Back from "../components/btnBack";
 import { z } from 'zod';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';

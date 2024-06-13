@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, Text, Button, StyleSheet,ImageBackground,ScrollView, KeyboardAvoidingView, Image, Alert, TouchableWithoutFeedback, TouchableOpacity, Keyboard } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import Back from '@/components/btnBack';
+import Back from '../components/btnBack';
 
 const NewPassword = ({ navigation }: any) => {
   const [password, setPassword] = useState('');
@@ -22,7 +22,7 @@ const NewPassword = ({ navigation }: any) => {
   const handleSubmit = () => {
     // afficher une alerte valider si les textes entrés sont identiques et contiennent aux moins 7 caractères si non afficher erreur
     if (password.trim().length > 7 && confirmPassword.trim().length > 7 && password.trim() === confirmPassword.trim()) {
-      navigation.replace("Login")
+      navigation.replace("Home")
     } else {
       Alert.alert('Erreur', 'Les mots de passe ne sont pas identiques.');
     }

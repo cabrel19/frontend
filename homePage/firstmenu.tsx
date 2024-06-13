@@ -11,6 +11,7 @@ import {
 import { MaterialIcons, Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import Horizontal from "@/components/Horizontal";
 
+
 //import {auth} from "@/firebase.config";
 
 const Firstmenu = ({ navigation }: any) => {
@@ -133,7 +134,7 @@ const Firstmenu = ({ navigation }: any) => {
               fontWeight: "bold",
             }}
           >
-            Securite
+            Aide
           </Text>
           {/* <MaterialIcons name="arrow-forward-ios" size={24} color="#088A4B" /> */}
         </TouchableOpacity>
@@ -155,9 +156,23 @@ const Firstmenu = ({ navigation }: any) => {
           >
             A propos
           </Text>
-          {/* <MaterialIcons name="arrow-forward-ios" size={24} color="#088A4B" /> */}
-          <Horizontal />
+           {/* <MaterialIcons name="arrow-forward-ios" size={24} color="#088A4B" />  */}
+          
         </TouchableOpacity>
+      </View>
+      <View style={styles.container3}>
+      <View style={{
+       
+      
+       marginLeft: 35,
+       height: 60,
+       width: "98%",
+   }}>
+    <TouchableOpacity onPress={() =>Alert.alert("")}>
+          <MaterialIcons name="logout" size={22}  color="#b22222"  style={{ top: 19, right:10}} />
+          <Text style={{fontSize: 16, marginLeft:26, color: '#b22222'}}>Deconnexion</Text>
+          </TouchableOpacity>
+          </View>
       </View>
     </View>
   );
@@ -173,11 +188,20 @@ const styles = StyleSheet.create({
   },
   container2: {
     width: "90%",
-    height: "85%",
+    height: "70%",
     backgroundColor: "white",
-    justifyContent: "center",
-    alignSelf: "center",
+    justifyContent: 'flex-start',
+    alignSelf: 'center',
     borderRadius: 8,
+  },
+  container3: {
+   height: '8%',
+   backgroundColor: 'white',
+   borderRadius: 8,
+   width: "90%",
+   justifyContent: 'flex-end',
+  alignSelf: 'center',
+  marginTop: 10,
   },
 
   button: {

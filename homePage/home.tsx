@@ -6,30 +6,51 @@ import {
   Alert,
   ImageBackground,
 } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import MapView, { Marker } from "react-native-maps";
 
 
-const Login = ({ navigation }: any) => {
+const Home = ({ navigation }: any) => {
+
+  const data = useState('');
+    const regionInitiale = {
+        latitude: 4.0651,
+        longitude: 9.7584,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+    };
+
+    const coordinates = [
+        { latitude: 4.0621, longitude: 9.7369 },
+    ];
   return (
+    
     <View style={styles.container}>
-      <ImageBackground
-        source={require("@/assets/images/6.png")}
-        style={{ flex: 1 ,justifyContent:'flex-end'}}
-      >
+         <MapView 
+                initialRegion={regionInitiale}
+                style={StyleSheet.absoluteFillObject}  >
+                <Marker
+                    coordinate={coordinates[0]}
+                    title={"Ma position >"}
+                    description={"Départ"}
+                    pinColor={"green"}
+                />
+          </MapView>
+
         <View style={styles.footer}>
           <TouchableOpacity
             style={{ marginRight: 30 }}
             onPress={() => navigation.navigate("Firstmenu")}
           >
-            <View>
-              <Ionicons name="menu" size={50} color="white" />
+            <View style={styles.icons}>
+              <Ionicons name="menu" size={40} color="white" />
             </View>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.course}
-            onPress={() => Alert.alert("")}
+            onPress={() => navigation.navigate("Destination")}
           >
             <Text style={{ color: "white", textAlign: "center" }}>COURSE</Text>
           </TouchableOpacity>
@@ -43,40 +64,51 @@ const Login = ({ navigation }: any) => {
             </Text>
           </TouchableOpacity>
         </View>
-      </ImageBackground>
+      
     </View>
+  
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    
+    width:'100%',
+    height:'100%',
     flex: 1,
+    position : 'relative'
+  },
+  // 
+  icons: {
+    justifyContent:'center',
+    alignItems:'center',
   },
 
   footer: {
     flexDirection: "row",
     width: "95%",
-    borderRadius: 30,
-    marginBottom:10,
+    borderRadius: 30, 
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: 'flex-end',
     height: 80,
     backgroundColor: "#a9a9a9",
     alignSelf: "center",
+    position: 'absolute',
+    bottom: 10
   },
   course: {
-    padding: 15,
+    justifyContent:'center',
+    alignItems:'center',
     borderRadius: 10,
     height: 50,
     width: 147,
   },
 
   livraison: {
-    padding: 15,
+    justifyContent:'center',
+    alignItems:'center',
     borderRadius: 10,
     height: 50,
     width: 147,
   },
 });
-export default Login;
+export default Home;

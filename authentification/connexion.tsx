@@ -5,10 +5,10 @@ import {
 } from 'react-native';
 import PhoneInput from 'react-native-phone-number-input';
 import { FontAwesome } from '@expo/vector-icons';
-import Ou from '@/components/ou';
 import { z } from 'zod';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import Ou from '../components/ou';
 
 interface props { onChangeText : any }
 
@@ -38,7 +38,7 @@ const Connexion = ({ navigation }: any) => {
       Alert.alert('Erreur', 'Le numéro de téléphone est invalide');
       return;
     }//vérifier si le numero est valide
-    navigation.navigate('Login');
+    navigation.navigate('Home');
   };
 
   const toggleShowPassword = () => {
