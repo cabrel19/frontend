@@ -15,10 +15,12 @@ const Back = () => {
 };
 const styles = StyleSheet.create({
     back: {
-        alignSelf: 'flex-start',
+       alignSelf: 'flex-start',
         alignItems: 'center',
         width: 70,
         flexDirection: 'row',
+        marginTop:'10%'
+       // backgroundColor:'red'
     },
 });
 export default Back;

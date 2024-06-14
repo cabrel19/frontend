@@ -138,7 +138,7 @@ const Firstmenu = ({ navigation }: any) => {
           {/* <MaterialIcons name="arrow-forward-ios" size={24} color="#088A4B" /> */}
         </TouchableOpacity>
         <Horizontal />
-        <TouchableOpacity style={styles.button} onPress={() => Alert.alert("")}>
+        <TouchableOpacity style={styles.button} >
           <MaterialIcons
             name="security"
             size={22}

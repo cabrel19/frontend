@@ -1,0 +1,7 @@
+{
+    "hello":"Hello",
+    "settings": {
+        "language": "Language",
+        "select_language": "Select Language"
+    }
+}

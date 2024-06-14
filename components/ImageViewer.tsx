@@ -12,9 +12,12 @@ const ImageViewer =({placeholderImageSource, selectedImage}:{placeholderImageSou
 } 
 const styles = StyleSheet.create({
     image: {
-        width: 211,
-        height: 211,
+        width: '36%',
+        height: '100%',
         borderRadius: 300,
+        backgroundColor:'#E8F4F3',
+        //borderWidth:2,
+       // borderColor:'#088A4B',
       },
     });
 

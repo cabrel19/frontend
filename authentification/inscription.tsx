@@ -71,10 +71,7 @@ const Inscription = ({ navigation }: any) => {
 
 
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        {/* <FirebaseRecaptchaVerifierModal
-        ref={recaptchaVerifier}
-        firebaseConfig={app.options}
-      /> */}
+       
           <View style={styles.formulaire}>
           <Controller name="name"
               control={control}
