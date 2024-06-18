@@ -54,7 +54,6 @@ const BarreRecherche=({onPress})=>{
         }}
         listViewDisplayed='auto'
 
-
       />
 
       <TouchableOpacity style={styles.icon}>
@@ -91,6 +90,7 @@ const styles = StyleSheet.create({
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    //backgroundColor:'red'
   },
 });
 

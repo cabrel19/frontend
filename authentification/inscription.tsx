@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, ImageBackground, Alert, KeyboardAvoidingView,
-  StyleSheet, TouchableOpacity,
+  StyleSheet, TouchableOpacity, ActivityIndicator,
   ScrollView
 } from 'react-native';
 import PhoneInput from 'react-native-phone-number-input';
@@ -11,10 +11,10 @@ import { z } from 'zod';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PhoneAuthProvider, app, auth, firestore, signInWithCredential } from '@/firebase.config';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import FirebaseRecaptchaVerifierModal from 'expo-firebase-recaptcha/build/FirebaseRecaptchaVerifierModal';
 
-interface props { onChangeText : any }
+interface props { onChangeText: any }
 
 const validationSchema = z.object({
   phone: z.string().min(9, 'Numero incorrect').max(9, 'Numero incorrect'),
@@ -26,34 +26,48 @@ const Inscription = ({ navigation }: any) => {
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
-  const phoneInput = useRef(null);
+  const phoneInput = useRef<PhoneInput>(null);
   const [showPassword, setShowPassword] = useState(false);//masquer le password par default
-  const [buttonColor, setButtonColor] = useState('#d3d3d3'); // Couleur grise initiale
-  const [verificationId,setVerificationId]= useState("")
-  const recaptchaVerifier= useRef(null)
+  const [verificationId, setVerificationId] = useState("")
+  const [loading, setLoading] = useState(false); // Nouvel état pour le chargement
+  const recaptchaVerifier = useRef(null)
   const [code, setCode] = useState('');
 
   type FormData = z.infer<typeof validationSchema>
 
-  const { handleSubmit, control,watch, formState: { errors } } = useForm<FormData>({
+  const { handleSubmit, control, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(validationSchema),
   });
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
     console.log(data);
     const isValid = phoneInput.current?.isValidNumber(phoneNumber);
     if (!isValid) {
       Alert.alert('Erreur', 'Le numéro de téléphone est invalide');
       return;
     }//vérifier si le numero est valide
-    navigation.navigate('OtpSignUp', { phoneNumber, name,password });
-  };
+    try {
+      setLoading(true); // Démarrer le chargement
+      const q = query(
+        collection(firestore, "users"),
+        where("phone", "==", phoneNumber),
+      );
 
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        Alert.alert('Erreur', 'Un compte avec ce numéro de téléphone existe déjà');
+      } else {
+        navigation.navigate('OtpSignUp', { phoneNumber, name: data.name, password: data.password });
+      }
+    } catch (error: any) {
+      Alert.alert('Erreur', `Erreur lors de la vérification: ${error.message}`);
+    } finally {
+      setLoading(false); // Arrêter le chargement
+    }
+  };
   const allFieldsFilled = watch(['name', 'phone', 'password']).every(field => field);
 
-
-  
- 
   const toggleShowPassword = () => {
     // masquer ou afficher le mot de passe
     setShowPassword(!showPassword);
@@ -71,22 +85,22 @@ const Inscription = ({ navigation }: any) => {
 
 
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
-       
+
           <View style={styles.formulaire}>
-          <Controller name="name"
+            <Controller name="name"
               control={control}
-              render={({ field: { onChange,value } }) => (
-            <TextInput
-              style={styles.name}
-              value={value}
-              onChangeText={onChange}
-              placeholder="Entrez votre nom"
-              keyboardType="web-search"
-              autoCorrect={false}
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  style={styles.name}
+                  value={value}
+                  onChangeText={onChange}
+                  placeholder="Entrez votre nom"
+                  keyboardType="web-search"
+                  autoCorrect={false}
+                />
+              )}
             />
-          )}
-          />
-          {errors.name && <Text style={{color:'red', textAlign:'center'}}>{errors.name.message}</Text>}
+            {errors.name && <Text style={{ color: 'red', textAlign: 'center' }}>{errors.name.message}</Text>}
 
             <Controller name="phone"
               control={control}
@@ -106,36 +120,43 @@ const Inscription = ({ navigation }: any) => {
                 />
               )}
             />
-            {errors.phone && <Text style={{color:'red', textAlign:'center'}}>{errors.phone.message}</Text>}
+            {errors.phone && <Text style={{ color: 'red', textAlign: 'center' }}>{errors.phone.message}</Text>}
 
             <Controller name="password"
               control={control}
-              render={({ field: { onChange,value } }) => (
-            <View style={styles.Password}>
-              <TextInput
-                style={styles.enterPassword}
-                value={value}
-                onChangeText={onChange}
-                secureTextEntry={!showPassword}
-                placeholder="Créer un mot de passe"
-                keyboardType="web-search"
-                autoCorrect={false}
-              />
-              <TouchableOpacity onPress={toggleShowPassword}>
-                <FontAwesome
-                  name={showPassword ? 'eye' : 'eye-slash'}
-                  size={20}
-                  color='#088A4B'
-                />
-              </TouchableOpacity>
-            </View>
-            )}
+              render={({ field: { onChange, value } }) => (
+                <View style={styles.Password}>
+                  <TextInput
+                    style={styles.enterPassword}
+                    value={value}
+                    onChangeText={onChange}
+                    secureTextEntry={!showPassword}
+                    placeholder="Créer un mot de passe"
+                    keyboardType="web-search"
+                    autoCorrect={false}
+                  />
+                  <TouchableOpacity onPress={toggleShowPassword}>
+                    <FontAwesome
+                      name={showPassword ? 'eye' : 'eye-slash'}
+                      size={20}
+                      color='#088A4B'
+                    />
+                  </TouchableOpacity>
+                </View>
+              )}
             />
-            {errors.password && <Text style={{color:'red', textAlign:'center'}}>{errors.password.message}</Text>}
+            {errors.password && <Text style={{ color: 'red', textAlign: 'center' }}>{errors.password.message}</Text>}
 
-            <TouchableOpacity style={[styles.inscrire, allFieldsFilled ? styles.buttonEnabled :styles.buttonDisabled]} disabled={!allFieldsFilled} onPress={handleSubmit(onSubmit)}>
+            <TouchableOpacity style={[styles.inscrire, allFieldsFilled ? styles.buttonEnabled : styles.buttonDisabled]}
+              disabled={!allFieldsFilled}
+              onPress={handleSubmit(onSubmit)}
+            >
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={{ color: '#fff', fontSize: 20 }}>S'inscrire</Text>
+              )}
 
-              <Text style={{ color: '#fff', fontSize: 20 }}>S'inscrire</Text>
             </TouchableOpacity>
 
 
@@ -145,7 +166,7 @@ const Inscription = ({ navigation }: any) => {
               <Text style={styles.haveAccount}>
                 Vous avez deja un compte?
               </Text>
-              <TouchableOpacity style={styles.seConnecter} onPress={() => navigation.navigate("Connexion")} >
+              <TouchableOpacity onPress={() => navigation.navigate("Connexion")} style={styles.seConnecter}>
                 <Text style={{ color: '#088A4B' }}>    Se connecter</Text>
               </TouchableOpacity>
 
@@ -259,10 +280,10 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     justifyContent: 'center'
   },
-  buttonEnabled:{
+  buttonEnabled: {
     backgroundColor: '#088A4B',
   },
-  buttonDisabled:{
+  buttonDisabled: {
     backgroundColor: '#d3d3d3',
   },
   footer: {

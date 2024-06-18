@@ -13,9 +13,12 @@
     }
   },
   "include": [
+     "src", "/node_modules/**/*" ,
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
 , "authentification/test.tsx"  ]
 }
+
+

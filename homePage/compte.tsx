@@ -1,6 +1,4 @@
-
 import React, { useState, useRef } from "react";
-
 import {
   View,
   StyleSheet,
@@ -15,22 +13,26 @@ import {
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import * as MediaLibrary from "expo-media-library";
 import * as ImagePicker from "expo-image-picker";
-import { AntDesign, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { AntDesign, MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import ImageViewer from "@/components/ImageViewer";
 import Horizontal from "@/components/Horizontal";
-import BottomSheet from "@gorhom/bottom-sheet/lib/typescript/components/bottomSheet/BottomSheet";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import Back from "@/components/btnBack";
+import { getAuth, deleteUser } from "firebase/auth";
+import { app, auth } from '@/firebase.config';
+import { getFirestore, doc, deleteDoc } from "firebase/firestore";
+const firestore = getFirestore(app);
 
-const PlaceholderImage = require("@/assets/images/10.png");
+const PlaceholderImage = 'require("@/assets/images/10.png")';
 
 const Compte = ({ navigation }: any) => {
+
   const [pickedEmoji, setPickedEmoji] = useState(null);
   const [showAppOptions, setShowAppOptions] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [status, requestPermission] = MediaLibrary.usePermissions();
   const imageRef = useRef(null);
+
 
   const pickImageAsync = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -44,6 +46,7 @@ const Compte = ({ navigation }: any) => {
       alert("Vous n'avez selectionner aucune image.");
     }
   };
+
   if (status === null) {
     requestPermission();
   }
@@ -55,122 +58,161 @@ const Compte = ({ navigation }: any) => {
   const onAddSticker = () => {
     setIsModalVisible(true);
   };
+
   const onModalClose = () => {
     setIsModalVisible(false);
   };
 
-  // const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-  // const snapPoints = useMeno(() => ['25%', '50%'],[]);
-  // const handlerPresentModalPress = useCallback(() => {
-  //   bottomSheetModalRef.current?.present();
-  // })
+
+  const handleDeleteAccount = async () => {
+    Alert.alert(
+      "Confirmation",
+      "Êtes-vous sûr de vouloir supprimer votre compte ?",
+      [
+        {
+          text: "Annuler",
+          style: "cancel",
+        },
+        {
+          text: "Oui",
+          onPress: async () => {
+            try {
+              //const auth = getAuth();
+              const currentUser = auth.currentUser;
+              if (currentUser) {
+                await deleteDoc(doc(firestore, "users", currentUser.uid));
+                Alert.alert("Succès", "Votre compte a été supprimé.");
+                navigation.navigate("Inscription"); // Utilisation de la navigation pour aller à la page Inscription
+              } else {
+                Alert.alert("Erreur", "Aucun utilisateur connecté.");
+              }
+            } catch (error) {
+              Alert.alert("Erreur", );
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+    return (
+
+      <View style={styles.container}>
+
+        <View style={styles.header}><Back /></View>
+        <View style={styles.header2}></View>
+        <View style={styles.photo} ref={imageRef} collapsable={false}>
+          <ImageViewer
+            placeholderImageSource={require("@/assets/images/10.png")}
+            selectedImage={selectedImage}
+          />
+          <AntDesign
+            name="pluscircle"
+            size={28}
+            color="#088A4B"
+            onPress={pickImageAsync}
+            style={{ right: '14%', top: '7%' }}
+          />
+        </View>
+        {
+          <View style={styles.footerContainer}>
+
+            <View style={styles.infos}>
+              <MaterialIcons name="perm-identity" size={24} color="#088A4B" />
+              <Text style={{ marginLeft: "4%", fontWeight: 'bold' }}>Name:</Text>
+              <Text style={{ marginLeft: "18%" }}>MALAIKA</Text>
+            </View>
 
 
-  return (
-    <GestureHandlerRootView style={styles.container}>
-      <View style={styles.header}></View>
-      <View style={styles.header2}></View>
-      <View style={styles.photo} ref={imageRef} collapsable={false}>
-        <TouchableOpacity onPress={() => Alert.alert("") }>
-        <ImageViewer
-          placeholderImageSource={PlaceholderImage}
-          selectedImage={selectedImage}
-        />
-        <AntDesign
-          name="pluscircle"
-          size={28}
-          color="#088A4B"
-          onPress={pickImageAsync}
-          style={{ top: "-18%", left: "74%" }}
-        />
+            <View style={styles.infos}>
+              <MaterialIcons name="phone-android" size={24} color="#088A4B" />
+              <Text style={{ marginLeft: "4%", fontWeight: 'bold' }}> Tel: </Text>
+              <Text style={{ marginLeft: "18%" }}> 693547739 </Text>
+            </View>
+
+
+
+
+            <TouchableOpacity style={styles.infos} onPress={() => navigation.navigate("Motdepasse")}>
+              <Text>Mot de passe</Text>
+              <MaterialIcons name="arrow-forward-ios" size={24} color="#088A4B" style={{ marginLeft: '66%' }} />
+            </TouchableOpacity>
+
+          </View>
+        }
+
+
+
+        <TouchableOpacity onPress={handleDeleteAccount} style={styles.deleteAccount}>
+          <MaterialCommunityIcons name="account-remove-outline" size={30} color="#b22222" />
+          <Text style={{ fontSize: 18, marginLeft: '4%', color: '#b22222', }}>Supprimer le compte</Text>
         </TouchableOpacity>
+
       </View>
-      {
-        <View style={styles.footerContainer}>
 
-          <View style={styles.infos}>
-            <MaterialIcons name="perm-identity" size={24} color="#088A4B" />
-            <Text style={{ marginLeft: "4%",fontWeight:'bold' }}>Name:</Text>
-            <Text style={{ marginLeft: "18%" }}>MALAIKA</Text>
-          </View>
+    );
 
-          <Horizontal />
+  };
 
-          <View style={styles.infos}>
-            <MaterialIcons name="phone-android" size={24} color="#088A4B" />
-            <Text style={{ marginLeft: "4%",fontWeight:'bold' }}> Tel: </Text>
-            <Text style={{ marginLeft: "18%" }}> 693547739 </Text>
-          </View>
-          <View style={{
-       
-       
-       justifyContent: 'center',
-       alignSelf: 'center',
-       marginTop: '85%',
-       marginLeft: 35,
-       height: 60,
-       width: "98%",
-       
 
-   }}>
-    <TouchableOpacity onPress={() =>Alert.alert("")}  style={{}}>
-          <MaterialCommunityIcons name="account-remove-outline" size={22} color="#b22222"  style={{ top: 19, right:10}} />
-          <Text style={{fontSize: 16, marginLeft:26, color: '#b22222'}}>Supprimer le compte</Text>
-          </TouchableOpacity>
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      width: '100%',
+      height: '100%',
+    },
+    rootView: { backgroundColor: 'blue' },
+    header: {
+      width: "100%",
+      height: "17%",
+      backgroundColor: "#088A4B",
+      //padding:'4%'
+      borderBottomLeftRadius: 25,
+      borderBottomRightRadius: 25,
+    },
 
-        </View>
-        </View>
-      }
-    </GestureHandlerRootView>
-  );
-};
+    header2: {
+      width: "100%",
+      height: "15%",
+      //backgroundColor: "red",
+    },
+    photo: {
+      width: "90%",
+      height: "15%",
+      // backgroundColor: "#E0E0E0",
+      marginTop: "-45%",
+      alignSelf: "center",
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'row'
+    },
+    footerContainer: {
+      width: "95%",
+      height: "40%",
+      marginTop: "10%",
+      alignSelf: "center",
+      // backgroundColor: "blue",
+    },
+    infos: {
+      width: "92%",
+      height: "25%",
+      padding: "2%",
+      flexDirection: "row",
+      alignSelf: "center",
+      alignItems: "center",
+      marginTop: "5%",
+      borderRadius: 10,
+      backgroundColor: "white",
+    },
+    deleteAccount: {
+      flexDirection: 'row',
+      marginTop: '45%',
+      width: '60%',
+      marginLeft: '7%',
+      alignItems: 'center',
+    },
 
-const styles = StyleSheet.create({
-  container: {},
+  });
 
-  header: {
-    width: "100%",
-    height: "17%",
-    backgroundColor: "#088A4B",
-  },
-
-  header2: {
-    width: "100%",
-    height: "15%",
-    // backgroundColor: "red",
-  },
-  photo: {
-    width: "32%",
-    height: "22%",
-    backgroundColor: "#E0E0E0",
-    marginTop: "-39%",
-    alignSelf: "center",
-    borderRadius: 300,
-  },
-  image: {},
-  optionsContainer: {},
-
-  footerContainer: {
-    width: "95%",
-    height: "40%",
-    marginTop: "5%",
-    alignSelf: "center",
-    
-  },
-  infos: {
-    width: "92%",
-    height: "25%",
-    padding: "2%",
-    flexDirection: "row",
-    shadowOpacity:1,
-    alignSelf: "center",
-    alignItems: "center",
-    marginTop: "5%",
-    shadowColor:'#eee',
-    backgroundColor: "white",
-    borderRadius:5,
-  },
-
-});
-
-export default Compte;
+  export default Compte;

@@ -2,22 +2,24 @@ import React from "react";
 import { useState, useEffect, useRef } from "react";
 import {
   View, Text, KeyboardAvoidingView, Alert,
-  TouchableOpacity, ImageBackground,
+  TouchableOpacity, ImageBackground,ActivityIndicator,
   StyleSheet, ScrollView
 } from "react-native";
 import PhoneInput from "react-native-phone-number-input";
-import Back from "../components/btnBack";
+import Back from "@/components/btnBack";
 import { z } from 'zod';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { firestore } from '@/firebase.config';
 
 interface props { onChangeText: any }
 
 const Vérification = ({ navigation }: any) => {
 
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [buttonColor, setButtonColor] = useState('#d3d3d3'); // Couleur grise initiale
-  const phoneInput = useRef(null);
+  const phoneInput = useRef<PhoneInput>(null);
+  const [loading, setLoading] = useState(false);
 
 
   const validationSchema = z.object({
@@ -27,32 +29,42 @@ const Vérification = ({ navigation }: any) => {
 
   type FormData = z.infer<typeof validationSchema>
 
-  const { handleSubmit, control, formState: { errors } } = useForm<FormData>({
+  const { handleSubmit, control, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(validationSchema),
   });
 
-  const onSubmit = (data: FormData) => {
-    console.log(data);
+
+  const checkCredentials = async (phone: string) => {
+    const q = query(
+      collection(firestore, "users"),
+      where("phone", "==", phone),
+    );
+
+    const querySnapshot = await getDocs(q);
+    return !querySnapshot.empty;
+  };
+
+  const onSubmit = async (data: FormData) => {
+    setLoading(true);
     const isValid = phoneInput.current?.isValidNumber(phoneNumber);
     if (!isValid) {
       //vérifier si le numero est valide
       Alert.alert('Erreur', 'Le numéro de téléphone est invalide');
       return;
     }
-    navigation.navigate('NewPassword');
+    const credentialsValid = await checkCredentials(phoneNumber);
+    if (credentialsValid) {
+     
+      navigation.navigate('OtpSignIn', { phoneNumber });
+    } else {
+      Alert.alert('Erreur', "Ce numéro n'a pas de compte");
+    } 
+      setLoading(false);
+    
   };
 
-  useEffect(() => {
-    // Changer la couleur du bouton en vert si tous les champs sont remplis, sinon gris
-    if (phoneNumber.trim().length === 13) {
-      setButtonColor('#088A4B');
-    } else {
-      setButtonColor('#d3d3d3');
-    }
-  }, [phoneNumber]);
 
-
-
+  const allFieldsFilled = watch(['phone']).every(field => field);
 
   return (
 
@@ -91,8 +103,12 @@ const Vérification = ({ navigation }: any) => {
             />
             {errors.phone && <Text style={{ color: 'red', textAlign: 'center' }}>{errors.phone.message}</Text>}
 
-            <TouchableOpacity style={{ ...styles.bouton, backgroundColor: buttonColor }} onPress={handleSubmit(onSubmit)} >
+            <TouchableOpacity style={[styles.bouton, allFieldsFilled ? styles.buttonEnabled : styles.buttonDisabled]} disabled={!allFieldsFilled} onPress={handleSubmit(onSubmit)} >
+            {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
               <Text style={{ color: "white", fontSize: 17, }}>VERIFIER</Text>
+              )}
             </TouchableOpacity>
 
           </View>
@@ -175,6 +191,12 @@ const styles = StyleSheet.create({
     height: '15%',
     alignSelf: 'center',
     justifyContent: 'center'
+  },
+  buttonEnabled: {
+    backgroundColor: '#088A4B',
+  },
+  buttonDisabled: {
+    backgroundColor: '#d3d3d3',
   },
 });
 

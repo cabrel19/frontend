@@ -1,7 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react'; 
 import { View, Text, StyleSheet, TouchableOpacity, ViewBase, Alert } from 'react-native';
-
+import Back from "@/components/btnBack";
 
 
 
@@ -12,15 +12,12 @@ const Information = ({ navigation }: any) => {
 
 <View style={styles.container} >
 
-    <View style={styles.header} >
+<View style={styles.header}>
 
-    </View>
+<Back />
+<Text style={styles.title}>Informations</Text>
 
-    <View>
-        <Text style={{fontWeight: '500', fontSize: 30, margin: 14}}>
-            Informations
-        </Text>
-    </View>
+</View>
 
     <View style={{
         marginTop: 10,
@@ -54,13 +51,26 @@ const Information = ({ navigation }: any) => {
 
 const styles = StyleSheet.create({
     container: {
-  
+  flex:1,
+  width:'100%',
+  height:'100%',
     },
 
     header: {
         width: '100%',
-        height: '30%',
-        backgroundColor: '#088A4B'
+        height: '15%',
+        padding: '2%',
+        backgroundColor: '#088A4B',
+        borderBottomLeftRadius:20,
+        borderBottomRightRadius:20,
+        // marginTop:'10%',
+        alignItems: 'center',
+        flexDirection: 'row',
+    },
+    title: {
+        marginLeft: '15%',
+        marginBottom: '2%',
+        fontSize: 20,
     },
     line: {
          borderBottomWidth: 1,

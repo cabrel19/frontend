@@ -3,6 +3,7 @@ import React from "react";
 import { Text, Image, View, TouchableOpacity, StyleSheet, Alert, Button } from "react-native";
 import { FontAwesome5, Feather } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
+import Back from "@/components/btnBack";
 
 const Securite = ({ navigation }: any) => {
     const openMessenger =  async () => {
@@ -10,13 +11,13 @@ const Securite = ({ navigation }: any) => {
         const webUrl = 'https://www.messenger.com/';
          
         try {
-            // check if Messenger is installed
+            // Verifier si messenger est installer
             const supported = await Linking.canOpenURL(appUrl);
             if (supported) {
-                //Open Messenger app
+                //ouvrir l'application messenger
                 await Linking.openURL(appUrl);
             } else {
-                //Messenger is not installed, open the website
+                //au cas ou messenger n'est pas installer, l'ouvrir sur le site
                 await Linking.openURL(webUrl);
             }
         } catch (error) {
@@ -44,7 +45,7 @@ const Securite = ({ navigation }: any) => {
 
   return (
     <View style={styles.container}>
-
+<Back/>
       <View>
       <Image
             source={require("@/assets/images/7.png")}

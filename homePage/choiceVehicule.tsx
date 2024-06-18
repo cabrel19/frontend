@@ -6,9 +6,45 @@ import { AntDesign } from '@expo/vector-icons';
 
 
 
-const Commander = () => {
+const Commander = ({ navigation }: any) => {
 
-    const data = useState('');
+    const [selectionner, setSelectionner] = useState(null);
+
+    const handlePress = (id) => {
+        setSelectionner(id);
+    };
+
+    const space = () => {
+        return <View style={styles.space} />;
+    };
+
+    const data = [
+        {
+            id: "1",
+            image: require('@/assets/images/moto.png'),
+            titre: 'moto',
+            prix: 300,
+        },
+        {
+            id: "2",
+            image: require('@/assets/images/eco.png'),
+            titre: 'eco',
+            prix: 600,
+        },
+        {
+            id: "3",
+            image: require('@/assets/images/confort.png'),
+            titre: 'confort',
+            prix: 1400,
+        },
+        {
+            id: "4",
+            image: require('@/assets/images/rapide.png'),
+            titre: 'rapide',
+            prix: 2000,
+        }
+
+    ];
     const regionInitiale = {
         latitude: 4.0651,
         longitude: 9.7584,
@@ -35,64 +71,55 @@ const Commander = () => {
 
 
             <View style={styles.overlay}>
-                <View style={styles.line}></View>
+                
                 <BackHome />
                 <Text style={{ fontSize: 20 }}>Options de prise en charge</Text>
 
                 <FlatList
-                    style={{ height: '10%' }}
                     data={data}
-                    renderItem={({ item }) => (
-                        <View style={styles.flatlist}>
-                            <TouchableOpacity style={styles.choice}>
-                                <Image source={require('@/assets/images/moto.png')} style={{ height: '100%', width: '33%' }} />
+                    renderItem={({ item }) => {
+                        const select = item.id === selectionner;
+                        return (
+                            <View style={styles.flatlist}>
+                                <TouchableOpacity
+                                    style={[styles.choice, select && styles.selectionner]}
+                                    onPress={() => handlePress(item.id)}
+                                >
+                                    <Image source={item.image}
+                                        style={{ height: '100%', width: '27%' }}
+                                    />
 
-                                <View style={styles.confortMoto}>
-                                    <Text style={styles.textEco}> moto </Text>
-                                    <Text style={styles.textPrix}> prix:300f</Text>
-                                </View>
-                            </TouchableOpacity>
+                                    <View style={styles.confortMoto}>
+                                        <Text style={styles.textEco}>{item.titre}</Text>
+                                        <Text style={styles.textPrix}> prix: {item.prix}</Text>
+                                    </View>
 
-                            <TouchableOpacity style={styles.choice}>
-                                <Image source={require('@/assets/images/eco.png')} style={{ height: '100%', width: '40%' }} />
+                                </TouchableOpacity>
+                            </View>
+                        )
+                    }}
+                    extraData={selectionner}
+                    keyExtractor={item => item.id}
+                    ItemSeparatorComponent={space}
+                />
 
-                                <View style={styles.confort}>
-                                    <Text style={styles.textEco}> eco </Text>
-                                    <Text style={styles.textPrix}> prix:600f</Text>
-                                </View>
-                            </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.choice}>
-                                <Image source={require('@/assets/images/confort.png')} style={{ height: '100%', width: '40%' }} />
-
-                                <View style={styles.confort}>
-                                    <Text style={styles.textEco}> confort </Text>
-                                    <Text style={styles.textPrix}> prix:1400f</Text>
-                                </View>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity style={styles.choice}>
-                                <Image source={require('@/assets/images/rapide.png')} style={{ height: '100%', width: '40%' }} />
-
-                                <View style={styles.confort}>
-                                    <Text style={styles.textEco}> rapide </Text>
-                                    <Text style={styles.textPrix}> prix:2000f</Text>
-                                </View>
-                            </TouchableOpacity>
-
-                        </View>
-                    )} />
-
-                <TouchableOpacity style={styles.promo}>
-                    <Image source={require('@/assets/images/promo.png')} style={{ height: '65%', width: '10%' }} />
+                <TouchableOpacity style={styles.promo} onPress={() => navigation.navigate("Offres")}>
+                    <Image source={require('@/assets/images/promo.png')} style={{ height: '55%', width: '7%' }} />
 
                     <View style={styles.text}>
                         <Text style={styles.textPromo}> Obtenez 50% de reduction lors de votre prochain trajet </Text>
-                        <AntDesign name="right" size={25} color="#088A4B" style={{ marginLeft: '2%' }} />
+                        <AntDesign name="right" size={20} color="#088A4B" style={{ marginLeft: '6%' }} />
                     </View>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.commander}>
+                <View style={styles.lines}></View>
+
+                <TouchableOpacity
+                    onPress={() => navigation.navigate('SuggestionChauffeur')}
+                    style={[styles.commander, selectionner && styles.bouton]}
+                    disabled={!selectionner}
+                >
                     <Text style={styles.textCommande}> COMMANDER </Text>
                 </TouchableOpacity>
 
@@ -102,6 +129,10 @@ const Commander = () => {
 };
 
 const styles = StyleSheet.create({
+    space: {
+        marginTop: '2%',
+    },
+
     container: {
         flex: 1,
         width: '100%',
@@ -109,36 +140,36 @@ const styles = StyleSheet.create({
     },
     overlay: {
         position: 'absolute',
-        bottom: 0,
+        bottom: '0%',
         width: '100%',
-        height: '54%',
+        height: '48%',
         backgroundColor: 'white',
         alignItems: 'center',
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         padding: '1%',
     },
-    line: {
-        width: "20%",
-        height: 2,
-        backgroundColor: '#088A4B',
-        alignSelf: 'center',
-    },
     flatlist: {
         flex: 1,
         width: '94%',
-        height: '50%',
+        height: '48%',
         alignSelf: 'center',
         // backgroundColor: '#AEAEAE',
         // borderRadius: 10,
     },
+    selectionner: {
+        borderColor: 'green',
+        borderWidth: 2
+    },
     choice: {
         width: '100%',
-        height: '22%',
+        height: '100%',
         borderWidth: 1,
+        borderColor:'#eee',
+        borderRadius:10,
+        padding:10,
         marginTop: '3%',
         flexDirection: 'row',
-        padding: '1%',
         alignItems: 'center',
         alignSelf: 'center',
     },
@@ -149,12 +180,12 @@ const styles = StyleSheet.create({
         alignItems: 'stretch',
         marginLeft: '3%'
     },
-    confortMoto:{
+    confortMoto: {
         width: '60%',
         height: '100%',
         textAlign: 'center',
         alignItems: 'stretch',
-        marginLeft: '10%'
+        marginLeft: '15%'
     },
     textEco: {
         height: '50%',
@@ -169,9 +200,8 @@ const styles = StyleSheet.create({
     },
     promo: {
         width: '90%',
-        height: '14%',
-        borderWidth: 1,
-        marginTop: '3%',
+        height: '13%',
+        marginTop: '1%',
         flexDirection: 'row',
         padding: '1%',
         alignItems: 'center',
@@ -184,21 +214,29 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         alignItems: 'center',
         flexDirection: 'row',
-        marginLeft: '2%'
-
+        marginLeft: '4%',
     },
     textPromo: {
         alignItems: 'center',
     },
+    lines: {
+        width: '75%',
+        height: 1,
+        backgroundColor: '#dddddd',
+        marginBottom:'1%',
+    },
     commander: {
         width: '40%',
         height: '14%',
-        marginTop: '3%',
-        backgroundColor: '#088A4B',
+        marginBottom: '2%',
+        backgroundColor: '#BBBBBB',
         borderRadius: 10,
         justifyContent: 'center',
         alignItems: 'center',
         alignSelf: 'center'
+    },
+    bouton: {
+        backgroundColor: '#088A4B'
     },
     textCommande: {
         fontSize: 17,

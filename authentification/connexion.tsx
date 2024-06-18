@@ -1,76 +1,86 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, ImageBackground, TextInput, StyleSheet, KeyboardAvoidingView,
-  TouchableOpacity, Alert, ScrollView
+  TouchableOpacity, Alert, ScrollView, ActivityIndicator
 } from 'react-native';
 import PhoneInput from 'react-native-phone-number-input';
 import { FontAwesome } from '@expo/vector-icons';
+import Ou from '@/components/ou';
 import { z } from 'zod';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Ou from '../components/ou';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { firestore } from '@/firebase.config';
 
-interface props { onChangeText : any }
-
-const Connexion = ({ navigation }: any) => {
-
+const Connexion = ({ navigation }:any) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);//masquer le password par default
-  const [buttonColor, setButtonColor] = useState('#d3d3d3'); // Couleur grise initiale
-  const phoneInput = useRef(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const phoneInput = useRef<PhoneInput>(null);
+
+
 
   const validationSchema = z.object({
     phone: z.string().min(9, 'Numero incorrect').max(9, 'Numero incorrect'),
-    password: z.string().min(8, 'Au moins 08 caractères '),
+    password: z.string().min(8, 'Au moins 08 caractères'),
   });
 
-  type FormData = z.infer<typeof validationSchema>
+  type FormData = z.infer<typeof validationSchema>;
 
-  const { handleSubmit, control, formState: { errors } } = useForm<FormData>({
+  const { handleSubmit, watch, control, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(validationSchema),
   });
 
-  const onSubmit = (data: FormData) => {
-    console.log(data);
+  const checkCredentials = async (phone:string, password:string) => {
+    const q = query(
+      collection(firestore, "users"),
+      where("phone", "==", phone),
+      where("password", "==", password)
+    );
+
+    const querySnapshot = await getDocs(q);
+    return !querySnapshot.empty;
+  };
+
+  const onSubmit = async (data: FormData) => {
+    setLoading(true);
     const isValid = phoneInput.current?.isValidNumber(phoneNumber);
     if (!isValid) {
       Alert.alert('Erreur', 'Le numéro de téléphone est invalide');
+      setLoading(false);
       return;
-    }//vérifier si le numero est valide
-    navigation.navigate('Home');
+    }
+
+    const credentialsValid = await checkCredentials(phoneNumber, data.password);
+    setLoading(false);
+    if (credentialsValid) {
+      navigation.navigate('Home');
+    } else {
+      Alert.alert('Erreur', 'Numéro de téléphone ou mot de passe incorrect');
+    }
   };
 
+  const allFieldsFilled = watch(['phone', 'password']).every(field => field);
+
   const toggleShowPassword = () => {
-    // masquer ou afficher le mot de passe
     setShowPassword(!showPassword);
   };
 
-  useEffect(() => {
-    // Changer la couleur du bouton en vert si tout les champs sont correctement remplis, sinon gris
-    if (phoneNumber.trim().length === 13 && password.trim().length > 7) {
-      setButtonColor('#088A4B'); // Couleur verte
-    } else {
-      setButtonColor('#d3d3d3'); // Couleur grise
-    }
-  }, [phoneNumber, password]);
 
   return (
-
     <ImageBackground
       source={require('@/assets/images/connexion.png')}
       style={styles.background}
     >
-
       <KeyboardAvoidingView
         behavior={'padding'}
-        style={styles.keyboardAvoidingView} >
-
-
+        style={styles.keyboardAvoidingView}
+      >
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
           <View style={styles.formulaire}>
-
-          <Controller name="phone"
+            <Controller
+              name="phone"
               control={control}
               render={({ field: { onChange } }) => (
                 <PhoneInput
@@ -88,41 +98,49 @@ const Connexion = ({ navigation }: any) => {
                 />
               )}
             />
-            {errors.phone && <Text style={{color:'red', textAlign:'center'}}>{errors.phone.message}</Text>}
+            {errors.phone && <Text style={{ color: 'red', textAlign: 'center' }}>{errors.phone.message}</Text>}
 
-            <Controller name="password"
+            <Controller
+              name="password"
               control={control}
-              render={({ field: { onChange,value } }) => (
-            <View style={styles.Password}>
-              <TextInput
-                style={styles.enterPassword}
-                value={value}
-                onChangeText={onChange}
-                secureTextEntry={!showPassword}
-                placeholder="Créer un mot de passe"
-                keyboardType="web-search"
-                autoCorrect={false}
-              />
-              <TouchableOpacity onPress={toggleShowPassword}>
-                <FontAwesome
-                  name={showPassword ? 'eye' : 'eye-slash'}
-                  size={20}
-                  color='#088A4B'
-                />
-              </TouchableOpacity>
-            </View>
-            )}
+              render={({ field: { onChange, value } }) => (
+                <View style={styles.Password}>
+                  <TextInput
+                    style={styles.enterPassword}
+                    value={value}
+                    onChangeText={onChange}
+                    secureTextEntry={!showPassword}
+                    placeholder="Mot de passe"
+                    keyboardType="web-search"
+                    autoCorrect={false}
+                  />
+                  <TouchableOpacity onPress={toggleShowPassword}>
+                    <FontAwesome
+                      name={showPassword ? 'eye' : 'eye-slash'}
+                      size={20}
+                      color='#088A4B'
+                    />
+                  </TouchableOpacity>
+                </View>
+              )}
             />
-            {errors.password && <Text style={{color:'red', textAlign:'center'}}>{errors.password.message}</Text>}
+            {errors.password && <Text style={{ color: 'red', textAlign: 'center' }}>{errors.password.message}</Text>}
 
             <TouchableOpacity style={styles.forgetPassword} onPress={() => navigation.navigate("Vérification")}>
-              <Text style={{ color: '#088A4B', fontSize: 16 }}>Mot de passe oublier ?</Text>
+              <Text style={{ color: '#088A4B', fontSize: 16 }}>Mot de passe oublié ?</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={{ ...styles.connecter, backgroundColor: buttonColor }} onPress={handleSubmit(onSubmit)}>
-              <Text style={{ color: '#fff', fontSize: 20, }}>Se connecter</Text>
+            <TouchableOpacity
+              style={[styles.connecter, allFieldsFilled ? styles.buttonEnabled : styles.buttonDisabled]}
+              disabled={!allFieldsFilled}
+              onPress={handleSubmit(onSubmit)}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={{ color: '#fff', fontSize: 20 }}>Se connecter</Text>
+              )}
             </TouchableOpacity>
-
 
             <Ou />
 
@@ -134,19 +152,14 @@ const Connexion = ({ navigation }: any) => {
                 <Text style={styles.textInscrire}>S'inscrire</Text>
               </TouchableOpacity>
             </View>
-
           </View>
         </ScrollView>
-
-
-
-      </KeyboardAvoidingView >
-
+      </KeyboardAvoidingView>
     </ImageBackground>
   );
 };
-const styles = StyleSheet.create({
 
+const styles = StyleSheet.create({
   background: {
     flex: 1,
     width: '100%',
@@ -160,7 +173,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
-
   formulaire: {
     width: "85%",
     alignSelf: 'center',
@@ -218,7 +230,7 @@ const styles = StyleSheet.create({
   },
   forgetPassword: {
     width: '55%',
-    height: '6%',
+    height: 28,
     marginLeft: '8%',
     justifyContent: 'center',
     alignItems: 'center',
@@ -229,10 +241,16 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: '7%',
     alignItems: 'center',
-    width: '40%',
+    width: '43%',
     height: '14%',
     alignSelf: 'center',
     justifyContent: 'center'
+  },
+  buttonEnabled: {
+    backgroundColor: '#088A4B',
+  },
+  buttonDisabled: {
+    backgroundColor: '#d3d3d3',
   },
   footer: {
     alignItems: 'center',
@@ -253,4 +271,5 @@ const styles = StyleSheet.create({
     color: '#088A4B',
   },
 });
+
 export default Connexion;
