@@ -116,7 +116,7 @@ const Commander = ({ navigation }: any) => {
                 <View style={styles.lines}></View>
 
                 <TouchableOpacity
-                    onPress={() => navigation.navigate('Chauffeur')}
+                    onPress={() => navigation.navigate('SuggestionChauffeur')}
                     style={[styles.commander, selectionner && styles.bouton]}
                     disabled={!selectionner}
                 >
@@ -140,9 +140,9 @@ const styles = StyleSheet.create({
     },
     overlay: {
         position: 'absolute',
-        bottom: 0,
+        bottom: '0%',
         width: '100%',
-        height: '44%',
+        height: '48%',
         backgroundColor: 'white',
         alignItems: 'center',
         borderTopLeftRadius: 20,
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     flatlist: {
         flex: 1,
         width: '94%',
-        height: '50%',
+        height: '48%',
         alignSelf: 'center',
         // backgroundColor: '#AEAEAE',
         // borderRadius: 10,
@@ -200,8 +200,8 @@ const styles = StyleSheet.create({
     },
     promo: {
         width: '90%',
-        height: '14%',
-        marginTop: '3%',
+        height: '13%',
+        marginTop: '1%',
         flexDirection: 'row',
         padding: '1%',
         alignItems: 'center',
@@ -222,12 +222,13 @@ const styles = StyleSheet.create({
     lines: {
         width: '75%',
         height: 1,
-        backgroundColor: '#dddddd'
+        backgroundColor: '#dddddd',
+        marginBottom:'1%',
     },
     commander: {
         width: '40%',
         height: '14%',
-        marginTop: '3%',
+        marginBottom: '2%',
         backgroundColor: '#BBBBBB',
         borderRadius: 10,
         justifyContent: 'center',

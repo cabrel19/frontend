@@ -1,35 +1,50 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Text, Button, StyleSheet,ImageBackground,ScrollView, KeyboardAvoidingView, Image, Alert, TouchableWithoutFeedback, TouchableOpacity, Keyboard } from 'react-native';
+import { View, TextInput, Text, Button, StyleSheet, ImageBackground, ScrollView, KeyboardAvoidingView, Image, Alert, TouchableWithoutFeedback, TouchableOpacity, Keyboard } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import Back from '@/components/btnBack';
+import { z } from 'zod';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { auth } from '@/firebase.config';
+import { updatePassword } from 'firebase/auth';
 
-const NewPassword = ({ navigation }: any) => {
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+const validationSchema = z.object({
+  password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
+  confirmPassword: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
+})
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Les mots de passe ne correspondent pas",
+    path: ["confirmPassword"],
+  });
+
+const NewPassword = (navigation: any) => {
   const [showPassword, setShowPassword] = useState(false); // masquer initialement
   const [showConfirmPassword, setShowConfirmPassword] = useState(false); // masquer initialement
-  const [buttonColor, setButtonColor] = useState('#d3d3d3'); // Couleur grise initiale
 
-  useEffect(() => {
-    // Changer la couleur du bouton en vert si le champ de texte contient au moins 7 caractères, sinon gris
-    if (password.trim().length > 7 && confirmPassword.trim().length > 7) {
-      setButtonColor('#088A4B'); // Couleur verte
-    } else {
-      setButtonColor('#d3d3d3'); // Couleur grise
-    }
-  }, [password, confirmPassword]);
+  type FormData = z.infer<typeof validationSchema>
 
-  const handleSubmit = () => {
-    // afficher une alerte valider si les textes entrés sont identiques et contiennent aux moins 7 caractères si non afficher erreur
-    if (password.trim().length > 7 && confirmPassword.trim().length > 7 && password.trim() === confirmPassword.trim()) {
-      Alert.alert('VALIDÉ', 'Votre mot de passe a ete modifier avec succès')
-      return( navigation.replace("Connexion"));
-    } else {
-      Alert.alert('Erreur', 'Les mots de passe ne sont pas identiques.');
-      return;
+  const { handleSubmit, control, watch, formState: { errors } } = useForm<FormData>({
+    resolver: zodResolver(validationSchema),
+  });
+
+  const onSubmit = async (data: FormData) => {
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        await updatePassword(user, data.password);
+        Alert.alert("Succès", "Le mot de passe a été mis à jour avec succès.");
+        navigation.navigate('Connexion'); // Naviguer vers l'écran de connexion 
+      } else {
+        Alert.alert("Erreur", "Aucun utilisateur connecté.");
+      }
+    } catch (error) {
+      Alert.alert("Erreur");
     }
-   
   };
+
+
+  const allFieldsFilled = watch(['password', 'confirmPassword']).every(field => field);
+
 
   const toggleShowPassword = () => {
     // masquer ou afficher le mot de passe lorsqu'on clique sur l'oeil
@@ -54,48 +69,64 @@ const NewPassword = ({ navigation }: any) => {
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
 
           <View style={styles.formulaire}>
-           
+
 
 
             <Text style={styles.text}>Créer un nouveau mot de passe</Text>
 
-            <View style={styles.Password}>
-              <TextInput
-                style={styles.enterPassword}
-                placeholder="Mot de passe"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-              />
+            <Controller name="password"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <View style={styles.Password}>
+                  <TextInput
+                    style={styles.enterPassword}
+                    placeholder="Mot de passe"
+                    value={value}
+                    onChangeText={onChange}
+                    secureTextEntry={!showPassword}
+                  />
 
-              <TouchableOpacity onPress={toggleShowPassword}>
-                <FontAwesome
-                  name={showPassword ? 'eye-slash' : 'eye'}
-                  size={20}
-                  style={{color: '#088A4B' }}
-                />
-              </TouchableOpacity>
-            </View>
+                  <TouchableOpacity onPress={toggleShowPassword}>
+                    <FontAwesome
+                      name={showPassword ? 'eye-slash' : 'eye'}
+                      size={20}
+                      style={{ color: '#088A4B' }}
+                    />
+                  </TouchableOpacity>
+                </View>
+              )}
+            />
+            {errors.password && <Text style={{ color: 'red', textAlign: 'center' }}>{errors.password.message}</Text>}
 
-            <View style={styles.Password}>
-              <TextInput
-                style={styles.enterPassword}
-                placeholder="Confirmer le mot de passe"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry={!showConfirmPassword}
-              />
+            <Controller name="confirmPassword"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <View style={styles.Password}>
+                  <TextInput
+                    style={styles.enterPassword}
+                    placeholder="Confirmer le mot de passe"
+                    value={value}
+                    onChangeText={onChange}
+                    secureTextEntry={!showConfirmPassword}
+                  />
 
-              <TouchableOpacity onPress={toggleShowConfirmPassword}>
-                <FontAwesome
-                  name={showConfirmPassword ? 'eye-slash' : 'eye'}
-                  size={20}
-                  style={{color: '#088A4B' }}
-                />
-              </TouchableOpacity>
-            </View>
+                  <TouchableOpacity onPress={toggleShowConfirmPassword}>
+                    <FontAwesome
+                      name={showConfirmPassword ? 'eye-slash' : 'eye'}
+                      size={20}
+                      style={{ color: '#088A4B' }}
+                    />
+                  </TouchableOpacity>
+                </View>
+              )}
+            />
+            {errors.confirmPassword && <Text style={{ color: 'red', textAlign: 'center' }}>{errors.confirmPassword.message}</Text>}
 
-            <TouchableOpacity style={{ ...styles.valider, backgroundColor: buttonColor }} onPress={handleSubmit}>
+            <TouchableOpacity
+              style={[styles.valider, allFieldsFilled ? styles.buttonEnabled : styles.buttonDisabled]}
+              disabled={!allFieldsFilled}
+              onPress={handleSubmit(onSubmit)}
+            >
               <Text style={{ color: "#fff" }}>VALIDER</Text>
             </TouchableOpacity>
 
@@ -103,9 +134,9 @@ const NewPassword = ({ navigation }: any) => {
           </View>
         </ScrollView>
 
-   
 
-    </KeyboardAvoidingView> 
+
+      </KeyboardAvoidingView>
     </ImageBackground >
   );
 };
@@ -139,7 +170,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     fontSize: 24,
     marginTop: 10,
-    width:'80%'
+    width: '80%'
   },
   Password: {
     flexDirection: 'row',
@@ -166,6 +197,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
+  },
+  buttonEnabled: {
+    backgroundColor: '#088A4B',
+  },
+  buttonDisabled: {
+    backgroundColor: '#d3d3d3',
   },
 });
 

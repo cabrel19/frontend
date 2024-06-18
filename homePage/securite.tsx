@@ -3,6 +3,7 @@ import React from "react";
 import { Text, Image, View, TouchableOpacity, StyleSheet, Alert, Button } from "react-native";
 import { FontAwesome5, Feather } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
+import Back from "@/components/btnBack";
 
 const Securite = ({ navigation }: any) => {
     const openMessenger =  async () => {
@@ -44,7 +45,7 @@ const Securite = ({ navigation }: any) => {
 
   return (
     <View style={styles.container}>
-
+<Back/>
       <View>
       <Image
             source={require("@/assets/images/7.png")}

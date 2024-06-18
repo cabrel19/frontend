@@ -13,7 +13,7 @@ import Back from '@/components/btnBack';
 
 //import {auth} from "@/firebase.config";
 
-const Reglage = ({ navigation }: any) => {
+const ReglageChauffeur = ({ navigation }: any) => {
     return (
         <View style={styles.container}>
 
@@ -55,7 +55,7 @@ const Reglage = ({ navigation }: any) => {
             </TouchableOpacity>
 
 
-            <TouchableOpacity style={styles.button} >
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('ProposChauffeur')}>
 
                 <MaterialIcons name="security" size={30} color="#088A4B" />
 
@@ -115,4 +115,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Reglage;
+export default ReglageChauffeur;

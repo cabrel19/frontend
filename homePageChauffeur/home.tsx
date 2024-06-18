@@ -2,6 +2,8 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, ScrollView }
 import React, { useState } from 'react';
 import { Entypo, Ionicons, AntDesign, FontAwesome } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
+import ShimmerPlaceHolder, { createShimmerPlaceholder } from 'react-native-shimmer-placeholder';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 const HomeChauffeur = ({ navigation }: any) => {
@@ -13,7 +15,8 @@ const HomeChauffeur = ({ navigation }: any) => {
         setShowPicker(!showPicker);
     };
 
-    const handleChangeStatut = (statut) => {
+
+    const handleChangeStatut = (statut:any) => {
         setSelectStatut(statut);
         setShowPicker(false);
     };
@@ -23,8 +26,8 @@ const HomeChauffeur = ({ navigation }: any) => {
             id: "1",
             image1: require('@/assets/images/profit.jpg'),
             image2: require('@/assets/images/money.png'),
-            location: 'location-pin',
-            car: 'car',
+            location: "location-pin",
+            car: "car",
             nom: 'Cabrel NYA',
             depart: 'Ndogbong, commissariat 10eme',
             arrivée: 'Bonamoussadi, carrefour IPPB',
@@ -37,8 +40,8 @@ const HomeChauffeur = ({ navigation }: any) => {
             id: "2",
             image1: require('@/assets/images/profit.jpg'),
             image2: require('@/assets/images/money.png'),
-            location: 'location-pin',
-            car: 'car',
+            location: "location-pin",
+            car: "car",
             nom: 'Cabrel NYA',
             depart: 'Ndogbong, commissariat 10eme',
             arrivée: 'Bonamoussadi, carrefour IPPB',
@@ -50,8 +53,8 @@ const HomeChauffeur = ({ navigation }: any) => {
             id: "3",
             image1: require('@/assets/images/profit.jpg'),
             image2: require('@/assets/images/money.png'),
-            location: 'location-pin',
-            car: 'car',
+            location: "location-pin",
+            car: "car",
             nom: 'Cabrel NYA',
             depart: 'Ndogbong, commissariat 10eme',
             arrivée: 'Bonamoussadi, carrefour IPPB',
@@ -63,8 +66,8 @@ const HomeChauffeur = ({ navigation }: any) => {
             id: "4",
             image1: require('@/assets/images/profit.jpg'),
             image2: require('@/assets/images/money.png'),
-            location: 'location-pin',
-            car: 'car',
+            location: "location-pin",
+            car: "car",
             nom: 'Cabrel NYA',
             depart: 'Ndogbong, commissariat 10eme',
             arrivée: 'Bonamoussadi, carrefour IPPB',
@@ -116,7 +119,7 @@ const HomeChauffeur = ({ navigation }: any) => {
                         selectedValue={selectStatut}
                         onValueChange={(itemValue) => handleChangeStatut(itemValue)}
                         style={styles.picker}
-                       // selectionColor='#088A4B'
+                    // selectionColor='#088A4B'
                     >
                         <Picker.Item label="En service" value="En service" />
                         <Picker.Item label="Hors service" value="Hors service" />
@@ -186,7 +189,7 @@ const HomeChauffeur = ({ navigation }: any) => {
 
                                 <View style={styles.depart}>
                                     <Entypo
-                                        name={item.location}
+                                        name={item.location as string}
                                         size={22}
                                         style={{ marginLeft: '2%' }}
                                     />

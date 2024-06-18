@@ -4,7 +4,7 @@ import MapView, { Marker } from 'react-native-maps';
 import { Feather } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
 
-const Chauffeur = () => {
+const Chauffeur = (navigation:any) => {
 
     const regionInitiale = {
         latitude: 4.0651,
@@ -66,7 +66,7 @@ const Chauffeur = () => {
                     </View>
                     <Text style={styles.contacter}>Contacter le conducteur</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.annuler}>
+                <TouchableOpacity style={styles.annuler} onPress={() =>navigation.navigate('Home')}>
                     <Text>ANNULER</Text>
                 </TouchableOpacity>
             </View>

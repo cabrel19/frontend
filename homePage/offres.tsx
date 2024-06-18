@@ -4,6 +4,7 @@ import { Text, StyleSheet, View, Image, TouchableOpacity, Alert,Clipboard } from
 //import  Share from "react-native-share";
 import Back from "@/components/btnBack";
 import { ClipboardStatic } from "react-native";
+import BackHome from '@/components/backHome';
 
 const genererCode = () => {
     const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -35,7 +36,7 @@ const Offres = () => {
 
         <View style={styles.container}>
             <View style={styles.header}>
-                <Back />
+            <BackHome />
                 <View style={styles.gomobil}>
                     <Text style={{ alignSelf: 'center', fontSize: 22}}>
                         <Text style={{ color: '#088A4B' }}> G</Text>
@@ -101,10 +102,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         width: '100%',
         height: '5%',
-        alignItems: 'center'
+        alignItems: 'center',
+        marginTop:'10%',
     },
     gomobil:{ 
         width: '65%',
+        marginLeft:'10%',
     },
     image: {
         width: '95%',

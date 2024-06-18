@@ -1,28 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  View, Text, TextInput, Button, TouchableOpacity, TouchableWithoutFeedback, StyleSheet,
-  Alert, Keyboard
-} from 'react-native';
+import { View, Text, Button, TouchableOpacity, TouchableWithoutFeedback, StyleSheet, ActivityIndicator, Alert, Keyboard } from 'react-native';
 import Back from '@/components/btnBack';
 import { app, auth, firestore, PhoneAuthProvider, signInWithCredential } from '@/firebase.config';
-import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
-import { addDoc, collection } from 'firebase/firestore';
 import { OtpInput } from "react-native-otp-entry";
-import { z } from 'zod';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
+import { addDoc, collection } from 'firebase/firestore';
+
 
 const OtpSignUp = ({ route, navigation }: any) => {
 
-  const { phoneNumber, name, password } = route.params;
+  const { phoneNumber, name, password, allFieldsFilled } = route.params;
   const [codeVerification, setCodeVerification] = useState('');
   const [verificationId, setVerificationId] = useState("")
   const [renvoyer, setRenvoyer] = useState(true);
   const [secondes, setSecondes] = useState(10);// décomptage de 10 sec par default
-  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false); // Nouvel état pour le chargement
   const recaptchaVerifier = useRef(null)
   const inputRef = useRef([]);
- 
+
 
   useEffect(() => {
     const sentVerificationCode = async () => {
@@ -30,37 +25,58 @@ const OtpSignUp = ({ route, navigation }: any) => {
         const phoneProvider = new PhoneAuthProvider(auth)
         const id = await phoneProvider.verifyPhoneNumber(`${phoneNumber}`, recaptchaVerifier.current!)
         setVerificationId(id)
-        //setCode(true)
-        Alert.alert("Succès", "Le code a été envoyé avec succès !");
+        Alert.alert("Alerte", "Un code vous a été envoyé par SMS!");
 
       } catch (error: any) {
-       // console.error("Erreur lors de l'envoi du code:", error);
-        // setError(error.message);
-        Alert.alert(
-          "Erreur",
-          `Erreur lors de l'envoi du code: ${error.message}`
-        );
-
+        if (error.code === 'auth/too-many-requests') {
+          Alert.alert("Erreur", "Trop de tentatives. Veuillez réessayer plus tard.");
+        } else {
+          Alert.alert(`Erreur lors de l'envoi du code: ${error.message}`);
+        }
       }
     }
-    sentVerificationCode()
+    sentVerificationCode();
+    }, [phoneNumber])
 
-  }, [phoneNumber])
+  const resendCode = async () => {
+
+    try {
+      setSecondes(30);
+      setRenvoyer(true);
+      const phoneProvider = new PhoneAuthProvider(auth);
+      const id = await phoneProvider.verifyPhoneNumber(`${phoneNumber}`, recaptchaVerifier.current!)
+      setVerificationId(id)
+      Alert.alert("Alerte", "Un nouveau code vous a été renvoyé!");
+    } catch (error: any) {
+      if (error.code === 'auth/too-many-requests') {
+        Alert.alert("Erreur", "Trop de tentatives. Veuillez réessayer plus tard.");
+      } else {
+        Alert.alert("Erreur", `Erreur lors de la réexpédition du code: ${error.message}`);
+      }
+
+    }
+
+  };
 
   const confirmCode = async () => {
     try {
+      setLoading(true); // Démarrer le chargement
       if (verificationId) {
-        const credential = PhoneAuthProvider.credential(verificationId, codeVerification)
-        await signInWithCredential(auth, credential)
+        const credential = PhoneAuthProvider.credential(verificationId, codeVerification);
+        await signInWithCredential(auth, credential);
         await addDoc(collection(firestore, "users"), {
-          name: name, phone: phoneNumber, password: password
-        })
-        .then (() => navigation.navigate('home'))
+          phone: phoneNumber,
+          name: name,
+          password: password
+        });
+        navigation.navigate('Home');
       }
     } catch (error: any) {
-      Alert.alert("une erreur lors de la confirmation", error.message)
+      Alert.alert("Une erreur lors de la confirmation", error.message);
+    } finally {
+      setLoading(false); // Arrêter le chargement
     }
-  }
+  };
 
 
   useEffect(() => {
@@ -86,19 +102,6 @@ const OtpSignUp = ({ route, navigation }: any) => {
     return `${formattedMinutes} : ${formattedSeconds}`;
   };
 
-  const resendCode = () => {
-    // l'appuie sur le bouton relance le décomptage et désactive le bouton
-    setSecondes(10);
-    setRenvoyer(true);
-    Alert.alert('Info', 'Un nouveau code a été renvoyer');
-
-  };
-
-
-
-
-
-
   return (
 
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -109,32 +112,33 @@ const OtpSignUp = ({ route, navigation }: any) => {
           firebaseConfig={app.options}
         />
         <Back />
-        <Text style={{ fontSize: 25, marginTop: 25 }}>Un code à cinq chiffres vous a été envoyé au : {phoneNumber}</Text>
+        <Text style={{ fontSize: 25, marginTop: '5%' }}>Un code à six chiffres vous a été envoyé au : {phoneNumber}</Text>
 
         <OtpInput
           numberOfDigits={6}
+
           focusColor="green"
-          focusStickBlinkingDuration={500}
+          focusStickBlinkingDuration={400}
           onFilled={(text) => setCodeVerification(text)}
           textInputProps={{ accessibilityLabel: "One-Time-Password", }}
           theme={{
-            //containerStyle: styles.containerOtp,
             inputsContainerStyle: styles.inputsContainer,
-            // pinCodeContainerStyle: styles.pinCodeContainer,
-            //pinCodeTextStyle: styles.pinCodeText,
-            //focusStickStyle: styles.focusStick,
-            //focusedPinCodeContainerStyle: styles.activePinCodeContainer
+            pinCodeContainerStyle: styles.pinCodeContainer,
           }}
         />
         <Text style={{ textAlign: 'center', fontSize: 17, marginTop: 15 }}> vous pourriez demander un nouveau code dans :</Text>
         <Text style={styles.secondes}>{décomptage(secondes)} </Text>
 
-        <View style={{ marginTop: 40 }}>
+        <View style={{ marginTop: 40, width: '45%', alignSelf: 'center', }}>
           <Button title="Renvoyer un code" color="#088A4B" onPress={resendCode} disabled={renvoyer} />
         </View>
 
-        <TouchableOpacity style={styles.vérifier} onPress={confirmCode}>
-          <Text style={{ color: 'white', textAlign: 'center', fontSize: 16 }}>VÉRIFIER</Text>
+        <TouchableOpacity style={styles.vérifier} onPress={confirmCode} disabled={loading}>
+          {loading ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text style={{ color: 'white', textAlign: 'center', fontSize: 16 }}>VÉRIFIER</Text>
+          )}
         </TouchableOpacity>
 
       </View>
@@ -145,55 +149,46 @@ const OtpSignUp = ({ route, navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
-    alignItems: 'center',
-  },
-  back: {
-    alignSelf: 'flex-start',
-    alignItems: 'center',
-    width: 70,
-    flexDirection: 'row'
-  },
-  codeContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: 20,
-    marginTop: 70,
-  },
-  codeInput: {
-    width: 60,
-    height: 60,
-    borderWidth: 1,
-    borderColor: '#088A4B',
-    textAlign: 'center',
-    fontSize: 20,
-    borderRadius: 10,
-    marginHorizontal: 5,
+    width: '100%',
+    height: '100%',
+    padding: '1%',
   },
   secondes: {
-    display: 'flex',
     fontSize: 25,
-    width: 100,
-    height: 35,
+    width: '26%',
+    height: '6%',
     borderWidth: 1,
     borderColor: '#088A4B',
     borderRadius: 5,
-    marginTop: 15,
+    marginTop: '5%',
     textAlign: 'center',
-
+    padding: '2%',
+    alignSelf: 'center',
 
   },
   vérifier: {
     backgroundColor: '#088A4B',
-    padding: 13,
     borderRadius: 10,
-    marginTop: 110,
-    width: 140,
-    height: 47,
+    marginTop: '35%',
+    width: '30%',
+    height: '7%',
+    alignItems: 'center',
+    justifyContent: 'center',
     alignSelf: 'center',
   },
   inputsContainer: {
-    marginTop: '8%'
+    marginTop: '8%',
+    width: '95%',
+    alignSelf: 'center',
+    height: '10%',
+    alignItems: 'center',
+  },
+  pinCodeContainer: {
+    width: '16%',
+    alignSelf: 'center',
+    height: '75%',
+    borderWidth: 2,
+    borderColor: '#777777',
   },
 
 });
