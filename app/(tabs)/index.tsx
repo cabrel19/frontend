@@ -36,6 +36,7 @@ import AideSupport from '@/homePageChauffeur/aideEtSupport';
 import NotificationChauffeur from '@/homePageChauffeur/notificationChauffeur';
 import HistoriqueChauffeur from '@/homePageChauffeur/historiqueChauffeur';
 import ProposChauffeur from '@/homePageChauffeur/proposChauffeur';
+import Destination from '@/homePage/destination';
 
 
 //import Test from '@/authentification/test';
@@ -73,6 +74,7 @@ export default function app() {
         <Stack.Screen name="Chauffeur" component={Chauffeur} options={{presentation:'fullScreenModal', headerShown: false }} />
         <Stack.Screen name="DestinationLIV" component={DestinationLIV} options={{presentation:'fullScreenModal', headerShown: false }} />
         <Stack.Screen name="Notification" component={Notification} options={{presentation:'fullScreenModal', headerShown: false }} />
+        <Stack.Screen name="Destination" component={Destination} options={{presentation:'fullScreenModal', headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
 
