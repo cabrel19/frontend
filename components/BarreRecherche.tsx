@@ -12,8 +12,12 @@ import {
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import { Keyboard } from "react-native";
+import PropTypes from 'prop-types';
 
-export function BarreRecherche() {
+
+const BarreRecherche=({onPress})=>{
+
+//export function BarreRecherche(navigation:any) {
   return (
 
     <KeyboardAvoidingView behavior={"padding"} style={{justifyContent:'flex-end'}}>
@@ -43,9 +47,7 @@ export function BarreRecherche() {
             width: '100%',
           },
         }}
-        onPress={(data, details = null) => {
-          console.log(data, details);
-        }}
+        onPress={onPress}
         query={{
           key: "AIzaSyBXJ_jco0wIOiAqlGOofYipRBGTw54ut5k",
           language: "en",
@@ -63,6 +65,10 @@ export function BarreRecherche() {
     </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
+};
+ 
+BarreRecherche.propTypes={
+  onPress: PropTypes.func.isRequired, 
 }
 
 const styles = StyleSheet.create({
@@ -87,3 +93,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 });
+
+export default BarreRecherche;

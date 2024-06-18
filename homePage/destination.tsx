@@ -5,7 +5,7 @@ import MapView, { Marker } from 'react-native-maps';
 import { AntDesign, Entypo, Ionicons } from '@expo/vector-icons';
 import { Alert } from 'react-native';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import { BarreRecherche } from '@/components/BarreRecherche';
+import BarreRecherche from '@/components/BarreRecherche';
 import { Keyboard, KeyboardAvoidingView } from 'react-native';
 import BackHome from '@/components/backHome';
 
@@ -16,7 +16,7 @@ import BackHome from '@/components/backHome';
 
     const { height } = Dimensions.get('window');
 
-const Destination = () => {
+function Destination ({navigation}:any) {
     const translateY = useRef(new Animated.Value(0)).current;
 
     const panResponder = useRef(
@@ -101,7 +101,9 @@ const Destination = () => {
 
                 <View>
                     
-            <BarreRecherche />
+            <BarreRecherche
+            onPress={()=>navigation.navigate('Commander')}
+             />
                 </View>
             </Animated.View>
 

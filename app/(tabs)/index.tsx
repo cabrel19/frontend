@@ -18,7 +18,7 @@ import First from '@/authentification/firstPage';
 import Ouverture from '@/authentification/ouverture';
 import Inscription from '@/authentification/inscription';
 import Connexion from '@/authentification/connexion';
-import OTP from '@/authentification/codeOTP';
+import OtpSignUp from '@/authentification/codeOTP';
 import Vérification from '@/authentification/verifNumber';
 import NewPassword from '@/authentification/newpassword';
 import Map from '@/authentification/map';
@@ -50,9 +50,11 @@ export default function HomeScreen(){
      <Stack.Screen name="Parametres" component={Parametres} options={{headerShown: false}} />
      <Stack.Screen name="Langue" component={Langue} options={{headerShown: false}}/>
      <Stack.Screen name='Vérification' component={Vérification} options={{ headerTransparent: false, headerShown: false }} />
-     <Stack.Screen name='OTP' component={OTP} options={{ headerTransparent: false, headerShown: false }} />
+     <Stack.Screen name='OTP' component={OtpSignUp} options={{ headerTransparent: false, headerShown: false }} />
      <Stack.Screen name='NewPassword' component={NewPassword} options={{ headerTransparent: false, headerShown: false, presentation: 'fullScreenModal' }} />
      <Stack.Screen name='Destination'  component={Destination} options={{ headerTransparent: false, headerShown: false, presentation: 'fullScreenModal' }} />
+     <Stack.Screen name='Commander'  component={Commander} options={{ headerTransparent: false, headerShown: false, presentation: 'fullScreenModal' }} />
+     
         </Stack.Navigator> 
       </NavigationContainer> 
 

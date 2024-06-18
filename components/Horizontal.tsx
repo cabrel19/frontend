@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
         borderBottomColor: "#E0E0E0",
         width: "82%",
         alignSelf:'center',
-        marginTop:'5%',
+        marginTop:'2%',
         
     },
 });

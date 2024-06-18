@@ -139,13 +139,15 @@ const Firstmenu = ({ navigation }: any) => {
           {/* <MaterialIcons name="arrow-forward-ios" size={24} color="#088A4B" /> */}
         </TouchableOpacity>
         <Horizontal />
-        <TouchableOpacity style={styles.button} onPress={() => Alert.alert("")}>
-        <MaterialIcons
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => Alert.alert("")}
+        >
+          <MaterialIcons
             name="security"
             size={22}
             color="#088A4B"
             style={{ margin: 10, }}
-  
           />
           <Text
             style={{
@@ -154,13 +156,12 @@ const Firstmenu = ({ navigation }: any) => {
               fontWeight: "bold",
             }}
           >
-            A propos
+          A propos
           </Text>
-           {/* <MaterialIcons name="arrow-forward-ios" size={24} color="#088A4B" />  */}
-          
+          {/* <MaterialIcons name="arrow-forward-ios" size={24} color="#088A4B" /> */}
         </TouchableOpacity>
       </View>
-      <View style={styles.container3}>
+       <View style={styles.container3}>
       <View style={{
        
       
@@ -173,7 +174,7 @@ const Firstmenu = ({ navigation }: any) => {
           <Text style={{fontSize: 16, marginLeft:26, color: '#b22222'}}>Deconnexion</Text>
           </TouchableOpacity>
           </View>
-      </View>
+      </View> 
     </View>
   );
 };
@@ -193,6 +194,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignSelf: 'center',
     borderRadius: 8,
+    marginBottom: '10%'
   },
   container3: {
    height: '8%',
@@ -201,14 +203,15 @@ const styles = StyleSheet.create({
    width: "90%",
    justifyContent: 'flex-end',
   alignSelf: 'center',
-  marginTop: 10,
+  marginTop: '6%'
+  
   },
 
   button: {
     alignSelf: "center",
     alignItems: "center",
     marginBottom: 6,
-    height: 75,
+    height:'12%',
     width: "90%",
     flexDirection: "row",
   },

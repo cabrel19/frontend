@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app"
- import { getAuth,PhoneAuthProvider,RecaptchaVerifier } from "firebase/auth"
+ import { getAuth,PhoneAuthProvider,RecaptchaVerifier, signInWithCredential } from "firebase/auth"
  import { getFirestore } from "firebase/firestore"
 
 const firebaseConfig = {
@@ -16,5 +16,5 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
  const auth = getAuth();
  const firestore = getFirestore();
-export {PhoneAuthProvider, RecaptchaVerifier,auth,firestore,app};
+export {PhoneAuthProvider, signInWithCredential, RecaptchaVerifier,auth,firestore,app};
 

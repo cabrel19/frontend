@@ -1,5 +1,5 @@
-import React from "react";
-import { useState, useRef } from "react";
+
+import React, { useState, useRef } from "react";
 
 import {
   View,
@@ -15,10 +15,12 @@ import {
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import * as MediaLibrary from "expo-media-library";
 import * as ImagePicker from "expo-image-picker";
-import { AntDesign, MaterialIcons } from "@expo/vector-icons";
+import { AntDesign, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import ImageViewer from "@/components/ImageViewer";
 import Horizontal from "@/components/Horizontal";
+import BottomSheet from "@gorhom/bottom-sheet/lib/typescript/components/bottomSheet/BottomSheet";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 
 const PlaceholderImage = require("@/assets/images/10.png");
 
@@ -57,11 +59,19 @@ const Compte = ({ navigation }: any) => {
     setIsModalVisible(false);
   };
 
+  // const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+  // const snapPoints = useMeno(() => ['25%', '50%'],[]);
+  // const handlerPresentModalPress = useCallback(() => {
+  //   bottomSheetModalRef.current?.present();
+  // })
+
+
   return (
     <GestureHandlerRootView style={styles.container}>
       <View style={styles.header}></View>
       <View style={styles.header2}></View>
       <View style={styles.photo} ref={imageRef} collapsable={false}>
+        <TouchableOpacity onPress={() => Alert.alert("") }>
         <ImageViewer
           placeholderImageSource={PlaceholderImage}
           selectedImage={selectedImage}
@@ -73,6 +83,7 @@ const Compte = ({ navigation }: any) => {
           onPress={pickImageAsync}
           style={{ top: "-18%", left: "74%" }}
         />
+        </TouchableOpacity>
       </View>
       {
         <View style={styles.footerContainer}>
@@ -90,7 +101,24 @@ const Compte = ({ navigation }: any) => {
             <Text style={{ marginLeft: "4%",fontWeight:'bold' }}> Tel: </Text>
             <Text style={{ marginLeft: "18%" }}> 693547739 </Text>
           </View>
+          <View style={{
+       
+       
+       justifyContent: 'center',
+       alignSelf: 'center',
+       marginTop: '85%',
+       marginLeft: 35,
+       height: 60,
+       width: "98%",
+       
 
+   }}>
+    <TouchableOpacity onPress={() =>Alert.alert("")}  style={{}}>
+          <MaterialCommunityIcons name="account-remove-outline" size={22} color="#b22222"  style={{ top: 19, right:10}} />
+          <Text style={{fontSize: 16, marginLeft:26, color: '#b22222'}}>Supprimer le compte</Text>
+          </TouchableOpacity>
+
+        </View>
         </View>
       }
     </GestureHandlerRootView>
@@ -127,7 +155,7 @@ const styles = StyleSheet.create({
     height: "40%",
     marginTop: "5%",
     alignSelf: "center",
-    //backgroundColor: "blue",
+    
   },
   infos: {
     width: "92%",
@@ -140,6 +168,7 @@ const styles = StyleSheet.create({
     marginTop: "5%",
     shadowColor:'#eee',
     backgroundColor: "white",
+    borderRadius:5,
   },
 
 });
