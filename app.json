@@ -2,33 +2,35 @@
   "expo": {
     "name": "frontend",
     "slug": "frontend",
+    "plugins": ["@react-native-firebase/app", "@react-native-firebase/auth"],
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/lo.png",
+    "icon": "./assets/images/logo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/lo.png",
-      "resizeMode": "contain",
+      "image": "./assets/images/splash.png",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "googleServicesFile": "./GoogleService-Info.plist",
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/lo.png",
+        "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.anonymous.frontend"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/lo.png"
+      "favicon": "./assets/images/logo.png"
     },
-    "plugins": [
-      "expo-router",
-      "expo-localization"
+    "plugins1": [
+      "expo-router"
     ],
     "experiments": {
       "typedRoutes": true

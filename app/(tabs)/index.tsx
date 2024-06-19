@@ -1,20 +1,45 @@
-import React from "react";
-import {View} from "react-native";
-import Localisation from "@/homePage/localisation";
-import Acceuil from "@/homePage/acceuil1transport";
-import Apropos from "@/homePage/Apropos";
-import InteractiveMap from '@/homePage/map'
-import Notification from "@/homePage/notification";
-import Trajet from "@/homePage/trajet";
-import Apps from "@/homePage/too";
+import React, { useState, version } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import First from '@/authentification/firstPage';
+import Ouverture from '@/authentification/ouverture';
+import Inscription from '@/authentification/inscription';
+import Connexion from '@/authentification/connexion';
+import OTP from '@/authentification/codeOTP';
+import Vérification from '@/authentification/verifNumber';
+import NewPassword from '@/authentification/newpassword';
+import Map from '@/authentification/map';
+import Home from "@/homePage/home";
+import Firstmenu from '@/homePage/firstmenu';
+import Compte from '@/homePage/compte';
+import Motdepasse from '@/homePage/motdepasse';
+import Nouveaumotdepasse from '@/homePage/nouveaumotdepasse';
+import Securite from '@/homePage/securite';
+import Information from '@/homePage/information';
+import Parametres from '@/homePage/parametres';
+import Langue from '@/homePage/langue';
+import Commander from '@/homePage/choiceVehicule';
+import Offres from '@/homePage/offres';
+import Chauffeur from '@/homePage/profilChaufeur';
 
 
-export default function App(){
+//import Test2 from '@/authentification/test2';
+import App from '@/authentification/test';
+import { BarreRecherche } from '@/components/BarreRecherche';
+import { View } from 'react-native';
 
-return(
-  <View>
-    <Acceuil/>
-  </View>
-);
+export default function app() {
 
-}
+  //const Stack = createNativeStackNavigator()
+
+  return (
+    <View>
+      <Map/>
+</View>
+
+  );
+
+};
+
+
