@@ -1,30 +1,16 @@
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import React, {useState, useEffect} from 'react';
 import { StyleSheet, View } from 'react-native';
 import * as Location from 'expo-location';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 //import mapStyle from '@/mapStyle.json'; 
 import MapViewDirections from 'react-native-maps-directions'
+import Geolocation from 'react-native-geolocation-service';
 
 const Map = () => {
+
+
+
 
     const [destination, setdestination] = useState(
         {
@@ -41,6 +27,10 @@ const Map = () => {
     )
 
     useEffect(()=>{
+        console.log({apiKey: process.env.GOOGLE_MAPS_KEY
+
+        });
+        
         getLocationPermission();
     }, [])
     async function getLocationPermission() {
@@ -66,12 +56,7 @@ const Map = () => {
         latitudeDelta: 0.05,
         longitudeDelta: 0.05,
     };
-/*
-    const coordinates = [
-        { latitude: 4.0621, longitude: 9.7369 },
-        { latitude: 4.100, longitude: 9.432},
-    ];
-    */
+
 
     return (
 
