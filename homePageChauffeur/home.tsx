@@ -1,22 +1,33 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, ScrollView } from 'react-native';
-import React, { useState } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { Entypo, Ionicons, AntDesign, FontAwesome } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
-import ShimmerPlaceHolder, { createShimmerPlaceholder } from 'react-native-shimmer-placeholder';
-import { LinearGradient } from 'expo-linear-gradient';
+import { getAuth } from 'firebase/auth';
+import { GeoPoint, doc, getDoc } from 'firebase/firestore';
+import { firestore } from '@/firebase.config';
 
+
+interface UserData {
+    nameClient: string;
+    distance: string;
+    lieu_depart: GeoPoint[];
+    lieu_arrivee: GeoPoint[];
+    prix: string;
+  
+  }
 
 const HomeChauffeur = ({ navigation }: any) => {
 
     const [selectStatut, setSelectStatut] = useState(null);
     const [showPicker, setShowPicker] = useState(false);
+    const [userData, setUserData] = useState<UserData | null>(null);
 
     const togglePicker = () => {
         setShowPicker(!showPicker);
     };
 
 
-    const handleChangeStatut = (statut:any) => {
+    const handleChangeStatut = ({statut}:any) => {
         setSelectStatut(statut);
         setShowPicker(false);
     };
@@ -89,6 +100,31 @@ const HomeChauffeur = ({ navigation }: any) => {
             accepter: 'ACCEPTER',
         },
     ];
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+          try {
+            const user = getAuth().currentUser;
+            if (user) {
+              const userDoc = await getDoc(doc(firestore, "commande", user.uid));
+              if (userDoc.exists()) {
+                const userDataFromFirestore = userDoc.data()  as UserData;
+                console.log('succes', {userDataFromFirestore})
+                setUserData(userDataFromFirestore);
+              } else {
+                Alert.alert("Erreur", "Aucune donnée utilisateur trouvée.");
+              }
+            } else {
+              Alert.alert("Erreur", "Utilisateur non connecté.");
+            }
+          
+          } catch (error: any) {
+            Alert.alert("Erreur", `Erreur lors de la récupération des données: ${error.message}`);
+          }
+        };
+    
+        fetchUserData();
+      }, []);
 
     return (
         <View style={styles.container}>
@@ -172,6 +208,7 @@ const HomeChauffeur = ({ navigation }: any) => {
                 data={data}
                 renderItem={({ item }) => {
                     return (
+
                         <View style={styles.commande}>
 
                             <View style={styles.client}>
@@ -233,6 +270,8 @@ const HomeChauffeur = ({ navigation }: any) => {
                     )
                 }}
                 keyExtractor={item => item.id}
+                showsVerticalScrollIndicator={false} 
+                ListEmptyComponent={<Text>Aucune commande pour l'instant!</Text>}
                 contentContainerStyle={{ paddingBottom: 100, }}
 
             />
@@ -247,7 +286,8 @@ const styles = StyleSheet.create({
         flex: 1,
         height: '100%',
         width: '100%',
-        backgroundColor: '#fafafa'
+        backgroundColor: '#fafafa',
+        marginTop:'10%'
     },
     header: {
         width: '85%',

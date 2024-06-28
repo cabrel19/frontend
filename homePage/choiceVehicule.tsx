@@ -1,17 +1,158 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, TextInput, Button, Text, Dimensions, Image, FlatList, TouchableOpacity } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { StyleSheet, View, TextInput, Button, Text, Dimensions, Image, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import BackHome from '@/components/backHome';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, FontAwesome5 } from '@expo/vector-icons';
+import MapViewDirections from 'react-native-maps-directions';
+import * as Location from 'expo-location';
+import { GeoPoint, addDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { firestore } from '@/firebase.config';
+import { Alert } from 'react-native';
+import * as Notifications from 'expo-notifications';
 
+interface UserData {
+    lieu_depart: GeoPoint[];
+    lieu_arrivée: GeoPoint[];
+    statut: string[];
+    prix: string;
+    distance: string;
+}
 
+const Commander = ({ navigation, route }: any) => {
 
-const Commander = ({ navigation }: any) => {
+    const { destination } = route.params;
+
+    const mapRef = useRef<MapView>(null);
+console.log("firdst", destination)
+console.log('destinationPrice', destination.price)
+    const [origin, setOrigin] = useState<any>({
+        latitude: 4.094354,
+        longitude: 9.7393663,
+    });
 
     const [selectionner, setSelectionner] = useState(null);
+    const [loading, setLoading] = useState(false);
 
-    const handlePress = (id) => {
+    const regionInitiale = {
+        latitude: 4.0651,
+        longitude: 9.7584,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+    };
+    const recenterMap = () => {
+        if (mapRef.current) {
+            mapRef.current.animateToRegion({
+                ...origin,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+            }, 2000);
+        }
+    };
+
+    const handlePress = (id: any) => {
         setSelectionner(id);
+    };
+
+    const initialValue: UserData = {
+        lieu_depart: origin,
+        lieu_arrivée: destination,
+        statut: ["libre", "prise", "terminée"],
+        prix: '',
+        distance: '',
+    }
+
+    const [commande] = useState<UserData>(initialValue);
+
+    useEffect(() => {
+
+        let intervalId: NodeJS.Timeout;
+
+        const updateLocation = async () => {
+            let location = await Location.getCurrentPositionAsync({});
+            const current = {
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+            };
+            setOrigin(current);
+        };
+
+        updateLocation();
+        intervalId = setInterval(updateLocation, 3000);
+
+        return () => clearInterval(intervalId);
+    }, []);
+
+    const createCommande = async () => {
+        setLoading(true);
+        try {
+            console.log("Origin:", origin);
+            await addDoc(collection(firestore, "commandes",), {
+                lieu_depart: commande.lieu_depart,
+                lieu_arrivée: commande.lieu_arrivée,
+                statut: commande.statut[0],
+                distance: commande.distance,
+                prix: commande.prix,
+            });
+            await findNearbyChauffeurs();
+            // console.log('findNearbyChauffeurs', test)
+            setLoading(false);
+            navigation.navigate('Chauffeur');
+
+        } catch (error: any) {
+            Alert.alert("Une erreur lors de la creation de la commande", error.message);
+        }
+    };
+
+    const findNearbyChauffeurs = async () => {
+        const radiusInM = 1000;
+        const chauffeursRef = collection(firestore, "users");
+        const q = query(chauffeursRef, where("statut", "==", "chauffeur"));
+        const querySnapshot = await getDocs(q);
+
+        querySnapshot.forEach((doc) => {
+            const chauffeur = doc.data();
+            console.log("chauffeur", chauffeur)
+            const chauffeurLocation = new GeoPoint(chauffeur.location.latitude, chauffeur.location.longitude);
+            const distance = haversineDistance(origin, chauffeurLocation);
+            if (distance <= radiusInM) {
+                sendNotificationToChauffeur(chauffeur.token);
+            }
+        });
+    };
+
+    const sendNotificationToChauffeur = async (token: string) => {
+        const message = {
+            content: {
+                title: 'Nouvelle commande',
+                body: 'Vous avez une nouvelle demande de course',
+                sound: 'default',
+                data: { someData: 'goes here' },
+            },
+            trigger: {
+                seconds: 1,
+            },
+        };
+
+        await Notifications.scheduleNotificationAsync(message);
+    };
+
+    const haversineDistance = (origin: GeoPoint, destination: GeoPoint) => {
+        const toRad = (value: number) => (value * Math.PI) / 180;
+        const R = 6371e3;
+        const φ1 = toRad(origin.latitude);
+        const φ2 = toRad(destination.latitude);
+        const Δφ = toRad(destination.latitude - origin.latitude);
+        const Δλ = toRad(destination.longitude - origin.longitude);
+
+        const a =
+            Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        const d = R * c;
+        // console.log ('succes', {d})
+        return d;
     };
 
     const space = () => {
@@ -23,7 +164,7 @@ const Commander = ({ navigation }: any) => {
             id: "1",
             image: require('@/assets/images/moto.png'),
             titre: 'moto',
-            prix: 300,
+            prix: Math.round(destination.price)
         },
         {
             id: "2",
@@ -40,69 +181,85 @@ const Commander = ({ navigation }: any) => {
         {
             id: "4",
             image: require('@/assets/images/rapide.png'),
-            titre: 'rapide',
+            titre: 'confort+',
             prix: 2000,
-        }
+        },
 
     ];
-    const regionInitiale = {
-        latitude: 4.0651,
-        longitude: 9.7584,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-    };
 
-    const coordinates = [
-        { latitude: 4.0621, longitude: 9.7369 },
-    ];
+
+
 
     return (
         <View style={styles.container}>
-            <MapView
-                initialRegion={regionInitiale}
-                style={StyleSheet.absoluteFillObject} >
-                <Marker
-                    coordinate={coordinates[0]}
-                    title={"Ma position >"}
-                    description={"Départ"}
-                    pinColor={"green"}
-                />
-            </MapView>
 
+            {origin && (
+                <MapView
+                    ref={mapRef}
+                    style={styles.map}
+                    initialRegion={regionInitiale}
+                    showsMyLocationButton
+                >
+                    <Marker
+                        coordinate={origin}
+                        title="Ma position"
+                        description={"Départ"}
+                        pinColor='#088A4B'
+                        draggable
+                        onDragEnd={(direction) => setOrigin(direction.nativeEvent.coordinate)}
+                    />
+                    <Marker
+                        coordinate={destination}
+                        title="Destination"
+                        description={"Arrivée"}
+                    />
+                    <MapViewDirections
+                        origin={origin}
+                        destination={destination}
+                        apikey={process.env.GOOGLE_MAPS_KEY ?? ""}
+                        strokeWidth={4}
+                        strokeColor="#088A4B"
+                    />
+                </MapView>
+            )}
+            <TouchableOpacity style={styles.button} onPress={recenterMap}>
+                <FontAwesome5 name="search-location" color="#088A4B" size={24} />
+            </TouchableOpacity>
 
             <View style={styles.overlay}>
-                
+
                 <BackHome />
                 <Text style={{ fontSize: 20 }}>Options de prise en charge</Text>
+                <View style={{ width: "100%", height: '50%', marginTop: '3%' }}>
+                    <FlatList
+                        data={data}
+                        renderItem={({ item }) => {
+                            const select = item.id === selectionner;
+                            return (
+                                <View style={styles.flatlist}>
+                                    <TouchableOpacity
+                                        style={[styles.choice, select && styles.selectionner]}
+                                        onPress={() => handlePress(item.id)}
+                                    >
+                                        <Image source={item.image}
+                                            style={{ height: '100%', width: '27%' }}
+                                        />
 
-                <FlatList
-                    data={data}
-                    renderItem={({ item }) => {
-                        const select = item.id === selectionner;
-                        return (
-                            <View style={styles.flatlist}>
-                                <TouchableOpacity
-                                    style={[styles.choice, select && styles.selectionner]}
-                                    onPress={() => handlePress(item.id)}
-                                >
-                                    <Image source={item.image}
-                                        style={{ height: '100%', width: '27%' }}
-                                    />
+                                        <View style={styles.confortMoto}>
+                                            <Text style={styles.textEco}>{item.titre}</Text>
+                                            <Text style={styles.textPrix}> prix: {item.prix}</Text>
+                                        </View>
 
-                                    <View style={styles.confortMoto}>
-                                        <Text style={styles.textEco}>{item.titre}</Text>
-                                        <Text style={styles.textPrix}> prix: {item.prix}</Text>
-                                    </View>
-
-                                </TouchableOpacity>
-                            </View>
-                        )
-                    }}
-                    extraData={selectionner}
-                    keyExtractor={item => item.id}
-                    ItemSeparatorComponent={space}
-                />
-
+                                    </TouchableOpacity>
+                                </View>
+                            )
+                        }}
+                        extraData={selectionner}
+                        showsVerticalScrollIndicator={false}
+                        keyExtractor={item => item.id}
+                        ItemSeparatorComponent={space}
+                    />
+                </View>
 
                 <TouchableOpacity style={styles.promo} onPress={() => navigation.navigate("Offres")}>
                     <Image source={require('@/assets/images/promo.png')} style={{ height: '55%', width: '7%' }} />
@@ -116,11 +273,16 @@ const Commander = ({ navigation }: any) => {
                 <View style={styles.lines}></View>
 
                 <TouchableOpacity
-                    onPress={() => navigation.navigate('SuggestionChauffeur')}
+                    onPress={createCommande}
                     style={[styles.commander, selectionner && styles.bouton]}
                     disabled={!selectionner}
                 >
-                    <Text style={styles.textCommande}> COMMANDER </Text>
+                    {loading ? (
+                        <ActivityIndicator color="white" />
+                    ) : (
+                        <Text style={styles.textCommande}> COMMANDER </Text>
+                    )}
+
                 </TouchableOpacity>
 
             </View>
@@ -138,11 +300,32 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
     },
+    map: {
+        width: '100%',
+        height: '50%',
+    },
+    markerIcon: {
+        width: 40,
+        height: 40,
+        resizeMode: 'contain',
+    },
+    button: {
+        position: 'absolute',
+        bottom: '84%',
+        alignSelf: 'flex-end',
+        right: '3%',
+        width: '13%',
+        height: '6%',
+        borderRadius: 30,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'white',
+    },
     overlay: {
         position: 'absolute',
         bottom: '0%',
         width: '100%',
-        height: '48%',
+        height: '50%',
         backgroundColor: 'white',
         alignItems: 'center',
         borderTopLeftRadius: 20,
@@ -152,7 +335,7 @@ const styles = StyleSheet.create({
     flatlist: {
         flex: 1,
         width: '94%',
-        height: '48%',
+        height: '50%',
         alignSelf: 'center',
         // backgroundColor: '#AEAEAE',
         // borderRadius: 10,
@@ -165,9 +348,9 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
         borderWidth: 1,
-        borderColor:'#eee',
-        borderRadius:10,
-        padding:10,
+        borderColor: '#eee',
+        borderRadius: 10,
+        padding: 10,
         marginTop: '3%',
         flexDirection: 'row',
         alignItems: 'center',
@@ -223,12 +406,12 @@ const styles = StyleSheet.create({
         width: '75%',
         height: 1,
         backgroundColor: '#dddddd',
-        marginBottom:'1%',
+        marginBottom: '1%',
     },
     commander: {
         width: '40%',
-        height: '14%',
-        marginBottom: '2%',
+        height: '13%',
+        marginBottom: '6%',
         backgroundColor: '#BBBBBB',
         borderRadius: 10,
         justifyContent: 'center',

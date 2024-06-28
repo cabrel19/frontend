@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { View, StyleSheet, Text, Image} from 'react-native';
 import Swiper from 'react-native-swiper';
 import LottieView from 'lottie-react-native';
-import { useNavigation } from '@react-navigation/native';
 
 const images = [
     //liste des images qui vont défiler
@@ -12,13 +11,13 @@ const images = [
     require('@/assets/images/home2.png'),
 ];
 
-const Ouverture = () => {
-    const navigation = useNavigation();
+const Ouverture = ({navigation}:any) => {
+  
 
     useEffect(() => {
         //temps pendant lequel mes images vont défiler
         const timer = setTimeout(() => {
-            navigation.replace('Inscription');
+            navigation.navigate('Connexion');
         }, 9000);
 
         return () => clearTimeout(timer);

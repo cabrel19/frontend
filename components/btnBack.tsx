@@ -8,7 +8,7 @@ const Back = () => {
 
     return (
         <TouchableOpacity style={styles.back}  onPress={() => navigation.goBack()}>
-            <AntDesign name="left" size={30} color="black" />
+            <AntDesign name="left" size={24} color="black" />
             <Text style={{ fontSize: 18, color: 'black' }}>Back</Text>
         </TouchableOpacity>
     );
@@ -18,8 +18,10 @@ const styles = StyleSheet.create({
        alignSelf: 'flex-start',
         alignItems: 'center',
         width: 70,
+        height:40,
         flexDirection: 'row',
-        marginTop:'10%'
+        marginTop:'10%',
+        marginLeft:'3%',
        // backgroundColor:'red'
     },
 });

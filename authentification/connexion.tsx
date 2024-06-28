@@ -6,20 +6,31 @@ import {
 import PhoneInput from 'react-native-phone-number-input';
 import { FontAwesome } from '@expo/vector-icons';
 import Ou from '@/components/ou';
+import * as Location from "expo-location";
 import { z } from 'zod';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { firestore } from '@/firebase.config';
+import { auth, firestore } from '@/firebase.config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const Connexion = ({ navigation }:any) => {
+const Connexion = ({ navigation }: any) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const phoneInput = useRef<PhoneInput>(null);
 
-
+  useEffect(() => {
+    const getLocationPermission = async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        alert("Permission refusée");
+        return;
+      }
+    };
+    getLocationPermission();
+  }, []);
 
   const validationSchema = z.object({
     phone: z.string().min(9, 'Numero incorrect').max(9, 'Numero incorrect'),
@@ -32,9 +43,9 @@ const Connexion = ({ navigation }:any) => {
     resolver: zodResolver(validationSchema),
   });
 
-  const checkCredentials = async (phone:string, password:string) => {
+  const checkCredentials = async (phone: string, password: string) => {
     const q = query(
-      collection(firestore, "users"),
+      collection(firestore, "users",),
       where("phone", "==", phone),
       where("password", "==", password)
     );
@@ -51,14 +62,14 @@ const Connexion = ({ navigation }:any) => {
       setLoading(false);
       return;
     }
-
     const credentialsValid = await checkCredentials(phoneNumber, data.password);
     setLoading(false);
     if (credentialsValid) {
-      navigation.navigate('Home');
+      navigation.navigate('OtpAuthConnect', { phoneNumber });
     } else {
       Alert.alert('Erreur', 'Numéro de téléphone ou mot de passe incorrect');
     }
+
   };
 
   const allFieldsFilled = watch(['phone', 'password']).every(field => field);
@@ -99,7 +110,7 @@ const Connexion = ({ navigation }:any) => {
               )}
             />
             {errors.phone && <Text style={{ color: 'red', textAlign: 'center' }}>{errors.phone.message}</Text>}
-
+            <Text style={{ textAlign: 'center', color: '#088A4B', marginTop: '2%' }}>Un code OTP sera envoyé a ce numero.</Text>
             <Controller
               name="password"
               control={control}
@@ -241,7 +252,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: '7%',
     alignItems: 'center',
-    width: '43%',
+    width: '46%',
     height: '14%',
     alignSelf: 'center',
     justifyContent: 'center'

@@ -64,9 +64,6 @@ const OtpSignIn = ({ route, navigation }: any) => {
       if (verificationId) {
         const credential = PhoneAuthProvider.credential(verificationId, codeVerification);
         await signInWithCredential(auth, credential);
-        await addDoc(collection(firestore, "users"), {
-          phone: phoneNumber,
-        });
         navigation.navigate('NewPassword');
       }
     } catch (error: any) {

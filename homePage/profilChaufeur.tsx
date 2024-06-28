@@ -1,21 +1,38 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View, Text, Alert, Image, TouchableOpacity } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { Feather } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
+import { deleteDoc, doc } from 'firebase/firestore';
+import { firestore } from '@/firebase.config';
+import { ActivityIndicator } from 'react-native';
+import { getAuth } from 'firebase/auth';
 
-const Chauffeur = (navigation:any) => {
+const Chauffeur = ({ navigation }: any) => {
 
-    const regionInitiale = {
-        latitude: 4.0651,
-        longitude: 9.7584,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
+    const regionInitiale = { latitude: 4.0651, longitude: 9.7584, latitudeDelta: 0.05, longitudeDelta: 0.05, };
+
+    const coordinates = [{ latitude: 4.0621, longitude: 9.7369 },];
+
+    const [loading, setLoading] = useState(false);
+
+    const deleteCommande = async () => {
+        setLoading(true);
+        try {
+
+            const user = getAuth().currentUser;
+            if (user) {
+                await deleteDoc(doc(firestore, 'commandes', 'commandeId'));
+                navigation.navigate('Home');
+            } else {
+                Alert.alert('Erreur', 'Une erreur est survenue lors de l\'annulation de la commande.');
+            }
+        } catch (error) {
+            Alert.alert('Erreur', 'Une erreur est survenue lors de l\'annulation de la commande.');
+        } finally {
+            setLoading(false);
+        }
     };
-
-    const coordinates = [
-        { latitude: 4.0621, longitude: 9.7369 },
-    ];
 
     const makePhoneCall = async (phoneNumber: string) => {
         const url = `tel:${phoneNumber}`;
@@ -66,8 +83,12 @@ const Chauffeur = (navigation:any) => {
                     </View>
                     <Text style={styles.contacter}>Contacter le conducteur</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.annuler} onPress={() =>navigation.navigate('Home')}>
-                    <Text>ANNULER</Text>
+                <TouchableOpacity style={styles.annuler} onPress={deleteCommande}>
+                    {loading ? (
+                        <ActivityIndicator color="white" />
+                    ) : (
+                        <Text>ANNULER</Text>
+                    )}
                 </TouchableOpacity>
             </View>
         </View>
@@ -105,7 +126,7 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         marginTop: '3%',
         width: '28%',
-        height: '25%'
+        height: '23%'
     },
     image: {
         width: '100%',
@@ -142,7 +163,7 @@ const styles = StyleSheet.create({
         marginTop: '4%'
     },
     iconCall: {
-        height: '100%',
+        height: '88%',
         width: '20%',
         justifyContent: 'center',
         borderRadius: 100,

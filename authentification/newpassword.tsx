@@ -17,7 +17,7 @@ const validationSchema = z.object({
     path: ["confirmPassword"],
   });
 
-const NewPassword = (navigation: any) => {
+const NewPassword = ({navigation}: any) => {
   const [showPassword, setShowPassword] = useState(false); // masquer initialement
   const [showConfirmPassword, setShowConfirmPassword] = useState(false); // masquer initialement
 
@@ -29,9 +29,9 @@ const NewPassword = (navigation: any) => {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const user = auth.currentUser;
-      if (user) {
-        await updatePassword(user, data.password);
+      const users = auth.currentUser;
+      if (users) {
+        await updatePassword(users, data.password);
         Alert.alert("Succès", "Le mot de passe a été mis à jour avec succès.");
         navigation.navigate('Connexion'); // Naviguer vers l'écran de connexion 
       } else {
@@ -65,7 +65,7 @@ const NewPassword = (navigation: any) => {
         behavior={'padding'}
         style={styles.keyboardAvoidingView} >
 
-        <Back />
+        <Back/>
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
 
           <View style={styles.formulaire}>

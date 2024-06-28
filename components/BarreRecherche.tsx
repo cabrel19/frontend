@@ -1,71 +1,61 @@
 import React from "react";
-import {
-  Text,
-  Image,
-  View,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-} from "react-native";
+import { View, StyleSheet, TouchableOpacity} from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+import PropTypes from 'prop-types';
 
-export function BarreRecherche() {
+const BarreRecherche = ({ onPress }: any) => {
+
   return (
-    <View style={styles.container}>
-      <GooglePlacesAutocomplete
-        placeholder="ou allez-vous?"
-        styles={{
-          height: 51,
-          borderWidth: 0,
-          borderColor: "#088A4B",
-          borderRadius: 10,
-          fontSize: 20,
-          width: "90%",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: 999,
 
-          listView: {
-            //backgroundColor: "blue",
-            position: "absolute",
-            top: 30,
-            marginTop:35,
-            borderRadius: 5,
-            flex: 1,
-            elevation: 8, // for Android
-            zIndex: 1080, // for iOS
-          },
-        }}
-        onPress={(data, details = null) => {
-          console.log(data, details);
-        }}
-        query={{
-          key: "AIzaSyBXJ_jco0wIOiAqlGOofYipRBGTw54ut5k",
-          language: "en",
-        }}
-        listViewDisplayed='auto'
+        <View style={{ flex: 1, width: '100%', height: '100%' }}>
+          <View style={styles.container}>
+            <GooglePlacesAutocomplete
+              placeholder="Entrez la destination"
+              fetchDetails={true}
+              styles={{
+                backgroundColor: 'blue',
+          
+                listView: {
+                  backgroundColor: "red",
+                  position: "absolute",
+                  top: 60,
+                },
+              }}
+              onPress={(data, details = null) => { onPress(data, details); }}
+              query={{
+                key: "AIzaSyBXJ_jco0wIOiAqlGOofYipRBGTw54ut5k",
+                language: "fr",
+              }}
+              listViewDisplayed='auto'
 
-      />
+            />
 
-      <TouchableOpacity style={styles.icon}>
-        <Ionicons name="search" size={22} color="#088A4B" />
-      </TouchableOpacity>
-    </View>
+            <TouchableOpacity style={styles.icon}>
+              <Ionicons name="search" size={24} color="#088A4B" />
+            </TouchableOpacity>
+          </View>
+
+        </View>
+  
   );
+};
+
+BarreRecherche.propTypes = {
+  onPress: PropTypes.func.isRequired,
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 0,
+   alignSelf:'center',
     borderWidth: 1,
     borderColor: "#088A4B",
-    height: 50,
+    height: '8%',
+    width: '95%',
     borderRadius: 15,
-    fontSize: 16,
-    paddingLeft: 10,
+    paddingLeft: '2%',
     flexDirection: "row",
-    margin: 10,
+    marginTop: '7%',
   },
 
   icon: {
@@ -77,3 +67,5 @@ const styles = StyleSheet.create({
     //backgroundColor:'red'
   },
 });
+
+export default BarreRecherche;

@@ -1,15 +1,72 @@
-import React, { useRef } from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity, Text, Animated, Dimensions, PanResponder } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import React, { useRef, useEffect, useState } from 'react';
+import { StyleSheet, View, Text, Dimensions, TouchableOpacity, Animated, PanResponder, Alert } from 'react-native';
+import { Entypo, FontAwesome5 } from '@expo/vector-icons';
+import Geolocation from '@react-native-community/geolocation';
+import BarreRecherche from '@/components/BarreRecherche';
 import BackHome from '@/components/backHome';
-import { Ionicons, Entypo } from '@expo/vector-icons';
-import { BarreRecherche } from '@/components/BarreRecherche';
+import LocationUser from '@/components/positionUser';
+import * as Location from "expo-location";
+import MapView, { Marker } from "react-native-maps";
+import MapViewDirections from "react-native-maps-directions";
 
+interface Destination {
+    latitude: number;
+    longitude: number;
+}
 
 const { height } = Dimensions.get('window');
 
-const DestinationCourse = () => {
+const DestinationCourse = ({ navigation }: any) => {
+
+    const [destination, setDestination] = useState<Destination | null>(null);
     const translateY = useRef(new Animated.Value(0)).current;
+    const [origin, setorigin] = useState({ latitude: 4.094354, longitude: 9.7393663,});
+    const [price,setPrice]=useState(0)
+    const [distance,setDistance]=useState(0)
+    const mapRef = useRef<MapView>(null);
+
+    useEffect(() => {
+        let intervalId: NodeJS.Timeout;
+        const getLocationPermission = async () => {
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== "granted") {
+                alert("Permission refusée");
+                return;
+            }
+
+            const updateLocation = async () => {
+                let location = await Location.getCurrentPositionAsync({});
+                const current = {
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude,
+                };
+                setorigin(current);
+            };
+
+            updateLocation();
+            intervalId = setInterval(updateLocation, 3000);
+        };
+
+        getLocationPermission();
+
+        return () => clearInterval(intervalId);
+    }, []);
+
+    const regionInitiale = {
+        latitude: 4.0651,
+        longitude: 9.7584,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+    };
+    const recenterMap = () => {
+        if (mapRef.current) {
+            mapRef.current.animateToRegion({
+                ...origin,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+            }, 1000);
+        }
+    };
 
     const panResponder = useRef(
         PanResponder.create({
@@ -45,40 +102,83 @@ const DestinationCourse = () => {
         }).start();
     };
 
-    const regionInitiale = {
-        latitude: 4.0651,
-        longitude: 9.7584,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
+    const handleDestinationSelected = async (data: any, details: any) => {
+        console.log({ details });
+        if (details && details.geometry && details.geometry.location) {
+            const { lat, lng } = details.geometry.location;
+            setDestination({ latitude: lat, longitude: lng });
+            await calculateDistance(origin.latitude, origin.longitude, lat, lng);
+            console.log('succes', price)
+            navigation.navigate('Commander', { destination: { latitude: lat, longitude: lng ,price:price} , price});
+        } else {
+            console.error("Invalid details object:", details);
+            alert("Désolé, nous n'avons pas pu obtenir les coordonnées de cette destination.");
+        }
     };
 
-    const coordinates = [
-        { latitude: 4.0621, longitude: 9.7369 },
-    ];
+    const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+        const R = 6371; // Rayon de la Terre en kilomètres
+        const dLat = (lat2 - lat1) * (Math.PI / 180);
+        const dLon = (lon2 - lon1) * (Math.PI / 180);
+        const tarif = 150;
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * (Math.PI / 180)) *
+            Math.cos(lat2 * (Math.PI / 180)) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const distance = R * c; // Distance en kilomètres
+            const prix = distance * tarif; //montant a payer
+            setDistance(distance)
+            console.log("first", distance)
+            setPrice(prix)
+
+            return prix;
+            
+    };
 
     return (
+
+
         <View style={styles.container}>
+
             <MapView
+                ref={mapRef}
+                style={styles.map}
                 initialRegion={regionInitiale}
-                style={StyleSheet.absoluteFillObject} >
+                showsMyLocationButton
+            >
                 <Marker
-                    coordinate={coordinates[0]}
+                    coordinate={origin}
                     title={"Ma position >"}
                     description={"Départ"}
-                    pinColor={"green"}
+                    pinColor={"#088A4B"}
+                    draggable
+                    onDragEnd={(direction) => setorigin(direction.nativeEvent.coordinate)}
+                />
+
+                <MapViewDirections
+                    apikey={process.env.GOOGLE_MAPS_KEY ?? ""}
+                    origin={origin}
+                    strokeWidth={4}
+                    strokeColor="#088A4B"
                 />
             </MapView>
 
+            <TouchableOpacity style={styles.buttons} onPress={recenterMap}>
+                <FontAwesome5 name="search-location" color="#088A4B" size={24} />
+            </TouchableOpacity>
 
             <Animated.View
                 style={[styles.formulaire, { transform: [{ translateY }] }]}
                 {...panResponder.panHandlers}
             >
+
                 <View style={styles.line}></View>
 
                 <BackHome />
 
-                <Text style={styles.texte}>Planifiez votre trajet</Text>
+                <Text style={styles.texte}>planifiez votre trajet</Text>
 
                 <TouchableOpacity style={styles.button} onPress={handlePress}>
                     <Entypo
@@ -89,10 +189,16 @@ const DestinationCourse = () => {
                     <Text style={styles.buttonText}>Ma localisation</Text>
                 </TouchableOpacity>
 
-                <BarreRecherche/>
+                <View>
+
+                    <BarreRecherche
+                        onPress={handleDestinationSelected}
+                    />
+                </View>
             </Animated.View>
 
         </View>
+
     );
 };
 
@@ -101,6 +207,22 @@ const styles = StyleSheet.create({
         flex: 1,
         width: '100%',
         height: '100%',
+    },
+    map: {
+        width: "100%",
+        height: "100%",
+    },
+    buttons: {
+        position: 'absolute',
+        bottom: '84%',
+        alignSelf: 'flex-end',
+        right: '3%',
+        width: '13%',
+        height: '6%',
+        borderRadius: 30,
+        alignItems:'center',
+        justifyContent:'center',
+        backgroundColor: 'white',
     },
     formulaire: {
         position: 'absolute',
@@ -115,9 +237,10 @@ const styles = StyleSheet.create({
     },
     line: {
         width: "20%",
-        height: 2,
+        height: '1%',
         backgroundColor: '#088A4B',
         alignSelf: 'center',
+        borderRadius: 10,
     },
     texte: {
         textAlign: 'center',
@@ -140,18 +263,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginLeft: '22%',
     },
-    enterDest: {
-        flexDirection: 'row',
-        height: '7%',
-        width: '95%',
-        borderColor: '#088A4B',
-        borderWidth: 1,
-        borderRadius: 10,
-        marginTop: '4%',
-        paddingHorizontal: '2%',
-        alignSelf: 'center',
-        alignItems: 'center',
-    },
+
     textInput: {
         width: '93%',
         height: '100%',

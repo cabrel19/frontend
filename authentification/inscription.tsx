@@ -1,18 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
-import {
-  View, Text, TextInput, ImageBackground, Alert, KeyboardAvoidingView,
-  StyleSheet, TouchableOpacity, ActivityIndicator,
-  ScrollView
-} from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, TextInput, ImageBackground, Alert, KeyboardAvoidingView, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView} from 'react-native';
 import PhoneInput from 'react-native-phone-number-input';
 import { FontAwesome } from '@expo/vector-icons';
 import Ou from '@/components/ou';
 import { z } from 'zod';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PhoneAuthProvider, app, auth, firestore, signInWithCredential } from '@/firebase.config';
-import { addDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import FirebaseRecaptchaVerifierModal from 'expo-firebase-recaptcha/build/FirebaseRecaptchaVerifierModal';
+import {  firestore } from '@/firebase.config';
+import {collection, query, where, getDocs } from 'firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface props { onChangeText: any }
 
@@ -23,15 +19,10 @@ const validationSchema = z.object({
 });
 
 const Inscription = ({ navigation }: any) => {
-  const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [password, setPassword] = useState('');
   const phoneInput = useRef<PhoneInput>(null);
-  const [showPassword, setShowPassword] = useState(false);//masquer le password par default
-  const [verificationId, setVerificationId] = useState("")
-  const [loading, setLoading] = useState(false); // Nouvel état pour le chargement
-  const recaptchaVerifier = useRef(null)
-  const [code, setCode] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false); 
 
   type FormData = z.infer<typeof validationSchema>
 
@@ -69,7 +60,6 @@ const Inscription = ({ navigation }: any) => {
   const allFieldsFilled = watch(['name', 'phone', 'password']).every(field => field);
 
   const toggleShowPassword = () => {
-    // masquer ou afficher le mot de passe
     setShowPassword(!showPassword);
   };
 
@@ -79,6 +69,7 @@ const Inscription = ({ navigation }: any) => {
       source={require('@/assets/images/inscription.png')}
       style={styles.background}
     >
+      
       <KeyboardAvoidingView
         behavior={'padding'}
         style={styles.keyboardAvoidingView} >
@@ -93,6 +84,7 @@ const Inscription = ({ navigation }: any) => {
                 <TextInput
                   style={styles.name}
                   value={value}
+                  placeholderTextColor="black"
                   onChangeText={onChange}
                   placeholder="Entrez votre nom"
                   keyboardType="web-search"
@@ -108,6 +100,7 @@ const Inscription = ({ navigation }: any) => {
                 <PhoneInput
                   ref={phoneInput}
                   defaultValue={phoneNumber}
+                  
                   defaultCode="CM"
                   layout="first"
                   onChangeText={onChange}
@@ -121,7 +114,7 @@ const Inscription = ({ navigation }: any) => {
               )}
             />
             {errors.phone && <Text style={{ color: 'red', textAlign: 'center' }}>{errors.phone.message}</Text>}
-
+            <Text style={{ textAlign: 'center', color: '#088A4B', marginTop: '2%' }}>Un code OTP sera envoyé à ce numéro.</Text>
             <Controller name="password"
               control={control}
               render={({ field: { onChange, value } }) => (
@@ -129,6 +122,7 @@ const Inscription = ({ navigation }: any) => {
                   <TextInput
                     style={styles.enterPassword}
                     value={value}
+                     placeholderTextColor="black"
                     onChangeText={onChange}
                     secureTextEntry={!showPassword}
                     placeholder="Créer un mot de passe"
@@ -164,9 +158,9 @@ const Inscription = ({ navigation }: any) => {
 
             <View style={styles.footer}>
               <Text style={styles.haveAccount}>
-                Vous avez deja un compte?
+                Vous avez déjà un compte?
               </Text>
-              <TouchableOpacity onPress={() => navigation.navigate("Connexion")} style={styles.seConnecter}>
+              <TouchableOpacity style={styles.seConnecter} onPress={() => navigation.navigate("Connexion")} >
                 <Text style={{ color: '#088A4B' }}>    Se connecter</Text>
               </TouchableOpacity>
 
@@ -246,7 +240,8 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 15,
     borderBottomRightRadius: 15,
     height: "100%",
-    fontSize: 18
+    fontSize: 18,
+    color: 'black',
   },
   drapeau: {
     borderTopLeftRadius: 15,

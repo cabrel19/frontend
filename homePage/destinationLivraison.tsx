@@ -1,14 +1,21 @@
-import React, { useRef } from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity, Text, Animated, Dimensions, PanResponder } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { StyleSheet, View, TextInput, Button, Text, Dimensions, Image, FlatList, TouchableOpacity, TouchableWithoutFeedback, Animated, PanResponder } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
+//import BackHome from '@/components/backHome';
+import { AntDesign, Entypo, Ionicons } from '@expo/vector-icons';
+import { Alert } from 'react-native';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import BarreRecherche from '@/components/BarreRecherche';
+import { Keyboard, KeyboardAvoidingView } from 'react-native';
 import BackHome from '@/components/backHome';
-import { Ionicons, Entypo } from '@expo/vector-icons';
-import { BarreRecherche } from '@/components/BarreRecherche';
+import LocationUser from '@/components/positionUser';
+
 
 
 const { height } = Dimensions.get('window');
 
-const DestinationLIV = () => {
+const DestinationLIV = ({ navigation }: any) => {
+
     const translateY = useRef(new Animated.Value(0)).current;
 
     const panResponder = useRef(
@@ -57,23 +64,17 @@ const DestinationLIV = () => {
     ];
 
     return (
-        <View style={styles.container}>
-            <MapView
-                initialRegion={regionInitiale}
-                style={StyleSheet.absoluteFillObject} >
-                <Marker
-                    coordinate={coordinates[0]}
-                    title={"Ma position >"}
-                    description={"Départ"}
-                    pinColor={"green"}
-                />
-            </MapView>
 
+
+        <View style={styles.container}>
+            
+           <LocationUser/>
 
             <Animated.View
                 style={[styles.formulaire, { transform: [{ translateY }] }]}
                 {...panResponder.panHandlers}
             >
+
                 <View style={styles.line}></View>
 
                 <BackHome />
@@ -89,10 +90,14 @@ const DestinationLIV = () => {
                     <Text style={styles.buttonText}>Ma localisation</Text>
                 </TouchableOpacity>
 
-                <BarreRecherche/>
+                <View>
+
+                    <BarreRecherche  onPress={() => navigation.navigate('CommanderLIV')}/>
+                </View>
             </Animated.View>
 
         </View>
+
     );
 };
 
@@ -115,9 +120,10 @@ const styles = StyleSheet.create({
     },
     line: {
         width: "20%",
-        height: 2,
+        height: '1%',
         backgroundColor: '#088A4B',
         alignSelf: 'center',
+        borderRadius:10,
     },
     texte: {
         textAlign: 'center',
@@ -140,18 +146,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginLeft: '22%',
     },
-    enterDest: {
-        flexDirection: 'row',
-        height: '7%',
-        width: '95%',
-        borderColor: '#088A4B',
-        borderWidth: 1,
-        borderRadius: 10,
-        marginTop: '4%',
-        paddingHorizontal: '2%',
-        alignSelf: 'center',
-        alignItems: 'center',
-    },
+
     textInput: {
         width: '93%',
         height: '100%',
