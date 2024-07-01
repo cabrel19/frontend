@@ -1,23 +1,24 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { Text, StyleSheet, View, Image, TouchableOpacity, Alert,Clipboard } from "react-native";
+import { Text, StyleSheet, View, Image, TouchableOpacity, Alert, Clipboard } from "react-native";
 //import  Share from "react-native-share";
 import Back from "@/components/btnBack";
 import { ClipboardStatic } from "react-native";
-import BackHome from '@/components/backHome';
+import { AntDesign } from "@expo/vector-icons";
+
 
 const genererCode = () => {
     const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let codePromo = '';
-    for (let i =0; i < 9; i++) {
+    for (let i = 0; i < 9; i++) {
         codePromo +=
-        caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+            caracteres.charAt(Math.floor(Math.random() * caracteres.length));
     }
     return codePromo;
 };
 
 
-const Offres = () => {
+const Offres = ({navigation}:any) => {
 
     const [codePromo, setCodePromo] = useState('');
 
@@ -36,9 +37,12 @@ const Offres = () => {
 
         <View style={styles.container}>
             <View style={styles.header}>
-            <BackHome />
+                <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()}>
+                    <AntDesign name="left" size={24} color="black" />
+                    <Text style={{ fontSize: 18, color: 'black' }}>Back</Text>
+                </TouchableOpacity>
                 <View style={styles.gomobil}>
-                    <Text style={{ alignSelf: 'center', fontSize: 22}}>
+                    <Text style={{ alignSelf: 'center', fontSize: 22 }}>
                         <Text style={{ color: '#088A4B' }}> G</Text>
                         O
                         <Text style={{ color: '#088A4B' }}>M</Text>
@@ -57,7 +61,7 @@ const Offres = () => {
                 <Text style={{ fontFamily: 'archivo black', fontSize: 20, marginLeft: 50, marginTop: 80, }}>INVITEZ UN AMI</Text>
             </View>
 
-            <Text style={{ marginLeft: 40, fontFamily: 'abel', width: "85%", fontSize: 16, marginTop:6,}}>
+            <Text style={{ marginLeft: 40, fontFamily: 'abel', width: "85%", fontSize: 16, marginTop: 6, }}>
                 Votre ami recevra une reduction de 10% sur sa première course.
             </Text>
 
@@ -68,7 +72,7 @@ const Offres = () => {
                 </Text>
             </View>
 
-            <Text style={{ alignSelf: 'center', fontFamily: 'abel', width: "85%", fontSize: 16, marginTop:6,}}>
+            <Text style={{ alignSelf: 'center', fontFamily: 'abel', width: "85%", fontSize: 16, marginTop: 6, }}>
                 Une fois qu’il aura effectue sa première course,vous bénéficierez de 50% de reduction sur votre
                 prochain trajet.
             </Text>
@@ -103,22 +107,30 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '5%',
         alignItems: 'center',
-        marginTop:'10%',
+        marginTop: '10%',
     },
-    gomobil:{ 
+    back: {
+        alignSelf: 'flex-start',
+         alignItems: 'center',
+         width: '14%',
+         height:'77%',
+         flexDirection: 'row',
+         marginLeft:'3%',
+     },
+    gomobil: {
         width: '65%',
-        marginLeft:'10%',
+       // marginLeft: '6%',
     },
     image: {
         width: '95%',
         height: '35%',
-       // alignItems:'center',
+        // alignItems:'center',
     },
-    profitez:{ 
-        alignSelf: 'center', 
-        fontSize: 20, 
-        marginTop: 10, 
-        
+    profitez: {
+        alignSelf: 'center',
+        fontSize: 20,
+        marginTop: 10,
+
     },
     partager: {
         padding: 13,

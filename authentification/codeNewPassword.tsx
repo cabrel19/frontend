@@ -4,54 +4,26 @@ import Back from '@/components/btnBack';
 import { app, auth, firestore, PhoneAuthProvider, signInWithCredential } from '@/firebase.config';
 import { OtpInput } from "react-native-otp-entry";
 import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
-import { GeoPoint, doc, setDoc } from 'firebase/firestore';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Location from "expo-location";
+import { addDoc, collection } from 'firebase/firestore';
 
-interface UserData { 
-  name: string; 
-  phone: string; 
-  statut:string[]; 
-  password:string; 
-  location?: GeoPoint;
- }
 
-const OtpSignUp = ({ route, navigation }: any) => {
+const OtpSignIn = ({ route, navigation }: any) => {
 
-  const { phoneNumber, name, password } = route.params;
-
-  const initialValue: UserData = {
-    name:name,
-    phone:phoneNumber,
-    statut:["client", "chauffeur"],
-    password:password,
-  }
-
+  const { phoneNumber } = route.params;
   const [codeVerification, setCodeVerification] = useState('');
   const [verificationId, setVerificationId] = useState("")
-  const [utilisateur] = useState<UserData>(initialValue);
   const [renvoyer, setRenvoyer] = useState(true);
-  const [secondes, setSecondes] = useState(45);// décomptage de 10 sec par default
+  const [secondes, setSecondes] = useState(10);// décomptage de 10 sec par default
   const [loading, setLoading] = useState(false); // Nouvel état pour le chargement
   const recaptchaVerifier = useRef(null)
-  const inputRef = useRef([]);  
-  const [location, setLocation] = useState<Location.LocationObject | null>();
-  const [errorMsg, setErrorMsg] = useState('');
+  const inputRef = useRef([]);
 
-  useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-
-      let location = await Location.getCurrentPositionAsync({});
-      setLocation(location);
-    })();
-  }, []);
 
   useEffect(() => {
     const sentVerificationCode = async () => {
       try {
         const phoneProvider = new PhoneAuthProvider(auth)
-        const id = await phoneProvider.verifyPhoneNumber(`${utilisateur.phone}`, recaptchaVerifier.current!)
+        const id = await phoneProvider.verifyPhoneNumber(`${phoneNumber}`, recaptchaVerifier.current!)
         setVerificationId(id)
         Alert.alert("Alerte", "Un code vous a été envoyé par SMS!");
 
@@ -64,7 +36,7 @@ const OtpSignUp = ({ route, navigation }: any) => {
       }
     }
     sentVerificationCode();
-    }, [utilisateur.phone])
+  }, [phoneNumber])
 
   const resendCode = async () => {
 
@@ -72,8 +44,8 @@ const OtpSignUp = ({ route, navigation }: any) => {
       setSecondes(30);
       setRenvoyer(true);
       const phoneProvider = new PhoneAuthProvider(auth);
-      const id = await phoneProvider.verifyPhoneNumber(`${utilisateur.phone}`, recaptchaVerifier.current!)
-      setVerificationId(id)
+      const id = await phoneProvider.verifyPhoneNumber(`${phoneNumber}`, recaptchaVerifier.current!)
+      setVerificationId(id);
       Alert.alert("Alerte", "Un nouveau code vous a été renvoyé!");
     } catch (error: any) {
       if (error.code === 'auth/too-many-requests') {
@@ -92,28 +64,16 @@ const OtpSignUp = ({ route, navigation }: any) => {
       if (verificationId) {
         const credential = PhoneAuthProvider.credential(verificationId, codeVerification);
         await signInWithCredential(auth, credential);
-        
-        const user = auth.currentUser;
-        if (user && location) {
-        await setDoc(doc(firestore, "users", user.uid), {
-          phone: utilisateur.phone,
-          name: utilisateur.name,
-          password: utilisateur.password,
-          statut: utilisateur.statut[0],
-          location: new GeoPoint(location.coords.latitude, location.coords.longitude),
-        });
-       // await AsyncStorage.setItem('userLoggedIn', 'true');
-        navigation.navigate('Home');
-      } else {
-        throw new Error("Utilisateur non trouver après connexion")
+        navigation.navigate('NewPassword');
       }
-    }
     } catch (error: any) {
+
       Alert.alert("Une erreur lors de la confirmation", error.message);
     } finally {
       setLoading(false); // Arrêter le chargement
     }
   };
+
 
   useEffect(() => {
     //désactivation et activation du bouton renvoyer le code
@@ -229,4 +189,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default OtpSignUp;
+export default OtpSignIn;

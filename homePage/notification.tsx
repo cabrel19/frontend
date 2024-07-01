@@ -23,6 +23,7 @@ const Notification = () => {
                     ios_backgroundColor="#3e3e3e"
                     onValueChange={toggleSwitch}
                     value={isEnabled}
+                    style={{ marginLeft: '28%' }}
                 />
             </View>
             <View style={styles.block}>
@@ -33,6 +34,7 @@ const Notification = () => {
                     ios_backgroundColor="#3e3e3e"
                     onValueChange={toggleSwitch1}
                     value={isEnabled1}
+                    style={{ marginLeft: '75%' }}
                 />
             </View>
 
@@ -51,16 +53,17 @@ const styles = StyleSheet.create({
     },
 
     block: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        borderWidth: 1,
-        borderColor: '#088A4B',
-        alignItems: 'center',
-        borderRadius: 10,
-        width: '85%',
+        marginTop: '5%',
+        alignSelf: 'center',
+        alignItems:'center',
         height: '8%',
-        padding: '3%',
-        marginTop: '8%',
+        width: "90%",
+        backgroundColor: 'white',
+        borderRadius:10,
+        shadowOpacity:2,
+        shadowColor:'#eee',
+        flexDirection:'row',
+        padding:'3%',
     },
 
     text: {

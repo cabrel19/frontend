@@ -1,87 +1,61 @@
 import React from "react";
-import {
-  Text,
-  Image,
-  View,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  TouchableWithoutFeedback,
-} from "react-native";
+import { View, StyleSheet, TouchableOpacity} from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
-import { Keyboard } from "react-native";
 import PropTypes from 'prop-types';
 
+const BarreRecherche = ({ onPress }: any) => {
 
-const BarreRecherche=({onPress})=>{
-
-//export function BarreRecherche(navigation:any) {
   return (
 
-    <KeyboardAvoidingView behavior={"padding"} style={{justifyContent:'flex-end'}}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-    <View style={styles.container}>
-      <GooglePlacesAutocomplete
-        placeholder="votre destination" 
-        styles={{
-          height: 71,
-          borderWidth: 0,
-          borderColor: "#088A4B",
-          borderRadius: 10,
-          fontSize: 16,
-          width: "95%",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: 999,
+        <View style={{ flex: 1, width: '100%', height: '100%' }}>
+          <View style={styles.container}>
+            <GooglePlacesAutocomplete
+              placeholder="Entrez la destination"
+              fetchDetails={true}
+              styles={{
+                backgroundColor: 'blue',
+          
+                listView: {
+                  backgroundColor: "red",
+                  position: "absolute",
+                  top: 60,
+                },
+              }}
+              onPress={(data, details = null) => { onPress(data, details); }}
+              query={{
+                key: "AIzaSyBXJ_jco0wIOiAqlGOofYipRBGTw54ut5k",
+                language: "fr",
+              }}
+              listViewDisplayed='auto'
 
-          listView: {
-            //backgroundColor: "",
-            position: "absolute",
-            top: 50,
-            borderRadius: 5,
-            flex: 1,
-            elevation: 8, // for Android
-            zIndex: 1080, // for iOS
-            width: '100%',
-          },
-        }}
-        onPress={onPress}
-        query={{
-          key: "AIzaSyBXJ_jco0wIOiAqlGOofYipRBGTw54ut5k",
-          language: "en",
-        }}
-        listViewDisplayed='auto'
+            />
 
-      />
+            <TouchableOpacity style={styles.icon}>
+              <Ionicons name="search" size={24} color="#088A4B" />
+            </TouchableOpacity>
+          </View>
 
-      <TouchableOpacity style={styles.icon}>
-        <Ionicons name="search" size={24} color="#088A4B" />
-      </TouchableOpacity>
-    </View>
-
-    </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+        </View>
+  
   );
 };
- 
-BarreRecherche.propTypes={
-  onPress: PropTypes.func.isRequired, 
+
+BarreRecherche.propTypes = {
+  onPress: PropTypes.func.isRequired,
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 0,
+   alignSelf:'center',
     borderWidth: 1,
     borderColor: "#088A4B",
-    height: 51,
-    width: 380,
+    height: '8%',
+    width: '95%',
     borderRadius: 15,
-    fontSize: 16,
-    paddingLeft: 10,
+    paddingLeft: '2%',
     flexDirection: "row",
-    margin: 10,
+    marginTop: '7%',
   },
 
   icon: {

@@ -1,9 +1,63 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList } from 'react-native';
-import React from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Alert } from 'react-native';
+import React, { useState } from 'react';
 import BackHome from '@/components/backHome';
+import { GeoPoint, addDoc, collection, doc, setDoc } from 'firebase/firestore';
+import { firestore } from '@/firebase.config';
 
+interface UserData {
+  lieu_depart: GeoPoint[];
+  lieu_arrivée: GeoPoint[];
+  statut:string[];
+  prix: string;
+  distance: string;
+}
 
-const SuggestionChauffeur = (navigation:any) => {
+const SuggestionChauffeur = ({ navigation, route }: any) => {
+
+  const { driverType, destination, origin } = route.params;
+
+  const initialValue: UserData = {
+    lieu_depart: origin ,
+    lieu_arrivée: destination,
+    statut:["libre", "prise", "terminée"],  
+    prix: '',
+    distance: '',
+   }
+
+  const [utilisateur, setUtilisateur] = useState<UserData>(initialValue);
+
+   const createCommande = async () => {
+    try {
+      console.log("Origin:", origin);
+      await addDoc(collection(firestore, "commandes",), {
+          lieu_depart: utilisateur.lieu_depart,
+          lieu_arrivée: utilisateur.lieu_arrivée,
+          statut: utilisateur.statut[0],
+          distance: utilisateur.distance,
+          prix: utilisateur.prix,
+        });
+        navigation.navigate('Chauffeur');
+      
+    
+    } catch (error: any) {
+      Alert.alert("Une erreur lors de la creation de la commande", error.message);
+    } 
+  };
+  
+  const getDriverTypeText = (type: string) => {
+    switch (type) {
+        case '1':
+            return 'Chauffeurs moto';
+        case '2':
+            return 'Chauffeurs eco';
+        case '3':
+            return 'Chauffeurs confort';
+        case '4':
+            return 'Chauffeurs confort+';
+        default:
+            return 'Chauffeurs confort';
+    }
+};
 
   const data = [
     {
@@ -12,7 +66,6 @@ const SuggestionChauffeur = (navigation:any) => {
       nom: 'TOTO DUCOBU',
       note: 'NOTE:',
       moyenne: '07/10',
-      onpress: () => navigation.navigate("Chauffeur"),
     },
     {
       id: "2",
@@ -20,7 +73,6 @@ const SuggestionChauffeur = (navigation:any) => {
       nom: 'TOTO DUCOBU',
       note: 'NOTE:',
       moyenne: '07/10',
-      onpress: () => navigation.navigate("Chauffeur"),
     },
     {
       id: "3",
@@ -28,7 +80,6 @@ const SuggestionChauffeur = (navigation:any) => {
       nom: 'TOTO DUCOBU',
       note: 'NOTE:',
       moyenne: '07/10',
-      onpress: () => navigation.navigate("Chauffeur"),
     },
     {
       id: "4",
@@ -36,7 +87,6 @@ const SuggestionChauffeur = (navigation:any) => {
       nom: 'TOTO DUCOBU',
       note: 'NOTE:',
       moyenne: '07/10',
-      onpress: () => navigation.navigate("Chauffeur"),
     },
   ];
 
@@ -45,45 +95,41 @@ const SuggestionChauffeur = (navigation:any) => {
       id: "1",
       image1: require('@/assets/images/profil.jpeg'),
       nom: 'DJIBRIL SOYA',
-      confort:'ECO',
-      image2:require('@/assets/images/money.png'),
-      prix:'600XAF',
+      confort: 'ECO',
+      image2: require('@/assets/images/money.png'),
+      prix: '600XAF',
       note: 'NOTE:',
       moyenne: '07/10',
-      onpress: () => navigation.navigate("Chauffeur"),
     },
     {
       id: "2",
       image1: require('@/assets/images/profil.jpeg'),
       nom: 'DJIBRIL SOYA',
-      confort:'ECO',
-      image2:require('@/assets/images/money.png'),
-      prix:'600XAF',
+      confort: 'ECO',
+      image2: require('@/assets/images/money.png'),
+      prix: '600XAF',
       note: 'NOTE:',
       moyenne: '07/10',
-      onpress: () => navigation.navigate("Chauffeur"),
     },
     {
       id: "3",
       image1: require('@/assets/images/profil.jpeg'),
       nom: 'DJIBRIL SOYA',
-      confort:'ECO',
-      image2:require('@/assets/images/money.png'),
-      prix:'600XAF',
+      confort: 'ECO',
+      image2: require('@/assets/images/money.png'),
+      prix: '600XAF',
       note: 'NOTE:',
       moyenne: '07/10',
-      onpress: () => navigation.navigate("Chauffeur"),
     },
     {
       id: "4",
       image1: require('@/assets/images/profil.jpeg'),
       nom: 'DJIBRIL SOYA',
-      confort:'ECO',
-      image2:require('@/assets/images/money.png'),
-      prix:'600XAF',
+      confort: 'ECO',
+      image2: require('@/assets/images/money.png'),
+      prix: '600XAF',
       note: 'NOTE:',
       moyenne: '07/10',
-      onpress: () => navigation.navigate("Chauffeur"),
     },
   ];
   return (
@@ -91,7 +137,7 @@ const SuggestionChauffeur = (navigation:any) => {
 
       <BackHome />
 
-      <Text style={{ textAlign: 'center', fontSize: 24 }}>Chauffeurs confort</Text>
+      <Text style={{ textAlign: 'center', fontSize: 24 }}>{getDriverTypeText(driverType)}</Text>
 
       <View style={{ width: "100%", height: '34%' }}>
         <FlatList
@@ -99,7 +145,7 @@ const SuggestionChauffeur = (navigation:any) => {
           data={data}
           renderItem={({ item }) => {
             return (
-              <TouchableOpacity style={styles.chauffeur} onPress={item.onpress}>
+              <TouchableOpacity style={styles.chauffeur} onPress={createCommande}>
                 <View style={styles.profil}>
                   <View style={{ width: '30%', height: '100%', borderRadius: 10, alignItems: 'center', justifyContent: 'center' }}>
                     <Image
@@ -117,6 +163,7 @@ const SuggestionChauffeur = (navigation:any) => {
             )
           }}
           keyExtractor={item => item.id}
+          showsVerticalScrollIndicator={false} 
           contentContainerStyle={{ paddingBottom: 100, }}
 
         />
@@ -125,44 +172,45 @@ const SuggestionChauffeur = (navigation:any) => {
       <Text style={{ textAlign: 'center', fontSize: 24, marginTop: '8%' }}>Autres suggestions</Text>
 
       <View style={{ width: "100%", height: '50%' }}>
-      <FlatList
-        style={{ marginTop: '4%' }}
-        data={data1}
-        renderItem={({ item }) => {
-          return (
-            <TouchableOpacity style={styles.suggesChauffeur} onPress={item.onpress}>
-              <View style={styles.header}>
-                <View style={styles.profil}>
-                  <View style={{ width: '30%', height: '100%', borderRadius: 10, alignItems: 'center', justifyContent: 'center' }}>
-                    <Image
-                      source={item.image1}
-                      style={{ width: '75%', height: '84%', borderRadius: 30, }}
-                    />
+        <FlatList
+          style={{ marginTop: '4%' }}
+          data={data1}
+          renderItem={({ item }) => {
+            return (
+              <TouchableOpacity style={styles.suggesChauffeur} onPress={createCommande}>
+                <View style={styles.header}>
+                  <View style={styles.profil}>
+                    <View style={{ width: '30%', height: '100%', borderRadius: 10, alignItems: 'center', justifyContent: 'center' }}>
+                      <Image
+                        source={item.image1}
+                        style={{ width: '75%', height: '84%', borderRadius: 30, }}
+                      />
+                    </View>
+                    <Text style={{ marginLeft: '3%' }}>{item.nom}</Text>
                   </View>
-                  <Text style={{ marginLeft: '3%' }}>{item.nom}</Text>
+                  <View style={styles.note}>
+                    <Text>{item.confort}</Text>
+                  </View>
                 </View>
-                <View style={styles.note}>
-                  <Text>{item.confort}</Text>
-                </View>
-              </View>
 
-              <View style={styles.footer}>
-                <View style={styles.prix}>
-                  <Image source={item.image2} />
-                  <Text style={{ marginLeft: '5%', fontSize: 16 }}>{item.prix}</Text>
+                <View style={styles.footer}>
+                  <View style={styles.prix}>
+                    <Image source={item.image2} />
+                    <Text style={{ marginLeft: '5%', fontSize: 16 }}>{item.prix}</Text>
+                  </View>
+                  <View style={styles.suggesNote}>
+                    <Text>{item.note}<Text style={{ color: '#088A4B' }}>{item.moyenne}</Text></Text>
+                  </View>
                 </View>
-                <View style={styles.suggesNote}>
-                  <Text>{item.note}<Text style={{ color: '#088A4B' }}>{item.moyenne}</Text></Text>
-                </View>
-              </View>
 
-            </TouchableOpacity >
-          )
-        }}
-        keyExtractor={item => item.id}
-        contentContainerStyle={{ paddingBottom: 100, }}
+              </TouchableOpacity >
+            )
+          }}
+          keyExtractor={item => item.id}
+          showsVerticalScrollIndicator={false} 
+          contentContainerStyle={{ paddingBottom: 100, }}
 
-      />
+        />
       </View>
     </View >
   );
@@ -174,7 +222,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: '#fafafa',
-    marginTop:'14%'
+    marginTop: '14%'
   },
   chauffeur: {
     width: '90%',

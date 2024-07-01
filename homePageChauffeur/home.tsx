@@ -1,25 +1,131 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, ScrollView } from 'react-native';
-import React, { useState } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { Entypo, Ionicons, AntDesign, FontAwesome } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
-import ShimmerPlaceHolder, { createShimmerPlaceholder } from 'react-native-shimmer-placeholder';
-import { LinearGradient } from 'expo-linear-gradient';
+import { getAuth } from 'firebase/auth';
+import { GeoPoint, collection, doc, getDoc, getDocs, onSnapshot, query } from 'firebase/firestore';
+import { firestore } from '@/firebase.config';
+import Geocoder from 'react-native-geocoding';
 
+Geocoder.init("AIzaSyBXJ_jco0wIOiAqlGOofYipRBGTw54ut5k");
+
+
+interface UserData {
+    name: string;
+    phone: string;
+    password: string;
+    lieu_depart: GeoPoint;
+    lieu_arrivée: GeoPoint;
+    statut: string[];
+    prix: string;
+    distance: string;
+    nameClient: string;
+}
 
 const HomeChauffeur = ({ navigation }: any) => {
 
     const [selectStatut, setSelectStatut] = useState(null);
     const [showPicker, setShowPicker] = useState(false);
+    const [commandes, setCommandes] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [userData, setUserData] = useState<UserData | null>(null);
 
     const togglePicker = () => {
         setShowPicker(!showPicker);
     };
 
 
-    const handleChangeStatut = (statut:any) => {
+    const handleChangeStatut = ({ statut }: any) => {
         setSelectStatut(statut);
         setShowPicker(false);
     };
+
+    const fetchAddress = async (geoPoint: GeoPoint) => {
+        try {
+            const response = await Geocoder.from(geoPoint.latitude, geoPoint.longitude);
+            if (response.results.length > 0) {
+                return response.results[0].formatted_address;
+            } else {
+                return `${geoPoint.latitude}, ${geoPoint.longitude}`;
+            }
+        } catch (error) {
+            console.error("Erreur lors de la récupération de l'adresse :", error);
+            return `${geoPoint.latitude}, ${geoPoint.longitude}`;
+        }
+    };
+
+    useEffect(() => {
+        const fetchAddresses = async () => {
+            const commandesWithAddresses = await Promise.all(commandes.map(async (commande) => {
+                const departAddress = await fetchAddress(commande.lieu_depart);
+                const arriveeAddress = await fetchAddress(commande.lieu_arrivée);
+                return {
+                    ...commande,
+                    departAddress,
+                    arriveeAddress
+                };
+            }));
+            setCommandes(commandesWithAddresses);
+        };
+    
+        if (commandes.length > 0) {
+            fetchAddresses();
+        }
+    }, [commandes]);
+    
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const user = getAuth().currentUser;
+                if (user) {
+                    const userDoc = await getDoc(doc(firestore, "users", user.uid));
+                    if (userDoc.exists()) {
+                        const userDataFromFirestore = userDoc.data() as UserData;
+                        setUserData(userDataFromFirestore);
+                    } else {
+                        Alert.alert("Erreur", "Aucune donnée utilisateur trouvée.");
+                    }
+                } else {
+                    Alert.alert("Erreur", "Utilisateur non connecté.");
+                }
+                setLoading(false);
+            } catch (error: any) {
+                Alert.alert("Erreur", `Erreur lors de la récupération des données: ${error.message}`);
+            }
+        };
+
+        const fetchCommandes = () => {
+            const commandesCollection = collection(firestore, "commandes");
+            const q = query(commandesCollection);
+            const unsubscribe = onSnapshot(q, (querySnapshot) => {
+                querySnapshot.docChanges().forEach((change) => {
+                    if (change.type === "added") {
+                        setCommandes(prev => [...prev, change.doc.data()]);
+                    }
+                    if (change.type === "modified") {
+                        setCommandes(prev => prev.map(commande => commande.id === change.doc.id ? change.doc.data() : commande));
+                    }
+                    if (change.type === "removed") {
+                        setCommandes(prev => prev.filter(commande => commande.id !== change.doc.id));
+                    }
+                });
+                setLoading(false);
+            }, (error) => {
+                Alert.alert("Erreur", `Erreur lors de la récupération des commandes: ${error.message}`);
+                setLoading(false);
+            });
+
+            return unsubscribe;
+        };
+
+        fetchUserData();
+        const unsubscribeCommandes = fetchCommandes();
+
+        return () => {
+            unsubscribeCommandes();
+        };
+    }, []);
 
     const data = [
         {
@@ -90,6 +196,31 @@ const HomeChauffeur = ({ navigation }: any) => {
         },
     ];
 
+    // useEffect(() => {
+    //     const fetchUserData = async () => {
+    //       try {
+    //         const user = getAuth().currentUser;
+    //         if (user) {
+    //           const userDoc = await getDoc(doc(firestore, "commande", user.uid));
+    //           if (userDoc.exists()) {
+    //             const userDataFromFirestore = userDoc.data()  as UserData;
+    //             console.log('succes', {userDataFromFirestore})
+    //             setUserData(userDataFromFirestore);
+    //           } else {
+    //            // Alert.alert("Erreur", "Aucune donnée utilisateur trouvée.");
+    //           }
+    //         } else {
+    //           Alert.alert("Erreur", "Utilisateur non connecté.");
+    //         }
+
+    //       } catch (error: any) {
+    //         Alert.alert("Erreur", `Erreur lors de la récupération des données: ${error.message}`);
+    //       }
+    //     };
+
+    //     fetchUserData();
+    //   }, []);
+
     return (
         <View style={styles.container}>
 
@@ -139,7 +270,7 @@ const HomeChauffeur = ({ navigation }: any) => {
             <View style={{ alignItems: 'center', width: '60%', marginTop: '5%', height: '5%', marginLeft: '7%', justifyContent: 'center' }}>
 
                 <Text style={{ fontSize: 22, textAlign: 'center', }}> Bienvenue,
-                    <Text style={{ fontWeight: 'bold' }}> Cabrel NYA</Text>
+                    {userData && (<Text style={{ fontWeight: 'bold' }}> {userData.name}</Text>)}
                 </Text>
 
             </View>
@@ -147,7 +278,7 @@ const HomeChauffeur = ({ navigation }: any) => {
             <View style={styles.recette}>
 
                 <View style={styles.gauche}>
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>80.000XAF</Text>
+                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>0.00XAF</Text>
                     <View style={{ width: '100%', flexDirection: 'row', marginTop: '13%' }}>
                         <Text style={{ width: '75%', marginLeft: '13%', fontSize: 12 }}>RECETTE</Text>
                         <Image
@@ -157,7 +288,7 @@ const HomeChauffeur = ({ navigation }: any) => {
                 </View>
 
                 <View style={styles.droite}>
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>50.000XAF</Text>
+                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>0.00XAF</Text>
                     <View style={{ width: '100%', flexDirection: 'row', marginTop: '13%' }}>
                         <Text style={{ width: '75%', marginLeft: '13%', fontSize: 12 }}>A VERSER</Text>
                         <Image
@@ -167,75 +298,76 @@ const HomeChauffeur = ({ navigation }: any) => {
                 </View>
             </View>
 
-            <FlatList
-                style={{ marginTop: '4%' }}
-                data={data}
-                renderItem={({ item }) => {
-                    return (
-                        <View style={styles.commande}>
+            {loading ? (
+                <Text style={{ textAlign: 'center', marginTop: '50%', fontSize: 20 }}>Chargement des commandes...</Text>
+            ) : (
+                commandes.length === 0 ? (
+                    <Text style={{ textAlign: 'center', marginTop: '50%', fontSize: 20 }}>Aucune commande pour l'instant!</Text>
+                ) : (
+                    <FlatList
+                        style={{ marginTop: '4%' }}
+                        data={commandes}
+                        renderItem={({ item }) => {
+                            return (
+                                <View style={styles.commande}>
+                                    <View style={styles.client}>
+                                        <View style={{ width: '20%', height: '100%', borderRadius: 10, alignItems: 'center', justifyContent: 'center' }}>
+                                            <Image
+                                                source={require('@/assets/images/profit.jpg')}
+                                                style={{ width: '75%', height: '78%', borderRadius: 30, }}
+                                            />
+                                        </View>
+                                        <Text style={{ fontWeight: 'bold', width: '77%', fontSize: 17, marginLeft: '3%', color: 'black' }}>{item.nameClient}</Text>
+                                    </View>
 
-                            <View style={styles.client}>
-                                <View style={{ width: '20%', height: '100%', borderRadius: 10, alignItems: 'center', justifyContent: 'center' }}>
-                                    <Image
-                                        source={item.image1}
-                                        style={{ width: '75%', height: '78%', borderRadius: 30, }}
-                                    />
+                                    <View style={styles.locations}>
+                                        <View style={styles.depart}>
+                                            <Entypo
+                                                name='location-pin'
+                                                size={22}
+                                                style={{ marginLeft: '2%' }}
+                                            />
+                                            <Text>{item.departAddress || 'Adresse non disponible'}</Text>
+                                        </View>
+
+                                        <View style={styles.space}>
+                                            <View style={styles.trait}></View>
+                                            <View style={styles.trait}></View>
+                                        </View>
+
+                                        <View style={styles.arrivée}>
+                                            <Entypo
+                                                name='location-pin'
+                                                size={22}
+                                                color='#088A4B'
+                                                style={{ marginLeft: '2%' }}
+                                            />
+                                            <Text>{item.arriveeAddress || 'Adresse non disponible'}</Text>
+                                        </View>
+                                    </View>
+
+                                    <View style={styles.footer}>
+                                        <View style={styles.money}>
+                                            <Image source={require('@/assets/images/money.png')} />
+                                            <Text style={{ width: '75%', marginLeft: '13%' }}>{item.prix}</Text>
+                                        </View>
+                                        <View style={{ width: '25%', flexDirection: 'row', marginLeft: '5%', alignItems: 'center' }}>
+                                            <FontAwesome name='car' />
+                                            <Text style={{ width: '75%', marginLeft: '13%' }}>{Math.round(item.distance)}m</Text>
+                                        </View>
+                                        <TouchableOpacity onPress={() => navigation.navigate("Client")} style={styles.accepter}>
+                                            <Text>accepter</Text>
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
-                                <Text style={{ fontWeight: 'bold', width: '77%', fontSize: 17, marginLeft: '3%', }}>{item.nom}</Text>
-
-                            </View>
-
-                            <View style={styles.locations}>
-
-                                <View style={styles.depart}>
-                                    <Entypo
-                                        name={item.location as string}
-                                        size={22}
-                                        style={{ marginLeft: '2%' }}
-                                    />
-                                    <Text>{item.depart}</Text>
-                                </View>
-
-                                <View style={styles.space}>
-                                    <View style={styles.trait}></View>
-                                    <View style={styles.trait}></View>
-
-                                </View>
-                                <View style={styles.arrivée}>
-                                    <Entypo
-                                        name={item.location}
-                                        size={22}
-                                        color='#088A4B'
-                                        style={{ marginLeft: '2%' }}
-                                    />
-                                    <Text> {item.arrivée}</Text>
-                                </View>
-                            </View>
-
-                            <View style={styles.footer}>
-                                <View style={styles.money}>
-                                    <Image
-                                        source={item.image2}
-                                    />
-                                    <Text style={{ width: '75%', marginLeft: '13%' }}>{item.prix}</Text>
-                                </View>
-                                <View style={{ width: '25%', flexDirection: 'row', marginLeft: '5%', alignItems: 'center' }}>
-                                    <FontAwesome
-                                        name={item.car}
-                                    />
-                                    <Text style={{ width: '75%', marginLeft: '13%' }}>{item.distance}</Text>
-                                </View>
-                                <TouchableOpacity onPress={() => navigation.navigate("Client")} style={styles.accepter}>
-                                    <Text>{item.accepter}</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    )
-                }}
-                keyExtractor={item => item.id}
-                contentContainerStyle={{ paddingBottom: 100, }}
-
-            />
+                            );
+                        }}
+                        keyExtractor={item => item.id}
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={{ paddingBottom: 100, }}
+                    />
+                )
+            )}
 
 
         </View>
@@ -247,7 +379,8 @@ const styles = StyleSheet.create({
         flex: 1,
         height: '100%',
         width: '100%',
-        backgroundColor: '#fafafa'
+        backgroundColor: '#fafafa',
+        marginTop: '10%'
     },
     header: {
         width: '85%',
@@ -257,7 +390,7 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
     },
     statut: {
-        width: '35%',
+        width: '38%',
         height: '100%',
         borderRadius: 10,
         flexDirection: 'row',

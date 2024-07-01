@@ -76,7 +76,7 @@ const Vérification = ({ navigation }: any) => {
         behavior={'padding'}
         style={styles.keyboardAvoidingView} >
 
-        <Back />
+        <Back/>
 
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
           <View style={styles.formulaire}>

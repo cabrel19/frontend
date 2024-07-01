@@ -15,6 +15,11 @@ const BackHome = () => {
 const styles = StyleSheet.create({
     back: {
         alignSelf: 'flex-start',
+        marginLeft:'2.5%',
+       // backgroundColor:'blue',
+        width:'10%',
+        height:'5%',
+        justifyContent:'center',
     },
 });
 export default BackHome;

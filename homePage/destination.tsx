@@ -1,23 +1,70 @@
-import React, { useRef, useState } from 'react';
-import { StyleSheet, View, TextInput, Button, Text, Dimensions, Image, FlatList, TouchableOpacity, TouchableWithoutFeedback, Animated, PanResponder } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
-//import BackHome from '@/components/backHome';
-import { AntDesign, Entypo, Ionicons } from '@expo/vector-icons';
-import { Alert } from 'react-native';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import React, { useRef, useEffect, useState } from 'react';
+import { StyleSheet, View, Text, Dimensions, TouchableOpacity, Animated, PanResponder, Alert } from 'react-native';
+import { Entypo, FontAwesome5 } from '@expo/vector-icons';
+import Geolocation from '@react-native-community/geolocation';
 import BarreRecherche from '@/components/BarreRecherche';
-import { Keyboard, KeyboardAvoidingView } from 'react-native';
 import BackHome from '@/components/backHome';
+import LocationUser from '@/components/positionUser';
+import * as Location from "expo-location";
+import MapView, { Marker } from "react-native-maps";
+import MapViewDirections from "react-native-maps-directions";
 
+interface Destination {
+    latitude: number;
+    longitude: number;
+}
 
+const { height } = Dimensions.get('window');
 
+const DestinationCourse = ({ navigation }: any) => {
 
-
-
-    const { height } = Dimensions.get('window');
-
-function Destination ({navigation}:any) {
+    const [destination, setDestination] = useState<Destination | null>(null);
     const translateY = useRef(new Animated.Value(0)).current;
+    const [origin, setorigin] = useState({ latitude: 4.094354, longitude: 9.7393663, });
+    const mapRef = useRef<MapView>(null);
+
+    useEffect(() => {
+        let intervalId: NodeJS.Timeout;
+        const getLocationPermission = async () => {
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== "granted") {
+                alert("Permission refusée");
+                return;
+            }
+
+            const updateLocation = async () => {
+                let location = await Location.getCurrentPositionAsync({});
+                const current = {
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude,
+                };
+                setorigin(current);
+            };
+
+            updateLocation();
+            intervalId = setInterval(updateLocation, 3000);
+        };
+
+        getLocationPermission();
+
+        return () => clearInterval(intervalId);
+    }, []);
+
+    const regionInitiale = {
+        latitude: 4.0651,
+        longitude: 9.7584,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+    };
+    const recenterMap = () => {
+        if (mapRef.current) {
+            mapRef.current.animateToRegion({
+                ...origin,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+            }, 1000);
+        }
+    };
 
     const panResponder = useRef(
         PanResponder.create({
@@ -53,37 +100,58 @@ function Destination ({navigation}:any) {
         }).start();
     };
 
-    const regionInitiale = {
-        latitude: 4.0651,
-        longitude: 9.7584,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
+    const handleDestinationSelected = async (data: any, details: any) => {
+        // console.log({ details });
+        if (details && details.geometry && details.geometry.location) {
+            const { lat, lng } = details.geometry.location;
+            setDestination({ latitude: lat, longitude: lng });
+            // console.log("first" , price)
+            navigation.navigate('Commander', { destination: { latitude: lat, longitude: lng },  });
+
+        } else {
+            console.error("Invalid details object:", details);
+            alert("Désolé, nous n'avons pas pu obtenir les coordonnées de cette destination.");
+        }
     };
 
-    const coordinates = [
-        { latitude: 4.0621, longitude: 9.7369 },
-    ];
 
     return (
 
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+
         <View style={styles.container}>
+
             <MapView
+                ref={mapRef}
+                style={styles.map}
                 initialRegion={regionInitiale}
-                style={StyleSheet.absoluteFillObject} >
+                showsMyLocationButton
+            >
                 <Marker
-                    coordinate={coordinates[0]}
+                    coordinate={origin}
                     title={"Ma position >"}
                     description={"Départ"}
-                    pinColor={"green"}
+                    pinColor={"#088A4B"}
+                    draggable
+                    onDragEnd={(direction) => setorigin(direction.nativeEvent.coordinate)}
+                />
+
+                <MapViewDirections
+                    apikey={process.env.GOOGLE_MAPS_KEY ?? ""}
+                    origin={origin}
+                    strokeWidth={4}
+                    strokeColor="#088A4B"
                 />
             </MapView>
 
+            <TouchableOpacity style={styles.buttons} onPress={recenterMap}>
+                <FontAwesome5 name="search-location" color="#088A4B" size={24} />
+            </TouchableOpacity>
 
             <Animated.View
                 style={[styles.formulaire, { transform: [{ translateY }] }]}
                 {...panResponder.panHandlers}
             >
+
                 <View style={styles.line}></View>
 
                 <BackHome />
@@ -100,15 +168,15 @@ function Destination ({navigation}:any) {
                 </TouchableOpacity>
 
                 <View>
-                    
-            <BarreRecherche
-            onPress={()=>navigation.navigate('Commander')}
-             />
+
+                    <BarreRecherche
+                        onPress={handleDestinationSelected}
+                    />
                 </View>
             </Animated.View>
 
         </View>
-        </TouchableWithoutFeedback>
+
     );
 };
 
@@ -117,6 +185,22 @@ const styles = StyleSheet.create({
         flex: 1,
         width: '100%',
         height: '100%',
+    },
+    map: {
+        width: "100%",
+        height: "100%",
+    },
+    buttons: {
+        position: 'absolute',
+        bottom: '84%',
+        alignSelf: 'flex-end',
+        right: '3%',
+        width: '13%',
+        height: '6%',
+        borderRadius: 30,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'white',
     },
     formulaire: {
         position: 'absolute',
@@ -131,9 +215,10 @@ const styles = StyleSheet.create({
     },
     line: {
         width: "20%",
-        height: 2,
+        height: '1%',
         backgroundColor: '#088A4B',
         alignSelf: 'center',
+        borderRadius: 10,
     },
     texte: {
         textAlign: 'center',
@@ -156,7 +241,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginLeft: '22%',
     },
-    
+
     textInput: {
         width: '93%',
         height: '100%',
@@ -164,4 +249,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Destination;
+export default DestinationCourse;

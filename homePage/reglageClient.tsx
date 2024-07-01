@@ -4,16 +4,35 @@ import { MaterialIcons, Ionicons, FontAwesome5, Entypo } from "@expo/vector-icon
 import Back from '@/components/btnBack';
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebase.config";
+import Toast from 'react-native-toast-message';
 
 
 const ReglageClient = ({ navigation }: any) => {
 
+
+
   const handleLogout = async () => {
     try {
-      // Naviguer vers l'écran de connexion ou l'écran d'accueil après la déconnexion
-      navigation.navigate("Connexion");
-      await signOut(auth);
-      Alert.alert("Succès", "Déconnexion réussie !");
+      Alert.alert(
+        "Confirmation",
+        "Êtes-vous sûr de vouloir vous déconnecter ?",
+        [
+          {
+            text: "Annuler",
+            style: "cancel",
+          },
+          {
+            text: "Oui",
+            // Naviguer vers l'écran de connexion après la déconnexion
+            onPress: async () => {
+              await signOut(auth);
+              navigation.navigate("Connexion");
+              
+            }
+          }
+        ]
+          );
+
     } catch (error: any) {
       Alert.alert("Erreur", `Erreur lors de la déconnexion: ${error.message}`);
     }
@@ -33,7 +52,7 @@ const ReglageClient = ({ navigation }: any) => {
       </TouchableOpacity>
 
 
-      <TouchableOpacity style={styles.button} >
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate(" HistoriqueCommande")} >
 
         <FontAwesome5 name="history" size={30} color="#088A4B" />
 
@@ -71,7 +90,7 @@ const ReglageClient = ({ navigation }: any) => {
       </TouchableOpacity>
 
 
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('ProposChauffeur')}>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Apropos')}>
 
         <MaterialIcons name="security" size={30} color="#088A4B" />
 

@@ -54,7 +54,7 @@ const Home = ({ navigation }: any) => {
 
         <TouchableOpacity
           style={styles.course}
-          onPress={() => navigation.navigate("Destination")}
+          onPress={() => navigation.navigate('DestinationCourse')}
         >
           <MaterialIcons
             name='emoji-transportation'
