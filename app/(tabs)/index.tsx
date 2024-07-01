@@ -54,6 +54,7 @@ import ProposChauffeur from '@/homePageChauffeur/proposChauffeur';
 
 
 import LocationUser from '@/components/positionUser';
+import LocationScreen from '@/authentification/test';
 
 
 
@@ -165,7 +166,7 @@ export default function app(navigation:any) {
     </NavigationContainer>
 
 //<HomeChauffeur/>
-
+//<LocationScreen/>
   );
 
 };

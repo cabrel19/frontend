@@ -15,8 +15,8 @@ import { auth, firestore } from '@/firebase.config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Connexion = ({ navigation }: any) => {
+
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const phoneInput = useRef<PhoneInput>(null);
@@ -39,9 +39,7 @@ const Connexion = ({ navigation }: any) => {
 
   type FormData = z.infer<typeof validationSchema>;
 
-  const { handleSubmit, watch, control, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(validationSchema),
-  });
+  const { handleSubmit, watch, control, formState: { errors } } = useForm<FormData>({ resolver: zodResolver(validationSchema),});
 
   const checkCredentials = async (phone: string, password: string) => {
     const q = query(

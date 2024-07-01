@@ -5,33 +5,36 @@ import BackHome from '@/components/backHome';
 import { AntDesign, FontAwesome5 } from '@expo/vector-icons';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
-import { GeoPoint, addDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { GeoPoint, addDoc, collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { firestore } from '@/firebase.config';
 import { Alert } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import calculateDistance from '@/utils/distance';
+import RIDE_STATUS from '@/utils/status';
+import { getAuth } from 'firebase/auth';
 
 interface UserData {
-    lieu_depart: GeoPoint[];
-    lieu_arrivée: GeoPoint[];
-    statut: string[];
-    prix: string;
+    lieu_depart: GeoPoint;
+    lieu_arrivée: GeoPoint;
+    statut: RIDE_STATUS;
     distance: string;
+    basePrice: string;
+    nameClient: string;
+    name: string;
+    phone: string;
+    password: string;
 }
+
 
 const Commander = ({ navigation, route }: any) => {
 
     const { destination } = route.params;
-
     const mapRef = useRef<MapView>(null);
-console.log("firdst", destination)
-console.log('destinationPrice', destination.price)
-    const [origin, setOrigin] = useState<any>({
-        latitude: 4.094354,
-        longitude: 9.7393663,
-    });
-
+    // console.log('destinationPrice', price)
+    const [origin, setOrigin] = useState<any>({ latitude: 4.094354, longitude: 9.7393663, });
     const [selectionner, setSelectionner] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [cab, setCab] = useState<{ id: number, price: number }>({ id: undefined as unknown as number, price: undefined as unknown as number })
 
     const regionInitiale = {
         latitude: 4.0651,
@@ -49,62 +52,96 @@ console.log('destinationPrice', destination.price)
         }
     };
 
-    const handlePress = (id: any) => {
-        setSelectionner(id);
-    };
-
     const initialValue: UserData = {
-        lieu_depart: origin,
-        lieu_arrivée: destination,
-        statut: ["libre", "prise", "terminée"],
-        prix: '',
+        lieu_depart: new GeoPoint(origin.latitude, origin.longitude),
+        lieu_arrivée: new GeoPoint(destination.latitude, destination.longitude),
+        statut: RIDE_STATUS.INITIALIZED,
         distance: '',
+        basePrice: '',
+        nameClient: '',
+        name: '',
+        phone: '',
+        password: '',
     }
 
-    const [commande] = useState<UserData>(initialValue);
+    const [commande, setCommande] = useState<UserData>(initialValue);
 
     useEffect(() => {
-
-        let intervalId: NodeJS.Timeout;
-
         const updateLocation = async () => {
-            let location = await Location.getCurrentPositionAsync({});
-            const current = {
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-            };
-            setOrigin(current);
+            try {
+                let location = await Location.getCurrentPositionAsync({});
+                const current = {
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude,
+                };
+                setOrigin(current);
+            } catch (error) {
+                console.error("Erreur lors de la mise à jour de la position :", error);
+            }
         };
 
-        updateLocation();
-        intervalId = setInterval(updateLocation, 3000);
+        const locationSubscription = Location.watchPositionAsync(
+            { accuracy: Location.Accuracy.High, timeInterval: 3000, distanceInterval: 1 },
+            (location) => {
+                const current = {
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude,
+                };
+                setOrigin(current);
+            }
+        );
 
-        return () => clearInterval(intervalId);
+        updateLocation();
+
+        return () => {
+            locationSubscription.then((sub) => sub.remove());
+        };
     }, []);
 
     const createCommande = async () => {
         setLoading(true);
         try {
-            console.log("Origin:", origin);
-            await addDoc(collection(firestore, "commandes",), {
-                lieu_depart: commande.lieu_depart,
-                lieu_arrivée: commande.lieu_arrivée,
-                statut: commande.statut[0],
-                distance: commande.distance,
-                prix: commande.prix,
-            });
-            await findNearbyChauffeurs();
-            // console.log('findNearbyChauffeurs', test)
-            setLoading(false);
-            navigation.navigate('Chauffeur');
+            const user = getAuth().currentUser;
+            if (user) {
+                const userDoc = await getDoc(doc(firestore, "users", user.uid));
+                if (userDoc.exists()) {
+                    const userDataFromFirestore = userDoc.data() as UserData;
+                    
+                    const calculatedDistance = calculateDistance(
+                        origin.latitude,
+                        origin.longitude,
+                        destination.latitude,
+                        destination.longitude
+                    );
+                    const newCommande = {
+                        lieu_depart: new GeoPoint(origin.latitude, origin.longitude),
+                        lieu_arrivée: new GeoPoint(destination.latitude, destination.longitude),
+                        statut: RIDE_STATUS.INITIALIZED,
+                        distance: calculatedDistance,
+                        prix: cab.price,
+                        category: cab.id,
+                        nameClient: userDataFromFirestore.name,
+                    };
 
+                    await addDoc(collection(firestore, "commandes"), newCommande);
+                    await findNearbyChauffeurs();
+
+                    setLoading(false);
+                    navigation.navigate('Chauffeur');
+                } else {
+                    setLoading(false);
+                    Alert.alert("Erreur", "Aucune donnée utilisateur trouvée.");
+                }
+
+            }
         } catch (error: any) {
+            setLoading(false);
             Alert.alert("Une erreur lors de la creation de la commande", error.message);
         }
     };
 
     const findNearbyChauffeurs = async () => {
-        const radiusInM = 1000;
+        const radius = 1000;
         const chauffeursRef = collection(firestore, "users");
         const q = query(chauffeursRef, where("statut", "==", "chauffeur"));
         const querySnapshot = await getDocs(q);
@@ -113,8 +150,10 @@ console.log('destinationPrice', destination.price)
             const chauffeur = doc.data();
             console.log("chauffeur", chauffeur)
             const chauffeurLocation = new GeoPoint(chauffeur.location.latitude, chauffeur.location.longitude);
-            const distance = haversineDistance(origin, chauffeurLocation);
-            if (distance <= radiusInM) {
+            console.log("location", chauffeurLocation)
+            const distance = haversineDistance(origin.latitude, origin.longitude, chauffeur.location.latitude, chauffeur.location.longitude);
+            console.log("distance", distance)
+            if (distance <= radius) {
                 sendNotificationToChauffeur(chauffeur.token);
             }
         });
@@ -134,15 +173,16 @@ console.log('destinationPrice', destination.price)
         };
 
         await Notifications.scheduleNotificationAsync(message);
+        console.log("message", message)
     };
 
-    const haversineDistance = (origin: GeoPoint, destination: GeoPoint) => {
+    const haversineDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
         const toRad = (value: number) => (value * Math.PI) / 180;
         const R = 6371e3;
-        const φ1 = toRad(origin.latitude);
-        const φ2 = toRad(destination.latitude);
-        const Δφ = toRad(destination.latitude - origin.latitude);
-        const Δλ = toRad(destination.longitude - origin.longitude);
+        const φ1 = toRad(lat1);
+        const φ2 = toRad(lat2);
+        const Δφ = toRad(lat2 - lat1);
+        const Δλ = toRad(lng2 - lng1);
 
         const a =
             Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
@@ -163,32 +203,40 @@ console.log('destinationPrice', destination.price)
         {
             id: "1",
             image: require('@/assets/images/moto.png'),
-            titre: 'moto',
-            prix: Math.round(destination.price)
+            titre: 'Moto',
+            basePrice: 141
         },
         {
             id: "2",
             image: require('@/assets/images/eco.png'),
-            titre: 'eco',
-            prix: 600,
+            titre: 'Eco',
+            basePrice: 286
         },
         {
             id: "3",
             image: require('@/assets/images/confort.png'),
-            titre: 'confort',
-            prix: 1400,
+            titre: 'Confort',
+            basePrice: 313
         },
         {
             id: "4",
             image: require('@/assets/images/rapide.png'),
-            titre: 'confort+',
-            prix: 2000,
+            titre: 'Confort+',
+            basePrice: 401
         },
 
     ];
 
+    const calculateMontant = ({ basePrice }: {
+        titre: string;
+        basePrice: number;
+    }) => {
+        const distance = calculateDistance(origin.latitude, origin.longitude, destination?.latitude as number, destination?.longitude as number);
 
+        const montant = basePrice * distance;
 
+        return Math.round(montant)
+    }
 
     return (
         <View style={styles.container}>
@@ -234,12 +282,12 @@ console.log('destinationPrice', destination.price)
                     <FlatList
                         data={data}
                         renderItem={({ item }) => {
-                            const select = item.id === selectionner;
+                            const select = item.id === cab.id?.toString();
                             return (
                                 <View style={styles.flatlist}>
                                     <TouchableOpacity
                                         style={[styles.choice, select && styles.selectionner]}
-                                        onPress={() => handlePress(item.id)}
+                                        onPress={() => setCab({ id: Number(item.id), price: calculateMontant(item) })}
                                     >
                                         <Image source={item.image}
                                             style={{ height: '100%', width: '27%' }}
@@ -247,7 +295,7 @@ console.log('destinationPrice', destination.price)
 
                                         <View style={styles.confortMoto}>
                                             <Text style={styles.textEco}>{item.titre}</Text>
-                                            <Text style={styles.textPrix}> prix: {item.prix}</Text>
+                                            <Text style={styles.textbasePrice}>{calculateMontant(item)} XAF</Text>
                                         </View>
 
                                     </TouchableOpacity>
@@ -262,20 +310,19 @@ console.log('destinationPrice', destination.price)
                 </View>
 
                 <TouchableOpacity style={styles.promo} onPress={() => navigation.navigate("Offres")}>
-                    <Image source={require('@/assets/images/promo.png')} style={{ height: '55%', width: '7%' }} />
+                    <Image source={require('@/assets/images/promo.png')} style={{ height: '55%', width: '9%' }} />
 
                     <View style={styles.text}>
                         <Text style={styles.textPromo}> Obtenez 50% de reduction lors de votre prochain trajet </Text>
-                        <AntDesign name="right" size={20} color="#088A4B" style={{ marginLeft: '6%' }} />
                     </View>
+                    <AntDesign name="right" size={20} color="#088A4B" style={{ marginLeft: '6%', width: '7%' }} />
                 </TouchableOpacity>
 
-                <View style={styles.lines}></View>
 
                 <TouchableOpacity
                     onPress={createCommande}
-                    style={[styles.commander, selectionner && styles.bouton]}
-                    disabled={!selectionner}
+                    style={[styles.commander, cab.id ? styles.bouton : null]}
+                    disabled={cab.id ? false : true}
                 >
                     {loading ? (
                         <ActivityIndicator color="white" />
@@ -326,7 +373,7 @@ const styles = StyleSheet.create({
         bottom: '0%',
         width: '100%',
         height: '50%',
-        backgroundColor: 'white',
+        backgroundColor: '#fafafa',
         alignItems: 'center',
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
@@ -376,7 +423,7 @@ const styles = StyleSheet.create({
         fontSize: 17,
         color: '#088A4B'
     },
-    textPrix: {
+    textbasePrice: {
         height: '50%',
         textAlign: 'center',
         fontSize: 17
@@ -384,15 +431,18 @@ const styles = StyleSheet.create({
     promo: {
         width: '90%',
         height: '13%',
-        marginTop: '1%',
+        marginTop: '4%',
         flexDirection: 'row',
         padding: '1%',
         alignItems: 'center',
         alignSelf: 'center',
         borderRadius: 10,
+        shadowOpacity: 2,
+        shadowColor: '#eee',
+        backgroundColor: 'white'
     },
     text: {
-        width: '88%',
+        width: '75%',
         height: '100%',
         textAlign: 'center',
         alignItems: 'center',
@@ -401,6 +451,7 @@ const styles = StyleSheet.create({
     },
     textPromo: {
         alignItems: 'center',
+        fontSize: 15,
     },
     lines: {
         width: '75%',
@@ -411,7 +462,7 @@ const styles = StyleSheet.create({
     commander: {
         width: '40%',
         height: '13%',
-        marginBottom: '6%',
+        marginTop: '2%',
         backgroundColor: '#BBBBBB',
         borderRadius: 10,
         justifyContent: 'center',

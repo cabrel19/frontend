@@ -8,13 +8,7 @@ import { addDoc, collection, doc, getDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
-interface UserData {
-  name: string;
-  phone: string;
-  password: string;
-  statut: string;
-}
+interface UserData { name: string; phone: string; password: string; statut: string;}
 
 const OtpAuthConnect = ({ route, navigation }: any) => {
 
@@ -79,9 +73,9 @@ const OtpAuthConnect = ({ route, navigation }: any) => {
           if (userDoc.exists()) {
             const userData = userDoc.data() as UserData;
             await AsyncStorage.setItem('userLoggedIn', 'true');
-            console.log('succes', userData.statut)
+           // console.log('succès', userData.statut)
             if (userData.statut ==="chauffeur") {
-             console.log("user data",userData.statut)
+             //console.log("user data",userData.statut)
              navigation.navigate("HomeChauffeur");
             } else if (userData.statut) {
               navigation.navigate("Home");
@@ -100,7 +94,6 @@ const OtpAuthConnect = ({ route, navigation }: any) => {
     }
   };
 
-
   useEffect(() => {
     //désactivation et activation du bouton renvoyer le code
     let timer: any;
@@ -114,7 +107,6 @@ const OtpAuthConnect = ({ route, navigation }: any) => {
     }
     return () => clearInterval(timer);
   }, [renvoyer, secondes]);
-
   const décomptage = (secondes: any) => {
     // faire le décomptage 00:30
     const minutes = Math.floor(secondes / 60);

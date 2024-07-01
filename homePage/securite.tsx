@@ -54,20 +54,15 @@ const Securite = ({ navigation }: any) => {
       </View>
 
       <TouchableOpacity style={styles.button} onPress={() => makePhoneCall('+237680322395')}>
-        <Text style={styles.placeholder}>Service client</Text>
-        <Feather name="phone-call" size={24} color="#088A4B" />
+        <Text style={{fontSize: 18}}>Service client</Text>
+        <Feather name="phone-call" size={24} color="#088A4B" style={{ marginLeft: '56%' }}/>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={openMessenger}>
-        <Text style={styles.placeholder}>Situation d'urgence</Text>
-        <FontAwesome5 name="facebook-messenger" size={24} color="#088A4B" />
+        <Text style={{fontSize: 18}}>Situation d'urgence</Text>
+        <FontAwesome5 name="facebook-messenger" size={24} color="#088A4B"style={{ marginLeft: '42%' }}/>
       </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => Alert.alert("")}
-          style={{alignSelf:'center', marginTop:135, backgroundColor: "#088A4B", padding: 15, borderRadius: 10, height: 47, 
-          width: 140}}>
-        <Text style={{ color: "white", textAlign: "center" }}>QUITTER</Text>
-      </TouchableOpacity>
+      
 
     </View>
   );
@@ -82,23 +77,19 @@ const styles = StyleSheet.create({
    
 
   button: {
-    alignSelf: "center",
-    alignItems: "center",
-    marginTop: 40,
-    borderRadius: 10,
-    borderColor: "#088A4B",
-    borderWidth: 1,
-    height: 60,
-    width: "90%",
-    flexDirection: "row",
+    marginTop: '5%',
+        alignSelf: 'center',
+        alignItems:'center',
+        height: '8%',
+        width: "90%",
+        backgroundColor: 'white',
+        borderRadius:10,
+        shadowOpacity:2,
+        shadowColor:'#eee',
+        flexDirection:'row',
+        padding:'3%',
   },
 
-  placeholder: {
-    color: "rgba(0, 0, 0, 1)",
-    width: "88%",
-    marginLeft: 10,
-    fontWeight: "bold",
-  },
 });
 
 export default Securite;

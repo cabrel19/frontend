@@ -8,71 +8,44 @@ import { GeoPoint, doc, setDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from "expo-location";
 
-interface UserData {
-  name: string;
-  phone: string;
-  statut:string[];
-  password:string;
-  location: GeoPoint[];
-}
-
-
-
+interface UserData { 
+  name: string; 
+  phone: string; 
+  statut:string[]; 
+  password:string; 
+  location?: GeoPoint;
+ }
 
 const OtpSignUp = ({ route, navigation }: any) => {
 
   const { phoneNumber, name, password } = route.params;
 
-  const [origin, setOrigin] = useState<any>({ latitude: 4.094354, longitude: 9.7393663,});
-
   const initialValue: UserData = {
-    name: name,
-    phone: phoneNumber,
-    statut:["client", "chauffeur"],  
+    name:name,
+    phone:phoneNumber,
+    statut:["client", "chauffeur"],
     password:password,
-    location: origin,
-   }
-   const [localisation] = useState<UserData>(initialValue);
-
-   useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-
-    const getLocationPermission = async () => {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-            alert("Permission refusée");
-            return;
-        }
-
-        const updateLocation = async () => {
-            let location = await Location.getCurrentPositionAsync({});
-            const current = {
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-            };
-            setOrigin(current);
-        };
-
-        updateLocation();
-        intervalId = setInterval(updateLocation, 3000);
-    };
-
-    getLocationPermission();
-
-    return () => clearInterval(intervalId);
-}, []);
+  }
 
   const [codeVerification, setCodeVerification] = useState('');
   const [verificationId, setVerificationId] = useState("")
-  const [utilisateur, setUtilisateur] = useState<UserData>(initialValue);
+  const [utilisateur] = useState<UserData>(initialValue);
   const [renvoyer, setRenvoyer] = useState(true);
   const [secondes, setSecondes] = useState(45);// décomptage de 10 sec par default
   const [loading, setLoading] = useState(false); // Nouvel état pour le chargement
   const recaptchaVerifier = useRef(null)
-  const inputRef = useRef([]);
+  const inputRef = useRef([]);  
+  const [location, setLocation] = useState<Location.LocationObject | null>();
+  const [errorMsg, setErrorMsg] = useState('');
 
- 
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
 
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    })();
+  }, []);
 
   useEffect(() => {
     const sentVerificationCode = async () => {
@@ -121,15 +94,15 @@ const OtpSignUp = ({ route, navigation }: any) => {
         await signInWithCredential(auth, credential);
         
         const user = auth.currentUser;
-        if (user) {
+        if (user && location) {
         await setDoc(doc(firestore, "users", user.uid), {
           phone: utilisateur.phone,
           name: utilisateur.name,
           password: utilisateur.password,
           statut: utilisateur.statut[0],
-          location: localisation.location,
+          location: new GeoPoint(location.coords.latitude, location.coords.longitude),
         });
-        await AsyncStorage.setItem('userLoggedIn', 'true');
+       // await AsyncStorage.setItem('userLoggedIn', 'true');
         navigation.navigate('Home');
       } else {
         throw new Error("Utilisateur non trouver après connexion")
@@ -141,7 +114,6 @@ const OtpSignUp = ({ route, navigation }: any) => {
       setLoading(false); // Arrêter le chargement
     }
   };
-
 
   useEffect(() => {
     //désactivation et activation du bouton renvoyer le code

@@ -20,9 +20,7 @@ const DestinationCourse = ({ navigation }: any) => {
 
     const [destination, setDestination] = useState<Destination | null>(null);
     const translateY = useRef(new Animated.Value(0)).current;
-    const [origin, setorigin] = useState({ latitude: 4.094354, longitude: 9.7393663,});
-    const [price,setPrice]=useState(0)
-    const [distance,setDistance]=useState(0)
+    const [origin, setorigin] = useState({ latitude: 4.094354, longitude: 9.7393663, });
     const mapRef = useRef<MapView>(null);
 
     useEffect(() => {
@@ -103,39 +101,19 @@ const DestinationCourse = ({ navigation }: any) => {
     };
 
     const handleDestinationSelected = async (data: any, details: any) => {
-        console.log({ details });
+        // console.log({ details });
         if (details && details.geometry && details.geometry.location) {
             const { lat, lng } = details.geometry.location;
             setDestination({ latitude: lat, longitude: lng });
-            await calculateDistance(origin.latitude, origin.longitude, lat, lng);
-            console.log('succes', price)
-            navigation.navigate('Commander', { destination: { latitude: lat, longitude: lng ,price:price} , price});
+            // console.log("first" , price)
+            navigation.navigate('Commander', { destination: { latitude: lat, longitude: lng },  });
+
         } else {
             console.error("Invalid details object:", details);
             alert("Désolé, nous n'avons pas pu obtenir les coordonnées de cette destination.");
         }
     };
 
-    const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-        const R = 6371; // Rayon de la Terre en kilomètres
-        const dLat = (lat2 - lat1) * (Math.PI / 180);
-        const dLon = (lon2 - lon1) * (Math.PI / 180);
-        const tarif = 150;
-        const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * (Math.PI / 180)) *
-            Math.cos(lat2 * (Math.PI / 180)) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            const distance = R * c; // Distance en kilomètres
-            const prix = distance * tarif; //montant a payer
-            setDistance(distance)
-            console.log("first", distance)
-            setPrice(prix)
-
-            return prix;
-            
-    };
 
     return (
 
@@ -220,8 +198,8 @@ const styles = StyleSheet.create({
         width: '13%',
         height: '6%',
         borderRadius: 30,
-        alignItems:'center',
-        justifyContent:'center',
+        alignItems: 'center',
+        justifyContent: 'center',
         backgroundColor: 'white',
     },
     formulaire: {
