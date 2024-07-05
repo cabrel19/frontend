@@ -10,10 +10,40 @@ import {
 } from "react-native";
 import { MaterialIcons, Ionicons, FontAwesome5, Entypo } from "@expo/vector-icons";
 import Back from '@/components/btnBack';
+import { signOut } from "firebase/auth";
+import { auth } from "@/firebase.config";
 
 //import {auth} from "@/firebase.config";
 
 const ReglageChauffeur = ({ navigation }: any) => {
+
+    const handleLogout = async () => {
+        try {
+          Alert.alert(
+            "Confirmation",
+            "Êtes-vous sûr de vouloir vous déconnecter ?",
+            [
+              {
+                text: "Annuler",
+                style: "cancel",
+              },
+              {
+                text: "Oui",
+                // Naviguer vers l'écran de connexion après la déconnexion
+                onPress: async () => {
+                  await signOut(auth);
+                  navigation.navigate("Connexion");
+                  
+                }
+              }
+            ]
+              );
+    
+        } catch (error: any) {
+          Alert.alert("Erreur", `Erreur lors de la déconnexion: ${error.message}`);
+        }
+      };
+
     return (
         <View style={styles.container}>
 
@@ -64,7 +94,7 @@ const ReglageChauffeur = ({ navigation }: any) => {
             </TouchableOpacity>
 
 
-            <TouchableOpacity style={styles.footer} >
+            <TouchableOpacity style={styles.footer} onPress={handleLogout} >
 
                 <MaterialIcons name="logout" size={30} color="#b22222" />
 

@@ -169,8 +169,6 @@ const Inscription = ({ navigation }: any) => {
 
         </ScrollView>
 
-
-
       </KeyboardAvoidingView>
 
     </ImageBackground >

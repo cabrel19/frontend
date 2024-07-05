@@ -4,31 +4,43 @@
     "slug": "frontend",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "platforms": ["ios", "android"],
+    "ios": {
+      "supportsTablet": true,
+      "config": {
+        "googleMapsApiKey": "AIzaSyBXJ_jco0wIOiAqlGOofYipRBGTw54ut5k"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff",
+        "package": "com.anonymous.frontend"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBXJ_jco0wIOiAqlGOofYipRBGTw54ut5k"
+        }
+      }
+    },
+    "icon": "./assets/images/logo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.anonymous.frontend"
-    },
+    
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/logo.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-firebase-core",
+      "@react-native-firebase/app", 
+      "@react-native-firebase/auth"
     ],
     "experiments": {
       "typedRoutes": true

@@ -131,15 +131,8 @@ const DestinationCourse = ({ navigation }: any) => {
                         draggable
                         onDragEnd={(direction) => setOrigin(direction.nativeEvent.coordinate)}
                     />
-                )}
-                {origin && (
-                    <MapViewDirections
-                        apikey={process.env.GOOGLE_MAPS_KEY ?? ""}
-                        origin={origin}
-                        strokeWidth={4}
-                        strokeColor="#088A4B"
-                    />
-                )}
+                )}   
+               
             </MapView>
 
             <TouchableOpacity style={styles.buttons} onPress={recenterMap}>

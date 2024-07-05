@@ -54,7 +54,7 @@ const Client = () => {
                 <View style={styles.barre}></View>
                 <Text style={{ marginTop: '2%' }}>ARRIVE DANS<Text style={{ color: "#088A4B" }}>~5MIN</Text></Text>
                 <View style={styles.profil}>
-                    <Image source={require('@/assets/images/profil.jpeg')} style={styles.image} />
+                    <Image source={require('@/assets/images/10.png')} style={styles.image} />
                 </View>
                 <Text style={styles.name}>TOTO DUCOBU</Text>
                 <View style={styles.line}></View>

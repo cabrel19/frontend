@@ -5,7 +5,7 @@ import BackHome from '@/components/backHome';
 import { AntDesign, FontAwesome5 } from '@expo/vector-icons';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
-import { GeoPoint, addDoc, collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { GeoPoint, addDoc, collection, doc, getDoc, getDocs, onSnapshot, query, where } from 'firebase/firestore';
 import { firestore } from '@/firebase.config';
 import { Alert } from 'react-native';
 import * as Notifications from 'expo-notifications';
@@ -33,10 +33,11 @@ const Commander = ({ navigation, route }: any) => {
     const mapRef = useRef<MapView>(null);
     // console.log('destinationPrice', price)
     const [origin, setOrigin] = useState<any>({ latitude: 4.094354, longitude: 9.7393663, });
-    const [selectionner, setSelectionner] = useState(null);
+    const [selectionner] = useState(null);
     const [loading, setLoading] = useState(false);
     const [cab, setCab] = useState<{ id: number, price: number }>({ id: undefined as unknown as number, price: undefined as unknown as number })
     const [originReady, setOriginReady] = useState(false);
+    const [commandeId, setCommandeId] = useState<string | null>(null);
 
     const regionInitiale = {
         latitude: 4.0651,
@@ -126,17 +127,14 @@ const Commander = ({ navigation, route }: any) => {
                         nameClient: userDataFromFirestore.name,
                     };
 
-                    const docRef = await addDoc(collection(firestore, "commandes",), newCommande);
-                    const commandeId = docRef.id;
-                    await findNearbyChauffeurs();
-
-                    setLoading(false);
-                    navigation.navigate('Chauffeur', { commandeId });
+                    const docRef = await addDoc(collection(firestore, "commandes"), newCommande);
+                    listenForCommandeAcceptance(docRef.id);
+                    setLoading(true);
+                    Alert.alert("Commande créée", "Votre commande est en attente d'acceptation.");
                 } else {
                     setLoading(false);
                     Alert.alert("Erreur", "Aucune donnée utilisateur trouvée.");
                 }
-
             }
         } catch (error: any) {
             setLoading(false);
@@ -144,60 +142,74 @@ const Commander = ({ navigation, route }: any) => {
         }
     };
 
-    const findNearbyChauffeurs = async () => {
-        const radius = 1000;
-        const chauffeursRef = collection(firestore, "users");
-        const q = query(chauffeursRef, where("statut", "==", "chauffeur"));
-        const querySnapshot = await getDocs(q);
-
-        querySnapshot.forEach((doc) => {
-            const chauffeur = doc.data();
-            console.log("chauffeur", chauffeur)
-            const chauffeurLocation = new GeoPoint(chauffeur.location.latitude, chauffeur.location.longitude);
-            console.log("location", chauffeurLocation)
-            const distance = haversineDistance(origin.latitude, origin.longitude, chauffeur.location.latitude, chauffeur.location.longitude);
-            console.log("distance", distance)
-            if (distance <= radius) {
-                sendNotificationToChauffeur(chauffeur.token);
+    const listenForCommandeAcceptance = (commandeId: string) => {
+        const commandeDocRef = doc(firestore, "commandes", commandeId);
+        const unsubscribe = onSnapshot(commandeDocRef, (docSnapshot) => {
+            if (docSnapshot.exists()) {
+                const commandeData = docSnapshot.data() as UserData;
+                if (commandeData.statut === RIDE_STATUS.ACCEPTED) {
+                    unsubscribe(); // Arrêter d'écouter les modifications après acceptation
+                    navigation.navigate('Chauffeur', { commandeId });
+                }
             }
         });
     };
 
-    const sendNotificationToChauffeur = async (token: string) => {
-        const message = {
-            content: {
-                title: 'Nouvelle commande',
-                body: 'Vous avez une nouvelle demande de course',
-                sound: 'default',
-                data: { someData: 'goes here' },
-            },
-            trigger: {
-                seconds: 1,
-            },
-        };
+    // const findNearbyChauffeurs = async () => {
+    //     const radius = 1000;
+    //     const chauffeursRef = collection(firestore, "users");
+    //     const q = query(chauffeursRef, where("statut", "==", "chauffeur"));
+    //     const querySnapshot = await getDocs(q);
 
-        await Notifications.scheduleNotificationAsync(message);
-        console.log("message", message)
-    };
+    //     querySnapshot.forEach((doc) => {
+    //         const chauffeur = doc.data();
+    //         console.log("chauffeur", chauffeur)
+    //         const chauffeurLocation = new GeoPoint(chauffeur.location.latitude, chauffeur.location.longitude);
+    //         console.log("location", chauffeurLocation)
+    //         const distance = haversineDistance(origin.latitude, origin.longitude, chauffeur.location.latitude, chauffeur.location.longitude);
+    //         console.log("distance", distance)
+    //         if (distance <= radius) {
+    //             sendNotificationToChauffeur(chauffeur.token);
+    //         }
+    //     });
+    // };
 
-    const haversineDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
-        const toRad = (value: number) => (value * Math.PI) / 180;
-        const R = 6371e3;
-        const φ1 = toRad(lat1);
-        const φ2 = toRad(lat2);
-        const Δφ = toRad(lat2 - lat1);
-        const Δλ = toRad(lng2 - lng1);
 
-        const a =
-            Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-            Math.cos(φ1) * Math.cos(φ2) *
-            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    // const sendNotificationToChauffeur = async (token: string) => {
+    //     const message = {
+    //         content: {
+    //             title: 'Nouvelle commande',
+    //             body: 'Vous avez une nouvelle demande de course',
+    //             sound: 'default',
+    //             data: { someData: 'goes here' },
+    //         },
+    //         trigger: {
+    //             seconds: 1,
+    //         },
+    //     };
 
-        const d = R * c;
-        // console.log ('succes', {d})
-        return d;
-    };
+    //     await Notifications.scheduleNotificationAsync(message);
+    //     console.log("message", message)
+    // };
+
+    // const haversineDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+    //     const toRad = (value: number) => (value * Math.PI) / 180;
+    //     const R = 6371e3;
+    //     const φ1 = toRad(lat1);
+    //     const φ2 = toRad(lat2);
+    //     const Δφ = toRad(lat2 - lat1);
+    //     const Δλ = toRad(lng2 - lng1);
+
+    //     const a =
+    //         Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    //         Math.cos(φ1) * Math.cos(φ2) *
+    //         Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    //     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    //     const d = R * c;
+    //     // console.log ('succes', {d})
+    //     return d;
+    // };
 
     const space = () => {
         return <View style={styles.space} />;
@@ -259,7 +271,7 @@ const Commander = ({ navigation, route }: any) => {
                     initialRegion={regionInitiale}
                     showsMyLocationButton
                     showsUserLocation={true}
-                   // followsUserLocation={true}
+
                 >
                     <Marker
                         coordinate={origin}
@@ -274,14 +286,15 @@ const Commander = ({ navigation, route }: any) => {
                         title="Destination"
                         description={"Arrivée"}
                     />
-                    <MapViewDirections
+                    {originReady && (<MapViewDirections
                         origin={origin}
                         destination={destination}
-                        apikey={process.env.GOOGLE_MAPS_KEY ?? ""}
+                        apikey={"AIzaSyBXJ_jco0wIOiAqlGOofYipRBGTw54ut5k"}
+                        // apikey={process.env.GOOGLE_MAPS_KEY ?? ""}
                         strokeWidth={4}
                         strokeColor="#088A4B"
                     />
-                   
+                    )}
                 </MapView>
             )}
             <TouchableOpacity style={styles.button} onPress={recenterMap}>

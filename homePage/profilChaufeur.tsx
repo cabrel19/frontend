@@ -1,23 +1,47 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, Alert, Image, TouchableOpacity } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { Feather } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
-import { deleteDoc, doc } from 'firebase/firestore';
+import { deleteDoc, doc, getDoc } from 'firebase/firestore';
 import { firestore } from '@/firebase.config';
 import { ActivityIndicator } from 'react-native';
 import { getAuth } from 'firebase/auth';
 
 const Chauffeur = ({ navigation, route }: any) => {
-
-    const {commandeId} = route.params;
-    // console.log("first", commandeId)
+    const { commandeId } = route.params;
 
     const regionInitiale = { latitude: 4.0651, longitude: 9.7584, latitudeDelta: 0.05, longitudeDelta: 0.05, };
 
     const coordinates = [{ latitude: 4.0621, longitude: 9.7369 },];
 
     const [loading, setLoading] = useState(false);
+    const [chauffeurInfo, setChauffeurInfo] = useState({ name: '', phone: '' });
+
+    useEffect(() => {
+        const fetchCommandeData = async () => {
+            try {
+                const commandeDoc = await getDoc(doc(firestore, 'commandes', commandeId));
+                if (commandeDoc.exists()) {
+                    const commandeData = commandeDoc.data();
+                    if (commandeData.chauffeur) {
+                        setChauffeurInfo({
+                            name: commandeData.chauffeur.name,
+                            phone: commandeData.chauffeur.phone,
+                        });
+                    } else {
+                        Alert.alert("Erreur", "Les informations du chauffeur ne sont pas disponibles.");
+                    }
+                } else {
+                    Alert.alert("Erreur", "Commande non trouvée.");
+                }
+            } catch (error: any) {
+                Alert.alert("Erreur", "Erreur lors de la récupération des données de la commande: " + error.message);
+            }
+        };
+
+        fetchCommandeData();
+    }, [commandeId]);
 
     const deleteCommande = async () => {
         setLoading(true);
@@ -70,9 +94,9 @@ const Chauffeur = ({ navigation, route }: any) => {
                 <View style={styles.barre}></View>
                 <Text style={{ marginTop: '2%' }}>ARRIVE DANS<Text style={{ color: "#088A4B" }}>~5MIN</Text></Text>
                 <View style={styles.profil}>
-                    <Image source={require('@/assets/images/profil.jpeg')} style={styles.image} />
+                    <Image source={require('@/assets/images/10.png')} style={styles.image} />
                 </View>
-                <Text style={styles.name}>TOTO DUCOBU</Text>
+                <Text style={styles.name}>{chauffeurInfo.name}</Text>
                 <View style={styles.line}></View>
                 <Text style={styles.name}>VEHICULE</Text>
                 <View style={styles.vehicule}>
@@ -80,7 +104,7 @@ const Chauffeur = ({ navigation, route }: any) => {
                     <Text style={{ fontSize: 15 }}>357148</Text>
                 </View>
                 <View style={styles.line}></View>
-                <TouchableOpacity onPress={() => makePhoneCall('+237680322395')} style={styles.zoneAppel}>
+                <TouchableOpacity onPress={() => makePhoneCall(chauffeurInfo.phone)} style={styles.zoneAppel}>
                     <View style={styles.iconCall}>
                         <Feather name="phone-call" size={24} color="black" />
                     </View>

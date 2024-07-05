@@ -3,15 +3,14 @@ import React, { useEffect, useState } from 'react';
 import { Entypo, Ionicons, AntDesign, FontAwesome } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { getAuth } from 'firebase/auth';
-import { GeoPoint, collection, doc, getDoc, getDocs, onSnapshot, query } from 'firebase/firestore';
+import { GeoPoint, collection, doc, getDoc, getDocs, onSnapshot, query, updateDoc } from 'firebase/firestore';
 import { firestore } from '@/firebase.config';
 import Geocoder from 'react-native-geocoding';
+import RIDE_STATUS from '@/utils/status';
 
 Geocoder.init("AIzaSyBXJ_jco0wIOiAqlGOofYipRBGTw54ut5k");
 
-interface Commande {
-    id: string;
-}
+
 interface UserData {
     name: string;
     phone: string;
@@ -31,6 +30,51 @@ const HomeChauffeur = ({ navigation }: any) => {
     const [commandes, setCommandes] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [userData, setUserData] = useState<UserData | null>(null);
+    const [recette, setRecette] = useState<number>(0);
+    const [aVerser, setAVerser] = useState<number>(0);
+
+
+
+    const handleAccept = async (commandeId: string) => {
+        // console.log("Prix original:", prix);
+        // const prixNumerique = parseFloat(prix.replace('XAF', '').trim());
+        // console.log("Prix numérique:", prixNumerique);
+        // if (isNaN(prixNumerique)) {
+        //     Alert.alert("Erreur", "Le prix de la commande est invalide.");
+        //     return;
+        // }
+        // const nouvelleRecette = recette + prixNumerique;
+        // setRecette(nouvelleRecette);
+        // setAVerser(nouvelleRecette * 0.35);
+
+        try {
+            const user = getAuth().currentUser;
+            if (user) {
+                const orderDoc = await getDoc(doc(firestore, "commandes", commandeId));
+                if (orderDoc.exists()) {
+                    const order = orderDoc.data();
+                    console.log("user", order)
+                    const commandeDocRef = doc(firestore, "commandes", commandeId);
+                    await updateDoc(commandeDocRef, { 
+                        statut: RIDE_STATUS.ACCEPTED,
+                        chauffeur: {
+                            name: user.displayName,
+                            phone: user.phoneNumber
+                        }
+                    });
+                    Alert.alert("Commande acceptée", "Vous avez accepté la commande.");
+                    navigation.navigate("Client");
+
+                } else {
+                    Alert.alert("Erreur", "Aucune donnée chauffeur trouvée.");
+                }
+            } else {
+                Alert.alert("Erreur", "Utilisateur non connecté.");
+            }
+        } catch (error: any) {
+            Alert.alert("Erreur", "Erreur lors de l'acceptation de la commande: " + error.message);
+        }
+    };
 
     const togglePicker = () => {
         setShowPicker(!showPicker);
@@ -69,12 +113,14 @@ const HomeChauffeur = ({ navigation }: any) => {
             }));
             setCommandes(commandesWithAddresses);
         };
-    
+
+        console.log({ commandes });
         if (commandes.length > 0) {
+
             fetchAddresses();
         }
     }, [commandes]);
-    
+
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -96,45 +142,50 @@ const HomeChauffeur = ({ navigation }: any) => {
                 Alert.alert("Erreur", `Erreur lors de la récupération des données: ${error.message}`);
             }
         };
+        fetchUserData();
 
         const fetchCommandes = () => {
             const commandesCollection = collection(firestore, "commandes");
+            console.log("first", commandesCollection)
             const q = query(commandesCollection);
             const unsubscribe = onSnapshot(q, (querySnapshot) => {
-                let newCommandes: Commande[] = [];
-                let removedCommandes: string[] = [];
-                querySnapshot.docChanges().forEach((change) => {
-                    const commandeData = { id: change.doc.id, ...change.doc.data() };
+                const commandesList: any[] = [];
+                querySnapshot.docChanges().forEach(async (change) => {
+                    const commandeData = change.doc.data();
+                    const departAddress = await fetchAddress(commandeData.lieu_depart);
+                    const arriveeAddress = await fetchAddress(commandeData.lieu_arrivée);
+
                     if (change.type === "added") {
-                        newCommandes.push(commandeData);
+                        setCommandes((prevCommandes) => [
+                            ...prevCommandes,
+                            { ...commandeData, id: change.doc.id, departAddress, arriveeAddress }
+                        ]);
                     } else if (change.type === "modified") {
-                        setCommandes(prev =>
-                            prev.map(commande => commande.id === change.doc.id ? commandeData : commande)
+                        setCommandes((prevCommandes) =>
+                            prevCommandes.map((cmd) =>
+                                cmd.id === change.doc.id ? { ...commandeData, id: change.doc.id, departAddress, arriveeAddress } : cmd
+                            )
                         );
                     } else if (change.type === "removed") {
-                        removedCommandes.push(change.doc.id);
+                        setCommandes((prevCommandes) =>
+                            prevCommandes.filter((cmd) => cmd.id !== change.doc.id)
+                        );
                     }
                 });
-                if (newCommandes.length > 0 || removedCommandes.length > 0) {
-                    setCommandes(prev => {
-                        const combinedCommandes = [...prev, ...newCommandes];
-                        const uniqueCommandes = Array.from(new Set(combinedCommandes.map(c => c.id)))
-                            .map(id => combinedCommandes.find(c => c.id === id));
-                        const filteredCommandes = uniqueCommandes.filter(commande => !removedCommandes.includes(commande.id));
-                        return filteredCommandes;
-                    });
-                }
+                setLoading(false);
             }, (error) => {
                 Alert.alert("Erreur", `Erreur lors de la récupération des commandes: ${error.message}`);
                 setLoading(false);
             });
-    
+
             return unsubscribe;
         };
-    
+
         const unsubscribe = fetchCommandes();
         return () => unsubscribe();
     }, []);
+
+
 
     const data = [
         {
@@ -287,22 +338,18 @@ const HomeChauffeur = ({ navigation }: any) => {
             <View style={styles.recette}>
 
                 <View style={styles.gauche}>
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>0.00XAF</Text>
+                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>{recette.toFixed(2)} XAF</Text>
                     <View style={{ width: '100%', flexDirection: 'row', marginTop: '13%' }}>
                         <Text style={{ width: '75%', marginLeft: '13%', fontSize: 12 }}>RECETTE</Text>
-                        <Image
-                            source={require('@/assets/images/money.png')}
-                        />
+                        <Image source={require('@/assets/images/money.png')} />
                     </View>
                 </View>
 
                 <View style={styles.droite}>
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>0.00XAF</Text>
+                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>{aVerser.toFixed(2)} XAF</Text>
                     <View style={{ width: '100%', flexDirection: 'row', marginTop: '13%' }}>
                         <Text style={{ width: '75%', marginLeft: '13%', fontSize: 12 }}>A VERSER</Text>
-                        <Image
-                            source={require('@/assets/images/money.png')}
-                        />
+                        <Image source={require('@/assets/images/money.png')} />
                     </View>
                 </View>
             </View>
@@ -316,14 +363,14 @@ const HomeChauffeur = ({ navigation }: any) => {
                     <FlatList
                         style={{ marginTop: '4%' }}
                         data={commandes}
-                        
+                        keyExtractor={item => item.id}
                         renderItem={({ item, index }) => {
                             return (
                                 <View style={styles.commande} key={index}>
                                     <View style={styles.client}>
                                         <View style={{ width: '20%', height: '100%', borderRadius: 10, alignItems: 'center', justifyContent: 'center' }}>
                                             <Image
-                                                source={require('@/assets/images/profit.jpg')}
+                                                source={require('@/assets/images/10.png')}
                                                 style={{ width: '75%', height: '78%', borderRadius: 30, }}
                                             />
                                         </View>
@@ -365,14 +412,14 @@ const HomeChauffeur = ({ navigation }: any) => {
                                             <FontAwesome name='car' />
                                             <Text style={{ width: '75%', marginLeft: '13%' }}>{Math.round(item.distance)}m</Text>
                                         </View>
-                                        <TouchableOpacity onPress={() => navigation.navigate("Client")} style={styles.accepter}>
+                                        <TouchableOpacity onPress={() => handleAccept(item.id)} style={styles.accepter}>
                                             <Text>accepter</Text>
                                         </TouchableOpacity>
                                     </View>
                                 </View>
                             );
                         }}
-                        keyExtractor={item => item.id}
+
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={{ paddingBottom: 100, }}
                     />
