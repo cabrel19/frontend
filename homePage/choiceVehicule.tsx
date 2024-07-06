@@ -125,6 +125,7 @@ const Commander = ({ navigation, route }: any) => {
                         prix: cab.price,
                         category: cab.id,
                         nameClient: userDataFromFirestore.name,
+                        phoneClient: userDataFromFirestore.phone,
                     };
 
                     const docRef = await addDoc(collection(firestore, "commandes"), newCommande);

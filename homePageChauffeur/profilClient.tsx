@@ -1,13 +1,73 @@
-import React from 'react';
-import { StyleSheet, View, Text, Alert, Image, TouchableOpacity } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { StyleSheet, View, Text, Alert, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { Feather } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
 import { useNavigation } from "@react-navigation/native";
+import { getAuth } from 'firebase/auth';
+import { deleteDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { firestore } from '@/firebase.config';
+import MapViewDirections from 'react-native-maps-directions';
+import * as Location from 'expo-location';
 
-const Client = () => {
+const Client = ({ navigation, route }: any) => {
 
-    const navigation = useNavigation();
+    const { commandeId, nameClient, phoneClient, lieu_depart } = route.params;
+
+    const [chauffeurPosition, setChauffeurPosition] = useState<Location.LocationObject | null>(null);
+    const mapRef = useRef<MapView>(null);
+    const [loading, setLoading] = useState(false);
+    
+
+    useEffect(() => {
+        (async () => {
+            let location = await Location.getCurrentPositionAsync({});
+            setChauffeurPosition(location);
+        })();
+    }, []);
+
+    useEffect(() => {
+        if (chauffeurPosition) {
+        const locationSubscription = Location.watchPositionAsync(
+            { accuracy: Location.Accuracy.High, timeInterval: 10000, distanceInterval: 10 },
+            (newLocation) => {
+                setChauffeurPosition(newLocation);
+                saveLocationToFirebase(commandeId,newLocation);
+            }
+        );
+
+        return () => {
+            locationSubscription.then((sub) => sub.remove());
+          };
+        }
+      }, [location]);
+    const saveLocationToFirebase = async (commandeId: string,location: Location.LocationObject) => {
+        try {
+            const user = getAuth().currentUser;
+            if (user) {
+                const orderDoc = await getDoc(doc(firestore, "commandes", commandeId));
+                if (orderDoc.exists()) {
+                    const order = orderDoc.data();
+                    const commandeDocRef = doc(firestore, "commandes", commandeId);
+                    await updateDoc(commandeDocRef, { 
+                        chauffeur: {
+                            location:{
+                                latitude: location.coords.latitude,
+                                longitude: location.coords.longitude,
+                            }
+
+                        }
+                    });
+                }
+            } else {
+                Alert.alert("Erreur", "aucune commande trouvee.");
+            }
+        } catch ({ error }: any) {
+            Alert.alert("Erreur", "Erreur lors de la sélection de la commande: " + error.message);
+        }
+
+    };
+
 
     const regionInitiale = {
         latitude: 4.0651,
@@ -16,9 +76,7 @@ const Client = () => {
         longitudeDelta: 0.05,
     };
 
-    const coordinates = [
-        { latitude: 4.0621, longitude: 9.7369 },
-    ];
+
 
     const makePhoneCall = async (phoneNumber: string) => {
         const url = `tel:${phoneNumber}`;
@@ -35,47 +93,92 @@ const Client = () => {
         }
     }
 
+    const deleteCommande = async () => {
+        setLoading(true);
+        try {
+
+            const user = getAuth().currentUser;
+            if (user) {
+                await deleteDoc(doc(firestore, 'commandes', commandeId));
+                navigation.navigate('HomeChauffeur');
+            } else {
+                Alert.alert('Erreur', 'Une erreur est survenue lors de l\'annulation de la commande.');
+            }
+        } catch (error: any) {
+            Alert.alert('Erreur', `Une erreur est survenue lors de l\'annulation de la commande.,${error.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <View style={styles.container}>
-            <MapView
-                initialRegion={regionInitiale}
-                style={StyleSheet.absoluteFillObject} >
-                <Marker
-                    coordinate={coordinates[0]}
-                    title={"Ma position >"}
-                    description={"Départ"}
-                    pinColor={"green"}
-                />
-            </MapView>
 
+            {chauffeurPosition && (
+                <MapView
+                    ref={mapRef}
+                    initialRegion={regionInitiale}
+                    style={StyleSheet.absoluteFillObject} >
+                    <Marker
+                        coordinate={lieu_depart}
+                        title="Position du client"
+                        pinColor="green"
+                    />
+                    <Marker
+                        coordinate={{
+                            latitude: chauffeurPosition.coords.latitude,
+                            longitude: chauffeurPosition.coords.longitude,
+                        }}
+                        title="Position du chauffeur"
+                        pinColor="red"
+                    />
+                    <MapViewDirections
+                        origin={{
+                            latitude: chauffeurPosition.coords.latitude,
+                            longitude: chauffeurPosition.coords.longitude,
+                        }}
+                        destination={lieu_depart}
+                        apikey={process.env.GOOGLE_MAPS_KEY ?? ""}
+                        strokeWidth={4}
+                        strokeColor="#088A4B"
+                    />
+                </MapView>
+            )}
 
             <View style={styles.overlay}>
-                
+
                 <View style={styles.barre}></View>
                 <Text style={{ marginTop: '2%' }}>ARRIVE DANS<Text style={{ color: "#088A4B" }}>~5MIN</Text></Text>
                 <View style={styles.profil}>
                     <Image source={require('@/assets/images/10.png')} style={styles.image} />
                 </View>
-                <Text style={styles.name}>TOTO DUCOBU</Text>
+                <Text style={styles.name}>{nameClient}</Text>
                 <View style={styles.line}></View>
-                <TouchableOpacity onPress={() => makePhoneCall('+237696981536')} style={styles.zoneAppel}>
+                <TouchableOpacity onPress={() => makePhoneCall(phoneClient)} style={styles.zoneAppel}>
                     <View style={styles.iconCall}>
                         <Feather name="phone-call" size={24} color="black" />
                     </View>
                     <Text style={styles.contacter}>Contacter le client</Text>
                 </TouchableOpacity>
                 <View style={styles.footer}>
-                    <TouchableOpacity style={styles.depart}>
+                    <TouchableOpacity style={styles.depart} onPress={() => navigation.navigate("trajectoireCourse")}>
                         <Text>DEPART</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.annuler}  onPress={() => navigation.goBack()}>
-                        <Text>ANNULER</Text>
+
+
+                    <TouchableOpacity style={styles.annuler} onPress={deleteCommande}>
+                        {loading ? (
+                            <ActivityIndicator size="large" color="#088A4B" />
+                        ) : (
+                            <Text>ANNULER</Text>
+                        )}
                     </TouchableOpacity>
+
                 </View>
 
             </View>
         </View>
-       
+
 
     );
 };
@@ -143,7 +246,7 @@ const styles = StyleSheet.create({
         width: '60%',
         height: '17%',
         //alignSelf: 'center',
-      //  marginLeft:'1%',
+        //  marginLeft:'1%',
         //backgroundColor:'blue',
         alignItems: 'center',
         marginTop: '4%'
@@ -162,14 +265,14 @@ const styles = StyleSheet.create({
     },
     contacter: {
         fontSize: 17,
-       // textAlign: 'center',
-       marginLeft:'3%', 
-       width: '70%'
+        // textAlign: 'center',
+        marginLeft: '3%',
+        width: '70%'
     },
     footer: {
         width: '85%',
         marginTop: '6%',
-       // backgroundColor: 'blue',
+        // backgroundColor: 'blue',
         // borderRadius: 7,
         alignItems: 'center',
         // justifyContent: 'center',
@@ -190,7 +293,7 @@ const styles = StyleSheet.create({
     },
     annuler: {
         width: '30%',
-         marginLeft: '20%',
+        marginLeft: '20%',
         backgroundColor: '#088A4B',
         borderRadius: 7,
         alignItems: 'center',

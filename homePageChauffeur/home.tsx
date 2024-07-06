@@ -33,20 +33,7 @@ const HomeChauffeur = ({ navigation }: any) => {
     const [recette, setRecette] = useState<number>(0);
     const [aVerser, setAVerser] = useState<number>(0);
 
-
-
     const handleAccept = async (commandeId: string) => {
-        // console.log("Prix original:", prix);
-        // const prixNumerique = parseFloat(prix.replace('XAF', '').trim());
-        // console.log("Prix numérique:", prixNumerique);
-        // if (isNaN(prixNumerique)) {
-        //     Alert.alert("Erreur", "Le prix de la commande est invalide.");
-        //     return;
-        // }
-        // const nouvelleRecette = recette + prixNumerique;
-        // setRecette(nouvelleRecette);
-        // setAVerser(nouvelleRecette * 0.35);
-
         try {
             const user = getAuth().currentUser;
             if (user) {
@@ -54,16 +41,33 @@ const HomeChauffeur = ({ navigation }: any) => {
                 if (orderDoc.exists()) {
                     const order = orderDoc.data();
                     console.log("user", order)
+                    const nameClient = orderDoc.data().nameClient;
+                    const phoneClient = orderDoc.data().phoneClient;
+                    const lieu_depart = orderDoc.data().lieu_depart;
                     const commandeDocRef = doc(firestore, "commandes", commandeId);
                     await updateDoc(commandeDocRef, { 
                         statut: RIDE_STATUS.ACCEPTED,
                         chauffeur: {
                             name: user.displayName,
-                            phone: user.phoneNumber
+                            phone: user.phoneNumber,
+
                         }
                     });
+                    // Récupérer le prix de la commande et le convertir en nombre
+                const prixCommande = parseFloat(order.prix);
+
+                // Ajouter le prix de la commande à la recette actuelle
+                const nouvelleRecette = recette + prixCommande;
+
+                // Calculer le nouveau montant à verser (35% de la nouvelle recette)
+                const nouveauAVerser = nouvelleRecette * 0.35;
+
+                // Mettre à jour les états recette et aVerser
+                setRecette(nouvelleRecette);
+                setAVerser(nouveauAVerser);
+
                     Alert.alert("Commande acceptée", "Vous avez accepté la commande.");
-                    navigation.navigate("Client");
+                    navigation.navigate("Client", {phoneClient,nameClient,commandeId,lieu_depart});
 
                 } else {
                     Alert.alert("Erreur", "Aucune donnée chauffeur trouvée.");
