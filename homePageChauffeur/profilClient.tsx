@@ -15,9 +15,13 @@ const Client = ({ navigation, route }: any) => {
     const { commandeId, nameClient, phoneClient, lieu_depart } = route.params;
 
     const [chauffeurPosition, setChauffeurPosition] = useState<Location.LocationObject | null>(null);
+    const [arrivalPosition, setArrivalPosition] = useState<Location.LocationObject | null>(null);
     const mapRef = useRef<MapView>(null);
     const [loading, setLoading] = useState(false);
     
+    useEffect(() => {
+        console.log("addressClient", lieu_depart)
+    },[]);
 
     useEffect(() => {
         (async () => {
@@ -28,7 +32,7 @@ const Client = ({ navigation, route }: any) => {
 
     useEffect(() => {
         if (chauffeurPosition) {
-        const locationSubscription = Location.watchPositionAsync(
+           const locationSubscription = Location.watchPositionAsync(
             { accuracy: Location.Accuracy.High, timeInterval: 10000, distanceInterval: 10 },
             (newLocation) => {
                 setChauffeurPosition(newLocation);
@@ -40,7 +44,7 @@ const Client = ({ navigation, route }: any) => {
             locationSubscription.then((sub) => sub.remove());
           };
         }
-      }, [location]);
+      }, [chauffeurPosition]);
     const saveLocationToFirebase = async (commandeId: string,location: Location.LocationObject) => {
         try {
             const user = getAuth().currentUser;
@@ -49,15 +53,7 @@ const Client = ({ navigation, route }: any) => {
                 if (orderDoc.exists()) {
                     const order = orderDoc.data();
                     const commandeDocRef = doc(firestore, "commandes", commandeId);
-                    await updateDoc(commandeDocRef, { 
-                        chauffeur: {
-                            location:{
-                                latitude: location.coords.latitude,
-                                longitude: location.coords.longitude,
-                            }
-
-                        }
-                    });
+                    
                 }
             } else {
                 Alert.alert("Erreur", "aucune commande trouvee.");
@@ -91,7 +87,7 @@ const Client = ({ navigation, route }: any) => {
             Alert.alert('Error', 'An error occured while trying to open Messenger.')
 
         }
-    }
+    };
 
     const deleteCommande = async () => {
         setLoading(true);
@@ -110,20 +106,18 @@ const Client = ({ navigation, route }: any) => {
             setLoading(false);
         }
     };
+     
 
     return (
         <View style={styles.container}>
-
-            {chauffeurPosition && (
-                <MapView
-                    ref={mapRef}
-                    initialRegion={regionInitiale}
-                    style={StyleSheet.absoluteFillObject} >
+            
+                <MapView ref={mapRef} initialRegion={regionInitiale} style={StyleSheet.absoluteFillObject} >
                     <Marker
                         coordinate={lieu_depart}
                         title="Position du client"
                         pinColor="green"
                     />
+                    { chauffeurPosition && (
                     <Marker
                         coordinate={{
                             latitude: chauffeurPosition.coords.latitude,
@@ -132,18 +126,35 @@ const Client = ({ navigation, route }: any) => {
                         title="Position du chauffeur"
                         pinColor="red"
                     />
-                    <MapViewDirections
-                        origin={{
+                    )}
+                    
+                        <Marker
+                          coordinate={{
+                            latitude:lieu_depart.latitude,
+                            longitude:lieu_depart.longitude
+                          }}
+                          title="Point d'arrivee"
+                          pinColor="green"
+                    />
+                    
+                    {chauffeurPosition && (
+                    
+                         <MapViewDirections
+                         origin={{
                             latitude: chauffeurPosition.coords.latitude,
                             longitude: chauffeurPosition.coords.longitude,
                         }}
-                        destination={lieu_depart}
-                        apikey={process.env.GOOGLE_MAPS_KEY ?? ""}
-                        strokeWidth={4}
-                        strokeColor="#088A4B"
-                    />
+                         destination={{
+                            latitude:lieu_depart.latitude,
+                            longitude:lieu_depart.longitude,
+                         }}
+                         apikey={"AIzaSyBXJ_jco0wIOiAqlGOofYipRBGTw54ut5k"}
+                         strokeWidth={4}
+                         strokeColor="blue"
+                     />
+                    )}
                 </MapView>
-            )}
+            
 
             <View style={styles.overlay}>
 

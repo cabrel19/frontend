@@ -98,32 +98,13 @@ const HomeChauffeur = ({ navigation }: any) => {
             } else {
                 return `${geoPoint.latitude}, ${geoPoint.longitude}`;
             }
+            fetchAddress(geoPoint);
         } catch (error) {
-            console.error("Erreur lors de la récupération de l'adresse :", error);
+           // console.error("Erreur lors de la récupération de l'adresse :", error);
             return `${geoPoint.latitude}, ${geoPoint.longitude}`;
         }
     };
 
-    useEffect(() => {
-        const fetchAddresses = async () => {
-            const commandesWithAddresses = await Promise.all(commandes.map(async (commande) => {
-                const departAddress = await fetchAddress(commande.lieu_depart);
-                const arriveeAddress = await fetchAddress(commande.lieu_arrivée);
-                return {
-                    ...commande,
-                    departAddress,
-                    arriveeAddress
-                };
-            }));
-            setCommandes(commandesWithAddresses);
-        };
-
-        console.log({ commandes });
-        if (commandes.length > 0) {
-
-            fetchAddresses();
-        }
-    }, [commandes]);
 
 
     useEffect(() => {
