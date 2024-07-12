@@ -307,8 +307,8 @@ const styles = StyleSheet.create({
         marginLeft: '20%',
         backgroundColor: '#088A4B',
         borderRadius: 7,
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignItems: 'flex-end',
+        justifyContent: 'flex-end',
         height: '100%',
         alignSelf: 'center'
     },
