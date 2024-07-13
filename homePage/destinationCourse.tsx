@@ -1,13 +1,10 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { StyleSheet, View, Text, Dimensions, TouchableOpacity, Animated, PanResponder, Alert } from 'react-native';
 import { Entypo, FontAwesome5 } from '@expo/vector-icons';
-import Geolocation from '@react-native-community/geolocation';
 import BarreRecherche from '@/components/BarreRecherche';
 import BackHome from '@/components/backHome';
-import LocationUser from '@/components/positionUser';
 import * as Location from "expo-location";
 import MapView, { Marker } from "react-native-maps";
-import MapViewDirections from "react-native-maps-directions";
 
 interface Destination {
     latitude: number;
@@ -56,7 +53,7 @@ const DestinationCourse = ({ navigation }: any) => {
                 ...origin,
                 latitudeDelta: 0.01,
                 longitudeDelta: 0.01,
-            }, 1000);
+            }, 2000);
         }
     };
 
@@ -71,7 +68,7 @@ const DestinationCourse = ({ navigation }: any) => {
             onPanResponderRelease: (evt, gestureState) => {
                 if (gestureState.dy > height * 0.4) {
                     Animated.timing(translateY, {
-                        toValue: height * 0.8 - 125,
+                        toValue: height * 0.8 - 170,
                         duration: 300,
                         useNativeDriver: true,
                     }).start();
@@ -88,22 +85,21 @@ const DestinationCourse = ({ navigation }: any) => {
 
     const handlePress = () => {
         Animated.timing(translateY, {
-            toValue: height * 0.7 - 50,
+            toValue: height * 0.8 - 170,
             duration: 300,
             useNativeDriver: true,
         }).start();
+        recenterMap();
     };
-
     const handleDestinationSelected = async (data: any, details: any) => {
-        // console.log({ details });
+    
         if (details && details.geometry && details.geometry.location) {
             const { lat, lng } = details.geometry.location;
             setDestination({ latitude: lat, longitude: lng });
-            // console.log("first" , price)
-            navigation.navigate('Commander', { destination: { latitude: lat, longitude: lng }, });
+            navigation.navigate('Commander', { destination: { latitude: lat, longitude: lng }});
 
         } else {
-            console.error("Invalid details object:", details);
+            console.error("details ", details);
             alert("Désolé, nous n'avons pas pu obtenir les coordonnées de cette destination.");
         }
     };
@@ -119,8 +115,7 @@ const DestinationCourse = ({ navigation }: any) => {
                 style={styles.map}
                 initialRegion={regionInitiale}
                 showsMyLocationButton
-                showsUserLocation={true}
-                
+                showsUserLocation={true}  
             >
                {origin && (
                     <Marker

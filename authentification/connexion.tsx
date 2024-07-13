@@ -14,6 +14,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { auth, firestore } from '@/firebase.config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
 const Connexion = ({ navigation }: any) => {
 
   const [phoneNumber, setPhoneNumber] = useState('');

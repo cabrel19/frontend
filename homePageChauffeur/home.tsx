@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Alert, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { Entypo, Ionicons, AntDesign, FontAwesome } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
@@ -7,6 +7,7 @@ import { GeoPoint, collection, doc, getDoc, getDocs, onSnapshot, query, updateDo
 import { firestore } from '@/firebase.config';
 import Geocoder from 'react-native-geocoding';
 import RIDE_STATUS from '@/utils/status';
+import * as Location from 'expo-location';
 
 Geocoder.init("AIzaSyBXJ_jco0wIOiAqlGOofYipRBGTw54ut5k");
 
@@ -28,50 +29,90 @@ const HomeChauffeur = ({ navigation }: any) => {
     const [selectStatut, setSelectStatut] = useState(null);
     const [showPicker, setShowPicker] = useState(false);
     const [commandes, setCommandes] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [userData, setUserData] = useState<UserData | null>(null);
-    const [recette, setRecette] = useState<number>(0);
-    const [aVerser, setAVerser] = useState<number>(0);
+    var [recette, setRecette] = useState<number>(0);
+    var [aVerser, setAVerser] = useState<number>(0);
+    const [chauffeurPosition, setChauffeurPosition] = useState<Location.LocationObject | null>(null);
+
+    useEffect(() => {
+        (async () => {
+            let location = await Location.getCurrentPositionAsync({});
+            setChauffeurPosition(location);
+        })();
+    }, []);
+
+    useEffect(() => {
+        if (chauffeurPosition) {
+           const locationSubscription = Location.watchPositionAsync(
+            { accuracy: Location.Accuracy.High, timeInterval: 10000, distanceInterval: 10 },
+            (newLocation) => {
+                setChauffeurPosition(newLocation);
+            }
+        );
+
+        return () => {
+            locationSubscription.then((sub) => sub.remove());
+          };
+        }
+      }, [chauffeurPosition]);
+
 
     const handleAccept = async (commandeId: string) => {
+        setLoading(true);
         try {
             const user = getAuth().currentUser;
+            
             if (user) {
+                const infoDriver = await getDoc(doc(firestore, "users", user.uid));
+                if (infoDriver.exists()) {
+                    const nameDriver = infoDriver.data().name;
+                    const phoneDriver = infoDriver.data().phone;
+                
                 const orderDoc = await getDoc(doc(firestore, "commandes", commandeId));
                 if (orderDoc.exists()) {
                     const order = orderDoc.data();
-                    console.log("user", order)
                     const nameClient = orderDoc.data().nameClient;
                     const phoneClient = orderDoc.data().phoneClient;
                     const lieu_depart = orderDoc.data().lieu_depart;
+                    
                     const commandeDocRef = doc(firestore, "commandes", commandeId);
-                    await updateDoc(commandeDocRef, { 
+                    console.log("locationChauffeur", chauffeurPosition?.coords.latitude)
+                    await updateDoc(commandeDocRef, {
                         statut: RIDE_STATUS.ACCEPTED,
                         chauffeur: {
-                            name: user.displayName,
-                            phone: user.phoneNumber,
-
+                            name: nameDriver,
+                            phone: phoneDriver,
+                            location:{
+                            latitude: chauffeurPosition?.coords.latitude,
+                            longitude: chauffeurPosition?.coords.longitude,
+                            }
                         }
+                        
                     });
                     // Récupérer le prix de la commande et le convertir en nombre
-                const prixCommande = parseFloat(order.prix);
+                    const prixCommande = parseFloat(order.prix);
 
-                // Ajouter le prix de la commande à la recette actuelle
-                const nouvelleRecette = recette + prixCommande;
+                    // Ajouter le prix de la commande à la recette actuelle
+                    const nouvelleRecette = recette + prixCommande;
 
-                // Calculer le nouveau montant à verser (35% de la nouvelle recette)
-                const nouveauAVerser = nouvelleRecette * 0.35;
+                    // Calculer le nouveau montant à verser (35% de la nouvelle recette)
+                    const nouveauAVerser = nouvelleRecette * 0.35;
 
-                // Mettre à jour les états recette et aVerser
-                setRecette(nouvelleRecette);
-                setAVerser(nouveauAVerser);
+                    // Mettre à jour les états recette et aVerser
+                    setRecette(nouvelleRecette);
+                    setAVerser(nouveauAVerser);
 
                     Alert.alert("Commande acceptée", "Vous avez accepté la commande.");
-                    navigation.navigate("Client", {phoneClient,nameClient,commandeId,lieu_depart});
+                    setLoading(false);
+                    navigation.navigate("Client", { phoneClient, nameClient, commandeId,chauffeurPosition,lieu_depart });
 
                 } else {
                     Alert.alert("Erreur", "Aucune donnée chauffeur trouvée.");
                 }
+            } else { 
+                Alert.alert("Erreur", "Aucune donnée utilisateur trouvée.");
+              }
             } else {
                 Alert.alert("Erreur", "Utilisateur non connecté.");
             }
@@ -108,6 +149,7 @@ const HomeChauffeur = ({ navigation }: any) => {
 
 
     useEffect(() => {
+
         const fetchUserData = async () => {
             try {
                 const user = getAuth().currentUser;
@@ -127,36 +169,23 @@ const HomeChauffeur = ({ navigation }: any) => {
                 Alert.alert("Erreur", `Erreur lors de la récupération des données: ${error.message}`);
             }
         };
-        fetchUserData();
+        
 
         const fetchCommandes = () => {
             const commandesCollection = collection(firestore, "commandes");
-            console.log("first", commandesCollection)
             const q = query(commandesCollection);
             const unsubscribe = onSnapshot(q, (querySnapshot) => {
-                const commandesList: any[] = [];
-                querySnapshot.docChanges().forEach(async (change) => {
-                    const commandeData = change.doc.data();
+                const updatedCommandes = querySnapshot.docs.map(async (doc) => {
+                    const commandeData = doc.data();
                     const departAddress = await fetchAddress(commandeData.lieu_depart);
                     const arriveeAddress = await fetchAddress(commandeData.lieu_arrivée);
-
-                    if (change.type === "added") {
-                        setCommandes((prevCommandes) => [
-                            ...prevCommandes,
-                            { ...commandeData, id: change.doc.id, departAddress, arriveeAddress }
-                        ]);
-                    } else if (change.type === "modified") {
-                        setCommandes((prevCommandes) =>
-                            prevCommandes.map((cmd) =>
-                                cmd.id === change.doc.id ? { ...commandeData, id: change.doc.id, departAddress, arriveeAddress } : cmd
-                            )
-                        );
-                    } else if (change.type === "removed") {
-                        setCommandes((prevCommandes) =>
-                            prevCommandes.filter((cmd) => cmd.id !== change.doc.id)
-                        );
-                    }
+                    return { ...commandeData, id: doc.id, departAddress, arriveeAddress };
                 });
+
+                Promise.all(updatedCommandes).then((commandesList) => {
+                    setCommandes(commandesList);
+                });
+
                 setLoading(false);
             }, (error) => {
                 Alert.alert("Erreur", `Erreur lors de la récupération des commandes: ${error.message}`);
@@ -165,9 +194,10 @@ const HomeChauffeur = ({ navigation }: any) => {
 
             return unsubscribe;
         };
-
+        fetchUserData();
         const unsubscribe = fetchCommandes();
         return () => unsubscribe();
+
     }, []);
 
 
@@ -241,30 +271,6 @@ const HomeChauffeur = ({ navigation }: any) => {
         },
     ];
 
-    // useEffect(() => {
-    //     const fetchUserData = async () => {
-    //       try {
-    //         const user = getAuth().currentUser;
-    //         if (user) {
-    //           const userDoc = await getDoc(doc(firestore, "commande", user.uid));
-    //           if (userDoc.exists()) {
-    //             const userDataFromFirestore = userDoc.data()  as UserData;
-    //             console.log('succes', {userDataFromFirestore})
-    //             setUserData(userDataFromFirestore);
-    //           } else {
-    //            // Alert.alert("Erreur", "Aucune donnée utilisateur trouvée.");
-    //           }
-    //         } else {
-    //           Alert.alert("Erreur", "Utilisateur non connecté.");
-    //         }
-
-    //       } catch (error: any) {
-    //         Alert.alert("Erreur", `Erreur lors de la récupération des données: ${error.message}`);
-    //       }
-    //     };
-
-    //     fetchUserData();
-    //   }, []);
 
     return (
         <View style={styles.container}>
@@ -338,13 +344,13 @@ const HomeChauffeur = ({ navigation }: any) => {
                     </View>
                 </View>
             </View>
-
             {loading ? (
-                <Text style={{ textAlign: 'center', marginTop: '50%', fontSize: 20 }}>Chargement des commandes...</Text>
+                <Text style={{ textAlign: 'center', marginTop: '50%', fontSize: 20 }}>Chargement...</Text>
             ) : (
                 commandes.length === 0 ? (
                     <Text style={{ textAlign: 'center', marginTop: '50%', fontSize: 20 }}>Aucune commande pour l'instant!</Text>
                 ) : (
+
                     <FlatList
                         style={{ marginTop: '4%' }}
                         data={commandes}
@@ -398,7 +404,12 @@ const HomeChauffeur = ({ navigation }: any) => {
                                             <Text style={{ width: '75%', marginLeft: '13%' }}>{Math.round(item.distance)}m</Text>
                                         </View>
                                         <TouchableOpacity onPress={() => handleAccept(item.id)} style={styles.accepter}>
-                                            <Text>accepter</Text>
+                                            {loading ? (
+                                                <ActivityIndicator size="small" color="white" />
+                                            ) : (
+                                                <Text style={{color:"white"}}>Accepter</Text>
+                                            )}
+
                                         </TouchableOpacity>
                                     </View>
                                 </View>
@@ -411,7 +422,6 @@ const HomeChauffeur = ({ navigation }: any) => {
                 )
             )}
 
-
         </View>
     )
 }
@@ -422,7 +432,6 @@ const styles = StyleSheet.create({
         height: '100%',
         width: '100%',
         backgroundColor: '#fafafa',
-        marginTop: '10%'
     },
     header: {
         width: '85%',
@@ -430,6 +439,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         alignSelf: 'center',
+        marginTop: '12%',
     },
     statut: {
         width: '38%',
@@ -559,7 +569,7 @@ const styles = StyleSheet.create({
         marginLeft: '7%',
         height: '100%',
         borderRadius: 10,
-        backgroundColor: '#fff',
+        backgroundColor: '#65F1AD',
         shadowOpacity: 1,
         shadowColor: '#eee',
         alignItems: 'center',
