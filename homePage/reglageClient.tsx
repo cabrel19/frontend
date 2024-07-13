@@ -5,6 +5,7 @@ import Back from '@/components/btnBack';
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebase.config";
 import Toast from 'react-native-toast-message';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 const ReglageClient = ({ navigation }: any) => {
@@ -26,6 +27,7 @@ const ReglageClient = ({ navigation }: any) => {
             // Naviguer vers l'écran de connexion après la déconnexion
             onPress: async () => {
               await signOut(auth);
+              await AsyncStorage.removeItem('userLoggedIn');
               navigation.navigate("Connexion");
               
             }

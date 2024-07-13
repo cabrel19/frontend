@@ -7,8 +7,9 @@ import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
 import { addDoc, collection, doc, getDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useUser } from '@/userContext';
 
-interface UserData { name: string; phone: string; password: string; statut: string;}
+interface UserData { name: string; phone: string; password: string; statut: string; }
 
 const OtpAuthConnect = ({ route, navigation }: any) => {
 
@@ -17,8 +18,9 @@ const OtpAuthConnect = ({ route, navigation }: any) => {
   const [verificationId, setVerificationId] = useState("")
   const [renvoyer, setRenvoyer] = useState(true);
   const [secondes, setSecondes] = useState(10);// décomptage de 10 sec par default
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
   const recaptchaVerifier = useRef(null);
+  const { setUser } = useUser();
 
 
   useEffect(() => {
@@ -72,11 +74,10 @@ const OtpAuthConnect = ({ route, navigation }: any) => {
           const userDoc = await getDoc(doc(firestore, "users", user.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data() as UserData;
-            await AsyncStorage.setItem('userLoggedIn', 'true');
-           // console.log('succès', userData.statut)
-            if (userData.statut ==="chauffeur") {
-             //console.log("user data",userData.statut)
-             navigation.navigate("HomeChauffeur");
+            await AsyncStorage.setItem('user', JSON.stringify(userData));
+            setUser(userData);
+            if (userData.statut === "chauffeur") {
+              navigation.navigate("HomeChauffeur");
             } else if (userData.statut) {
               navigation.navigate("Home");
             }

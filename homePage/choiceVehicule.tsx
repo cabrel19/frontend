@@ -1,18 +1,16 @@
-import React, { useEffect, useRef, createContext, useState, useContext } from 'react';
-import { StyleSheet, View, TextInput, Button, Text, Dimensions, Image, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { StyleSheet, View, Text, Image, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import BackHome from '@/components/backHome';
 import { AntDesign, FontAwesome5 } from '@expo/vector-icons';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
-import { GeoPoint, addDoc, collection, doc, getDoc, getDocs, onSnapshot, query, where } from 'firebase/firestore';
+import { GeoPoint, addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, } from 'firebase/firestore';
 import { firestore } from '@/firebase.config';
 import { Alert } from 'react-native';
-import * as Notifications from 'expo-notifications';
 import calculateDistance from '@/utils/distance';
 import RIDE_STATUS from '@/utils/status';
 import { getAuth } from 'firebase/auth';
-import { parse } from '@babel/core';
 
 interface UserData {
     lieu_depart: GeoPoint;
@@ -23,7 +21,6 @@ interface UserData {
     nameClient: string;
     name: string;
     phone: string;
-    password: string;
 }
 
 
@@ -31,13 +28,34 @@ const Commander = ({ navigation, route }: any) => {
 
     const { destination } = route.params;
     const mapRef = useRef<MapView>(null);
-    // console.log('destinationPrice', price)
-    const [origin, setOrigin] = useState<any>({ latitude: 4.094354, longitude: 9.7393663, });
+    const [origin, setOrigin] = useState<{ latitude: number, longitude: number }>(() => ({ latitude: 0, longitude: 0 }));
     const [selectionner] = useState(null);
     const [loading, setLoading] = useState(false);
     const [cab, setCab] = useState<{ id: number, price: number }>({ id: undefined as unknown as number, price: undefined as unknown as number })
     const [originReady, setOriginReady] = useState(false);
-    const [commandeId, setCommandeId] = useState<string | null>(null);
+    const [waitConfirm, setWaitConfirm ] = useState(false);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null); 
+
+    // useEffect(() => {
+    //     let intervalId: NodeJS.Timeout;
+    //     const getLocationPermission = async () => {
+    //         const updateLocation = async () => {
+    //             let location = await Location.getCurrentPositionAsync({});
+    //             const current = {
+    //                 latitude: location.coords.latitude,
+    //                 longitude: location.coords.longitude,
+    //             };
+    //             setOrigin(current);
+    //         };
+
+    //         updateLocation();
+    //         intervalId = setInterval(updateLocation, 1000);
+    //     };
+
+    //     getLocationPermission();
+
+    //     return () => clearInterval(intervalId);
+    // }, []);
 
     const regionInitiale = {
         latitude: 4.0651,
@@ -46,14 +64,15 @@ const Commander = ({ navigation, route }: any) => {
         longitudeDelta: 0.05,
     };
     const recenterMap = () => {
-        if (mapRef.current) {
+        if (mapRef.current && origin) {
             mapRef.current.animateToRegion({
                 ...origin,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
+                latitudeDelta: 0.03,
+                longitudeDelta: 0.03,
             }, 2000);
         }
     };
+
 
     const initialValue: UserData = {
         lieu_depart: new GeoPoint(origin.latitude, origin.longitude),
@@ -64,10 +83,7 @@ const Commander = ({ navigation, route }: any) => {
         nameClient: '',
         name: '',
         phone: '',
-        password: '',
     }
-
-    const [commande, setCommande] = useState<UserData>(initialValue);
 
     useEffect(() => {
         const updateLocation = async () => {
@@ -129,9 +145,14 @@ const Commander = ({ navigation, route }: any) => {
                     };
 
                     const docRef = await addDoc(collection(firestore, "commandes"), newCommande);
+                    
                     listenForCommandeAcceptance(docRef.id);
-                    setLoading(true);
+                    setWaitConfirm(true);
                     Alert.alert("Commande créée", "Votre commande est en attente d'acceptation.");
+                    // Définir le délai de 40 secondes
+                    timeoutRef.current = setTimeout(() => {
+                        handleTimeout(docRef.id);
+                    }, 45000);
                 } else {
                     setLoading(false);
                     Alert.alert("Erreur", "Aucune donnée utilisateur trouvée.");
@@ -150,67 +171,22 @@ const Commander = ({ navigation, route }: any) => {
                 const commandeData = docSnapshot.data() as UserData;
                 if (commandeData.statut === RIDE_STATUS.ACCEPTED) {
                     unsubscribe(); // Arrêter d'écouter les modifications après acceptation
+                    clearTimeout(timeoutRef.current!); // Annuler le délai si la commande est acceptée
                     navigation.navigate('Chauffeur', { commandeId });
                 }
             }
         });
     };
 
-    // const findNearbyChauffeurs = async () => {
-    //     const radius = 1000;
-    //     const chauffeursRef = collection(firestore, "users");
-    //     const q = query(chauffeursRef, where("statut", "==", "chauffeur"));
-    //     const querySnapshot = await getDocs(q);
-
-    //     querySnapshot.forEach((doc) => {
-    //         const chauffeur = doc.data();
-    //         console.log("chauffeur", chauffeur)
-    //         const chauffeurLocation = new GeoPoint(chauffeur.location.latitude, chauffeur.location.longitude);
-    //         console.log("location", chauffeurLocation)
-    //         const distance = haversineDistance(origin.latitude, origin.longitude, chauffeur.location.latitude, chauffeur.location.longitude);
-    //         console.log("distance", distance)
-    //         if (distance <= radius) {
-    //             sendNotificationToChauffeur(chauffeur.token);
-    //         }
-    //     });
-    // };
-
-
-    // const sendNotificationToChauffeur = async (token: string) => {
-    //     const message = {
-    //         content: {
-    //             title: 'Nouvelle commande',
-    //             body: 'Vous avez une nouvelle demande de course',
-    //             sound: 'default',
-    //             data: { someData: 'goes here' },
-    //         },
-    //         trigger: {
-    //             seconds: 1,
-    //         },
-    //     };
-
-    //     await Notifications.scheduleNotificationAsync(message);
-    //     console.log("message", message)
-    // };
-
-    // const haversineDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
-    //     const toRad = (value: number) => (value * Math.PI) / 180;
-    //     const R = 6371e3;
-    //     const φ1 = toRad(lat1);
-    //     const φ2 = toRad(lat2);
-    //     const Δφ = toRad(lat2 - lat1);
-    //     const Δλ = toRad(lng2 - lng1);
-
-    //     const a =
-    //         Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-    //         Math.cos(φ1) * Math.cos(φ2) *
-    //         Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-    //     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    //     const d = R * c;
-    //     // console.log ('succes', {d})
-    //     return d;
-    // };
+    const handleTimeout = async (commandeId: string) => {
+        try {
+            await deleteDoc(doc(firestore, "commandes", commandeId));
+            Alert.alert("Commande annulée", "Aucun chauffeur n'a accepté la commande dans le délai imparti.");
+            navigation.navigate('Home');
+        } catch (error: any) {
+            Alert.alert("Erreur", "Une erreur est survenue lors de l'annulation de la commande.");
+        }
+    };
 
     const space = () => {
         return <View style={styles.space} />;
@@ -244,10 +220,7 @@ const Commander = ({ navigation, route }: any) => {
 
     ];
 
-    const calculateMontant = ({ basePrice }: {
-        titre: string;
-        basePrice: number;
-    }) => {
+    const calculateMontant = ({ basePrice }: { titre: string; basePrice: number;}) => {
         var distance = calculateDistance(origin.latitude, origin.longitude, destination?.latitude as number, destination?.longitude as number);
 
         var montant = basePrice * distance;
@@ -265,29 +238,33 @@ const Commander = ({ navigation, route }: any) => {
     return (
         <View style={styles.container}>
 
-            {origin && (
-                <MapView
-                    ref={mapRef}
-                    style={styles.map}
-                    initialRegion={regionInitiale}
-                    showsMyLocationButton
-                    showsUserLocation={true}
 
-                >
-                    <Marker
-                        coordinate={origin}
-                        title="Ma position"
-                        description={"Départ"}
-                        pinColor='#088A4B'
-                        draggable
-                        onDragEnd={(direction) => setOrigin(direction.nativeEvent.coordinate)}
-                    />
-                    <Marker
-                        coordinate={destination}
-                        title="Destination"
-                        description={"Arrivée"}
-                    />
-                    {originReady && (<MapViewDirections
+            <MapView
+                ref={mapRef}
+                style={styles.map}
+                initialRegion={regionInitiale}
+                showsMyLocationButton
+                showsUserLocation={true}
+
+            >
+
+                <Marker
+                    coordinate={origin}
+                    title="Ma position"
+                    description={"Départ"}
+                    pinColor='#088A4B'
+                    draggable
+                    onDragEnd={(direction) => setOrigin(direction.nativeEvent.coordinate)}
+                />
+
+                <Marker
+                    coordinate={destination}
+                    title="Destination"
+                    description={"Arrivée"}
+                />
+                {origin && (
+
+                    <MapViewDirections
                         origin={origin}
                         destination={destination}
                         apikey={"AIzaSyBXJ_jco0wIOiAqlGOofYipRBGTw54ut5k"}
@@ -295,9 +272,9 @@ const Commander = ({ navigation, route }: any) => {
                         strokeWidth={4}
                         strokeColor="#088A4B"
                     />
-                    )}
-                </MapView>
-            )}
+                )}
+            </MapView>
+
             <TouchableOpacity style={styles.button} onPress={recenterMap}>
                 <FontAwesome5 name="search-location" color="#088A4B" size={24} />
             </TouchableOpacity>
@@ -357,7 +334,9 @@ const Commander = ({ navigation, route }: any) => {
                     ) : (
                         <Text style={styles.textCommande}> COMMANDER </Text>
                     )}
-
+                    {waitConfirm ? (
+                        <Text style={styles.textCommande}> Veuillez patienter </Text>
+                    ) : null}
                 </TouchableOpacity>
 
             </View>

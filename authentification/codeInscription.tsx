@@ -102,7 +102,7 @@ const OtpSignUp = ({ route, navigation }: any) => {
           statut: utilisateur.statut[0],
           location: new GeoPoint(location.coords.latitude, location.coords.longitude),
         });
-       // await AsyncStorage.setItem('userLoggedIn', 'true');
+       await AsyncStorage.setItem('userLoggedIn', 'true');
         navigation.navigate('Home');
       } else {
         throw new Error("Utilisateur non trouver après connexion")

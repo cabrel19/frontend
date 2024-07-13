@@ -20,29 +20,23 @@ const DestinationLIV = ({ navigation }: any) => {
 
     const [destination, setDestination] = useState<Destination | null>(null);
     const translateY = useRef(new Animated.Value(0)).current;
-    const [origin, setorigin] = useState({ latitude: 4.094354, longitude: 9.7393663, });
+    const [origin, setOrigin] = useState<{ latitude: number, longitude: number } | null>(null);
     const mapRef = useRef<MapView>(null);
 
     useEffect(() => {
         let intervalId: NodeJS.Timeout;
         const getLocationPermission = async () => {
-            let { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== "granted") {
-                alert("Permission refusée");
-                return;
-            }
-
             const updateLocation = async () => {
                 let location = await Location.getCurrentPositionAsync({});
                 const current = {
                     latitude: location.coords.latitude,
                     longitude: location.coords.longitude,
                 };
-                setorigin(current);
+                setOrigin(current);
             };
 
             updateLocation();
-            intervalId = setInterval(updateLocation, 500);
+            intervalId = setInterval(updateLocation, 1000);
         };
 
         getLocationPermission();
@@ -57,7 +51,7 @@ const DestinationLIV = ({ navigation }: any) => {
         longitudeDelta: 0.05,
     };
     const recenterMap = () => {
-        if (mapRef.current) {
+        if (mapRef.current && origin) {
             mapRef.current.animateToRegion({
                 ...origin,
                 latitudeDelta: 0.01,
@@ -106,7 +100,7 @@ const DestinationLIV = ({ navigation }: any) => {
             const { lat, lng } = details.geometry.location;
             setDestination({ latitude: lat, longitude: lng });
             // console.log("first" , price)
-            navigation.navigate('CommanderLIV', { destination: { latitude: lat, longitude: lng },  });
+            navigation.navigate('CommanderLIV', { destination: { latitude: lat, longitude: lng }, });
 
         } else {
             console.error("Invalid details object:", details);
@@ -126,23 +120,19 @@ const DestinationLIV = ({ navigation }: any) => {
                 initialRegion={regionInitiale}
                 showsMyLocationButton
                 showsUserLocation={true}
-                followsUserLocation={true}
+                
             >
-                <Marker
-                    coordinate={origin}
-                    title={"Ma position >"}
-                    description={"Départ"}
-                    pinColor={"#088A4B"}
-                    draggable
-                    onDragEnd={(direction) => setorigin(direction.nativeEvent.coordinate)}
-                />
-
-                <MapViewDirections
-                    apikey={process.env.GOOGLE_MAPS_KEY ?? ""}
-                    origin={origin}
-                    strokeWidth={4}
-                    strokeColor="#088A4B"
-                />
+               {origin && (
+                    <Marker
+                        coordinate={origin}
+                        title={"Ma position"}
+                        description={"Départ"}
+                        pinColor={"#088A4B"}
+                        draggable
+                        onDragEnd={(direction) => setOrigin(direction.nativeEvent.coordinate)}
+                    />
+                )}   
+               
             </MapView>
 
             <TouchableOpacity style={styles.buttons} onPress={recenterMap}>
@@ -252,4 +242,3 @@ const styles = StyleSheet.create({
 });
 
 export default DestinationLIV;
-

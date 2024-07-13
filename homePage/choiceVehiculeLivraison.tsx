@@ -207,7 +207,7 @@ const CommanderLIV = ({ navigation, route }: any) => {
             id: "1",
             image: require('@/assets/images/moto.png'),
             titre: 'moto',
-            basePrice: 141
+            basePrice: 135
         },
         {
             id: "2",
@@ -229,11 +229,18 @@ const CommanderLIV = ({ navigation, route }: any) => {
         titre: string;
         basePrice: number;
     }) => {
-        const distance = calculateDistance(origin.latitude, origin.longitude, destination?.latitude as number, destination?.longitude as number);
+        var distance = calculateDistance(origin.latitude, origin.longitude, destination?.latitude as number, destination?.longitude as number);
 
-        const montant = basePrice * distance;
+        var montant = basePrice * distance;
 
-        return Math.round(montant)
+        if (montant % 25 !== 0) {
+            var a = montant / 25
+
+            var newMontant = 25 * (Math.round(a) + 1)
+            return Math.round(newMontant)
+        } else {
+            return Math.round(montant)
+        }
     }
 
     return (
@@ -262,7 +269,7 @@ const CommanderLIV = ({ navigation, route }: any) => {
                     <MapViewDirections
                         origin={origin}
                         destination={destination}
-                        apikey={process.env.GOOGLE_MAPS_KEY ?? ""}
+                        apikey={"AIzaSyBXJ_jco0wIOiAqlGOofYipRBGTw54ut5k"}
                         strokeWidth={4}
                         strokeColor="#088A4B"
                     />

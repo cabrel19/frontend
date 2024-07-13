@@ -1,22 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, Text, Alert, Image, TouchableOpacity } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { Feather } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
-import { deleteDoc, doc, getDoc } from 'firebase/firestore';
+import { deleteDoc, doc, GeoPoint, getDoc } from 'firebase/firestore';
 import { firestore } from '@/firebase.config';
 import { ActivityIndicator } from 'react-native';
 import { getAuth } from 'firebase/auth';
+import MapViewDirections from 'react-native-maps-directions';
 
+interface commande {
+    nameDriver: string;
+    phoneDriver: string;
+    locationCustomer: GeoPoint;
+    locationDriverLongitude: number;
+    locationDriverLatitude: number;
+}
 const Chauffeur = ({ navigation, route }: any) => {
     const { commandeId } = route.params;
 
-    const regionInitiale = { latitude: 4.0651, longitude: 9.7584, latitudeDelta: 0.05, longitudeDelta: 0.05, };
-
-    const coordinates = [{ latitude: 4.0621, longitude: 9.7369 },];
+    const regionInitiale = {
+        latitude: 4.0651,
+        longitude: 9.7584,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+    };
 
     const [loading, setLoading] = useState(false);
-    const [chauffeurInfo, setChauffeurInfo] = useState({ name: '', phone: '' });
+    const [infoCommande, setInfoCommande] = useState<commande | null>(null);
+    const mapRef = useRef<MapView>(null);
 
     useEffect(() => {
         const fetchCommandeData = async () => {
@@ -24,14 +36,14 @@ const Chauffeur = ({ navigation, route }: any) => {
                 const commandeDoc = await getDoc(doc(firestore, 'commandes', commandeId));
                 if (commandeDoc.exists()) {
                     const commandeData = commandeDoc.data();
-                    if (commandeData.chauffeur) {
-                        setChauffeurInfo({
-                            name: commandeData.chauffeur.name,
-                            phone: commandeData.chauffeur.phone,
-                        });
-                    } else {
-                        Alert.alert("Erreur", "Les informations du chauffeur ne sont pas disponibles.");
-                    }
+                    setInfoCommande({
+                        nameDriver: commandeData.chauffeur.name,
+                        phoneDriver: commandeData.chauffeur.phone,
+                        locationCustomer: commandeData.lieu_depart,
+                        locationDriverLatitude: commandeData.chauffeur.location.latitude,
+                        locationDriverLongitude: commandeData.chauffeur.location.longitude,
+                    })
+
                 } else {
                     Alert.alert("Erreur", "Commande non trouvée.");
                 }
@@ -54,7 +66,7 @@ const Chauffeur = ({ navigation, route }: any) => {
             } else {
                 Alert.alert('Erreur', 'Une erreur est survenue lors de l\'annulation de la commande.');
             }
-        } catch (error:any) {
+        } catch (error: any) {
             Alert.alert('Erreur', `Une erreur est survenue lors de l\'annulation de la commande.,${error.message}`);
         } finally {
             setLoading(false);
@@ -80,13 +92,35 @@ const Chauffeur = ({ navigation, route }: any) => {
         <View style={styles.container}>
             <MapView
                 initialRegion={regionInitiale}
-                style={StyleSheet.absoluteFillObject} >
+                showsUserLocation={true}
+                style={StyleSheet.absoluteFillObject}
+                ref={mapRef}
+            >
+
                 <Marker
-                    coordinate={coordinates[0]}
-                    title={"Ma position >"}
-                    description={"Départ"}
-                    pinColor={"green"}
+                    coordinate={infoCommande?.locationCustomer as GeoPoint}
+                    title="Ma position"
+                    pinColor="green"
                 />
+                <Marker
+                    coordinate={{
+                        latitude: infoCommande?.locationDriverLatitude as number,
+                        longitude: infoCommande?.locationDriverLongitude as number,
+                    }}
+                    title="Position du chauffeur"
+                    pinColor="red"
+                />
+                <MapViewDirections
+                    origin={infoCommande?.locationCustomer as GeoPoint}
+                    destination={{
+                        latitude: infoCommande?.locationDriverLatitude as number,
+                        longitude: infoCommande?.locationDriverLongitude as number,
+                    }}
+                    apikey={"AIzaSyBXJ_jco0wIOiAqlGOofYipRBGTw54ut5k"}
+                    strokeWidth={4}
+                    strokeColor="#088A4B"
+                />
+
             </MapView>
 
 
@@ -96,7 +130,7 @@ const Chauffeur = ({ navigation, route }: any) => {
                 <View style={styles.profil}>
                     <Image source={require('@/assets/images/10.png')} style={styles.image} />
                 </View>
-                <Text style={styles.name}>{chauffeurInfo.name}</Text>
+                <Text style={styles.name}>{infoCommande?.nameDriver}</Text>
                 <View style={styles.line}></View>
                 <Text style={styles.name}>VEHICULE</Text>
                 <View style={styles.vehicule}>
@@ -104,7 +138,7 @@ const Chauffeur = ({ navigation, route }: any) => {
                     <Text style={{ fontSize: 15 }}>357148</Text>
                 </View>
                 <View style={styles.line}></View>
-                <TouchableOpacity onPress={() => makePhoneCall(chauffeurInfo.phone)} style={styles.zoneAppel}>
+                <TouchableOpacity onPress={() => makePhoneCall(infoCommande?.phoneDriver as string)} style={styles.zoneAppel}>
                     <View style={styles.iconCall}>
                         <Feather name="phone-call" size={24} color="black" />
                     </View>

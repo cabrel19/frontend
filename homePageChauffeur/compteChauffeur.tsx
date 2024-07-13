@@ -149,7 +149,7 @@ const CompteChauffeur = ({ navigation }: any) => {
               <Text style={{ marginLeft: "4%", fontWeight: 'bold' }}> Tel: </Text>
               <Text style={{ marginLeft: "18%", fontSize:18 }}> {userData.phone} </Text>
             </View>
-            <TouchableOpacity style={styles.infos} onPress={() => navigation.navigate("Motdepasse")}>
+            <TouchableOpacity style={styles.infos}>
               <Text style={{fontSize:17}}>Mot de passe</Text>
               <MaterialIcons name="arrow-forward-ios" size={24} color="#088A4B" style={{ marginLeft: '61%' }} />
             </TouchableOpacity>
